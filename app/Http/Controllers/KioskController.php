@@ -28,6 +28,8 @@ class KioskController extends Controller
             'location_id' => ['required', 'integer', 'exists:locations,id'],
         ]);
 
-        return response()->json(KioskToken::issue((int) $validated['location_id']));
+        return response()->json(
+            KioskToken::issue((int) $validated['location_id'], $request->getSchemeAndHttpHost())
+        );
     }
 }

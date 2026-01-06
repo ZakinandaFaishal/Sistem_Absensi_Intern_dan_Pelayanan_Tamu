@@ -12,7 +12,7 @@ final class KioskToken
     /**
      * @return array{token: string, scan_url: string, expires_in: int}
      */
-    public static function issue(int $locationId): array
+    public static function issue(int $locationId, ?string $baseUrl = null): array
     {
         $now = time();
         $window = intdiv($now, self::WINDOW_SECONDS);
@@ -28,7 +28,8 @@ final class KioskToken
         $token = $data . '.' . $sig;
 
         $expiresIn = (($window + 1) * self::WINDOW_SECONDS) - $now;
-        $scanUrl = url('/presensi/scan?k=' . rawurlencode($token));
+        $path = '/presensi/scan?k=' . rawurlencode($token);
+        $scanUrl = $baseUrl ? rtrim($baseUrl, '/') . $path : url($path);
 
         return [
             'token' => $token,
