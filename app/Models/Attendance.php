@@ -10,6 +10,9 @@ class Attendance extends Model
     protected $fillable = [
         'user_id',
         'location_id',
+        'lat',
+        'lng',
+        'accuracy_m',
         'date',
         'check_in_at',
         'check_out_at',
@@ -21,6 +24,9 @@ class Attendance extends Model
         'date' => 'date',
         'check_in_at' => 'datetime',
         'check_out_at' => 'datetime',
+        'lat' => 'decimal:7',
+        'lng' => 'decimal:7',
+        'accuracy_m' => 'integer',
     ];
 
     public function user(): BelongsTo

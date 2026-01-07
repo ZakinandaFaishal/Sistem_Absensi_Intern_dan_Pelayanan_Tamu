@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
-use App\Models\Location;
 use App\Support\KioskToken;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -19,11 +18,8 @@ class AttendanceScanController extends Controller
             abort(404);
         }
 
-        $location = Location::query()->findOrFail($claims['loc']);
-
         return view('attendance.scan', [
             'token' => $token,
-            'location' => $location,
         ]);
     }
 
@@ -32,6 +28,9 @@ class AttendanceScanController extends Controller
         $validated = $request->validate([
             'k' => ['required', 'string'],
             'action' => ['required', Rule::in(['in', 'out'])],
+            'lat' => ['required', 'numeric', 'between:-90,90'],
+            'lng' => ['required', 'numeric', 'between:-180,180'],
+            'accuracy_m' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $claims = KioskToken::validate($validated['k']);
@@ -39,7 +38,6 @@ class AttendanceScanController extends Controller
             return back()->withErrors(['k' => 'QR sudah tidak berlaku. Silakan scan ulang.']);
         }
 
-        $locationId = (int) $claims['loc'];
         $userId = (int) $request->user()->id;
 
         $today = CarbonImmutable::now()->toDateString();
@@ -61,8 +59,11 @@ class AttendanceScanController extends Controller
             ]);
 
             $attendance->fill([
-                'location_id' => $locationId,
                 'check_in_at' => $now,
+                'location_id' => null,
+                'lat' => $validated['lat'],
+                'lng' => $validated['lng'],
+                'accuracy_m' => $validated['accuracy_m'] ?? null,
             ])->save();
         }
 
@@ -76,8 +77,11 @@ class AttendanceScanController extends Controller
             }
 
             $attendance->fill([
-                'location_id' => $locationId,
                 'check_out_at' => $now,
+                'location_id' => null,
+                'lat' => $validated['lat'],
+                'lng' => $validated['lng'],
+                'accuracy_m' => $validated['accuracy_m'] ?? null,
             ])->save();
         }
 
