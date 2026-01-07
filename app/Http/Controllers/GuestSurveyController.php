@@ -12,8 +12,6 @@ class GuestSurveyController extends Controller
 {
     public function show(GuestVisit $visit)
     {
-        abort_if($visit->completed_at === null, 404);
-
         if ($visit->survey()->exists()) {
             return view('guest.survey_thanks');
         }
@@ -25,8 +23,9 @@ class GuestSurveyController extends Controller
 
     public function store(Request $request, GuestVisit $visit)
     {
-        abort_if($visit->completed_at === null, 404);
-        abort_if($visit->survey()->exists(), 409);
+        if ($visit->survey()->exists()) {
+            return view('guest.survey_thanks');
+        }
 
         $validated = $request->validate([
             'rating' => ['required', Rule::in([1, 2, 3, 4, 5])],

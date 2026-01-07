@@ -27,7 +27,8 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            // Accept either an email address or a username in a single field.
+            'email' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string'],
         ];
     }
@@ -41,7 +42,35 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $identifier = Str::of((string) $this->string('email'))->trim()->toString();
+        $nikCandidate = preg_replace('/\D+/', '', $identifier) ?? '';
+        $password = (string) $this->string('password');
+
+        $candidates = [];
+
+        // 1) NIK (accept input with spaces/dashes; normalize to digits)
+        if (preg_match('/^\d{16}$/', $nikCandidate) === 1) {
+            $candidates[] = ['nik' => $nikCandidate];
+        }
+
+        // 2) Email (support both real emails and internal ones like user@localhost)
+        if (str_contains($identifier, '@') || filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+            $candidates[] = ['email' => Str::lower($identifier)];
+        }
+
+        // 3) Username
+        $candidates[] = ['username' => Str::lower($identifier)];
+
+        $authenticated = false;
+        foreach ($candidates as $base) {
+            $credentials = $base + ['password' => $password];
+            if (Auth::attempt($credentials, $this->boolean('remember'))) {
+                $authenticated = true;
+                break;
+            }
+        }
+
+        if (! $authenticated) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -80,6 +109,8 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        $identifier = Str::of((string) $this->string('email'))->trim()->toString();
+
+        return Str::transliterate(Str::lower($identifier) . '|' . $this->ip());
     }
 }

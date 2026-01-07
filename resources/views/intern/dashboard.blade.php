@@ -12,61 +12,30 @@
         </div>
     </x-slot>
 
-    <div class="relative min-h-[calc(100vh-64px)] overflow-hidden
-                bg-gradient-to-b from-slate-50 via-white to-slate-50 py-10">
-
-        {{-- glow halus --}}
-        <div class="pointer-events-none absolute inset-0">
-            <div class="absolute -top-40 left-1/4 h-[28rem] w-[28rem] rounded-full bg-emerald-100/25 blur-3xl"></div>
-            <div class="absolute top-24 right-1/4 h-[28rem] w-[28rem] rounded-full bg-sky-100/25 blur-3xl"></div>
-        </div>
-
-        <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-
-            {{-- Hero --}}
-            <div class="rounded-3xl border border-slate-200/60 bg-white/50 backdrop-blur-xl shadow-lg">
-                <div class="p-6 sm:p-8 text-center space-y-3">
-                    <div class="mx-auto inline-flex h-14 w-14 items-center justify-center
-                                rounded-2xl bg-emerald-600/10 ring-1 ring-inset ring-emerald-200">
-                        📱
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 space-y-3">
+                    <div class="text-sm text-gray-700">
+                        Presensi dilakukan dengan cara scan QR yang tampil di layar kiosk (monitor).
                     </div>
 
-                    <h3 class="text-lg sm:text-xl font-extrabold text-slate-900">
-                        Presensi dengan QR Code
-                    </h3>
+                    <div class="rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                        <div class="font-semibold">Langkah cepat</div>
+                        <div>1) Tekan <span class="font-semibold">Scan QR Presensi</span></div>
+                        <div>2) Arahkan kamera ke QR di monitor</div>
+                        <div>3) Pilih Check-in / Check-out (GPS diminta dari HP)</div>
+                    </div>
 
-                    <p class="text-sm text-slate-600 max-w-md mx-auto">
-                        Gunakan <span class="font-semibold">HP Anda</span> untuk melakukan scan QR
-                        yang ditampilkan pada layar kiosk untuk presensi masuk atau pulang.
-                    </p>
-                </div>
-            </div>
-
-            {{-- Actions --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                {{-- Scan Info --}}
-                <div class="rounded-3xl border border-slate-200/60 bg-white/50 backdrop-blur shadow-lg p-6">
-                    <p class="text-sm font-semibold text-slate-900">
-                        Cara Presensi
-                    </p>
-                    <ul class="mt-2 text-sm text-slate-600 space-y-1 list-disc list-inside">
-                        <li>Datangi layar kiosk presensi</li>
-                        <li>Scan QR menggunakan kamera HP</li>
-                        <li>Presensi akan tercatat otomatis</li>
-                    </ul>
-                </div>
-
-                {{-- Riwayat --}}
-                <div class="rounded-3xl border border-slate-200/60 bg-white/50 backdrop-blur shadow-lg p-6
-                            flex flex-col justify-between">
-                    <div>
-                        <p class="text-sm font-semibold text-slate-900">
+                    <div class="flex flex-wrap gap-2">
+                        <a href="{{ route('attendance.qr') }}"
+                            class="inline-flex items-center px-4 py-2 bg-gray-800 text-white rounded">
+                            Scan QR Presensi
+                        </a>
+                        <a href="{{ route('intern.attendance.history') }}"
+                            class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-800 rounded">
                             Riwayat Presensi
-                        </p>
-                        <p class="mt-1 text-sm text-slate-600">
-                            Lihat catatan check-in dan check-out Anda.
-                        </p>
+                        </a>
                     </div>
 
                     <a

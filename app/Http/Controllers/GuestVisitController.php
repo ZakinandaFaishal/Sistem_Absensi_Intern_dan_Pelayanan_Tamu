@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\GuestVisit;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class GuestVisitController extends Controller
 {
@@ -19,15 +21,38 @@ class GuestVisitController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'institution' => ['nullable', 'string', 'max:120'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'purpose' => ['required', 'string', 'max:255'],
+            'job' => ['nullable', 'string', 'max:120'],
+            'jabatan' => ['nullable', 'string', 'max:120'],
+            'service_type' => ['required', 'string', Rule::in(['layanan', 'koordinasi', 'berkas', 'lainnya'])],
+            'purpose_detail' => ['required', 'string', 'max:500'],
         ]);
 
-        GuestVisit::query()->create([
-            ...$validated,
+        $purpose = '[' . $validated['service_type'] . '] ' . trim($validated['purpose_detail']);
+        $extras = [];
+        if (!empty($validated['job'])) {
+            $extras[] = 'Pekerjaan: ' . trim($validated['job']);
+        }
+        if (!empty($validated['jabatan'])) {
+            $extras[] = 'Jabatan: ' . trim($validated['jabatan']);
+        }
+        if ($extras !== []) {
+            $purpose .= ' (' . implode(', ', $extras) . ')';
+        }
+
+        // guest_visits.purpose is a string (VARCHAR 255). Keep it safe to avoid DB errors.
+        $purpose = Str::of($purpose)->limit(255, '')->toString();
+
+        $visit = GuestVisit::query()->create([
+            'name' => $validated['name'],
+            'institution' => $validated['institution'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'purpose' => $purpose,
             'arrived_at' => CarbonImmutable::now(),
         ]);
 
-        return view('guest.thanks');
+        return view('guest.thanks', [
+            'visit' => $visit,
+        ]);
     }
 
     public function index()
@@ -42,7 +67,9 @@ class GuestVisitController extends Controller
     public function complete(Request $request, GuestVisit $visit)
     {
         if ($visit->completed_at !== null) {
-            return redirect()->route('guest.survey.show', $visit);
+            return redirect()
+                ->route('admin.guest.index')
+                ->with('status', 'Kunjungan sudah ditandai selesai.');
         }
 
         $visit->fill([
@@ -50,6 +77,8 @@ class GuestVisitController extends Controller
             'handled_by' => $request->user()->id,
         ])->save();
 
-        return redirect()->route('guest.survey.show', $visit);
+        return redirect()
+            ->route('admin.guest.index')
+            ->with('status', 'Kunjungan berhasil ditandai selesai.');
     }
 }

@@ -25,60 +25,95 @@
                     @endif
 
                     <div class="rounded border bg-gray-50 p-4">
-                        <div class="font-semibold text-gray-900">Tambah User</div>
-                        <form method="POST" action="{{ route('admin.users.store') }}"
-                            class="mt-3 grid grid-cols-1 md:grid-cols-6 gap-3">
+                        <div class="font-semibold text-gray-900">
+                            {{ isset($editUser) && $editUser ? 'Edit User' : 'Tambah User' }}
+                        </div>
+                        <form method="POST"
+                            action="{{ isset($editUser) && $editUser ? route('admin.users.update', $editUser) : route('admin.users.store') }}"
+                            class="mt-3 grid grid-cols-1 md:grid-cols-12 gap-3">
                             @csrf
+                            @if (isset($editUser) && $editUser)
+                                @method('PATCH')
+                            @endif
 
-                            <div class="md:col-span-2">
+                            <div class="md:col-span-3">
                                 <label class="block text-sm text-gray-700">Nama</label>
-                                <input name="name" value="{{ old('name') }}"
+                                <input name="name" value="{{ old('name', $editUser->name ?? '') }}"
                                     class="mt-1 w-full border rounded px-3 py-2" required>
                             </div>
 
                             <div class="md:col-span-2">
+                                <label class="block text-sm text-gray-700">NIK</label>
+                                <input name="nik" value="{{ old('nik', $editUser->nik ?? '') }}"
+                                    class="mt-1 w-full border rounded px-3 py-2" required inputmode="numeric">
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-sm text-gray-700">No Telepon</label>
+                                <input name="phone" value="{{ old('phone', $editUser->phone ?? '') }}"
+                                    class="mt-1 w-full border rounded px-3 py-2" required inputmode="tel">
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-sm text-gray-700">Username</label>
+                                <input name="username" value="{{ old('username', $editUser->username ?? '') }}"
+                                    class="mt-1 w-full border rounded px-3 py-2" required autocomplete="off">
+                            </div>
+
+                            <div class="md:col-span-3">
                                 <label class="block text-sm text-gray-700">Email</label>
-                                <input type="email" name="email" value="{{ old('email') }}"
+                                <input type="email" name="email" value="{{ old('email', $editUser->email ?? '') }}"
                                     class="mt-1 w-full border rounded px-3 py-2" required>
                             </div>
 
-                            <div class="md:col-span-1">
+                            <div class="md:col-span-2">
                                 <label class="block text-sm text-gray-700">Role</label>
                                 <select name="role" class="mt-1 w-full border rounded px-3 py-2" required>
-                                    <option value="intern" @selected(old('role', 'intern') === 'intern')>intern</option>
-                                    <option value="admin" @selected(old('role') === 'admin')>admin</option>
+                                    @php($roleValue = old('role', $editUser->role ?? 'intern'))
+                                    <option value="intern" @selected($roleValue === 'intern')>intern</option>
+                                    <option value="admin" @selected($roleValue === 'admin')>admin</option>
                                 </select>
                             </div>
 
-                            <div class="md:col-span-1">
+                            <div class="md:col-span-2">
                                 <label class="block text-sm text-gray-700">Aktif</label>
                                 <div class="mt-2">
                                     <input type="hidden" name="active" value="0">
                                     <label class="inline-flex items-center gap-2">
                                         <input type="checkbox" name="active" value="1"
-                                            @checked(old('active', '1') === '1')>
+                                            @checked(old('active', $editUser->active ?? true ? '1' : '0') === '1')>
                                         <span class="text-sm">Aktif</span>
                                     </label>
                                 </div>
                             </div>
 
-                            <div class="md:col-span-2">
-                                <label class="block text-sm text-gray-700">Password</label>
+                            <div class="md:col-span-3">
+                                <label class="block text-sm text-gray-700">
+                                    Password {{ isset($editUser) && $editUser ? '(Kosongkan jika tidak diubah)' : '' }}
+                                </label>
                                 <input type="password" name="password" class="mt-1 w-full border rounded px-3 py-2"
-                                    required>
+                                    @if (!isset($editUser) || !$editUser) required @endif>
                             </div>
 
-                            <div class="md:col-span-2">
+                            <div class="md:col-span-3">
                                 <label class="block text-sm text-gray-700">Konfirmasi Password</label>
                                 <input type="password" name="password_confirmation"
-                                    class="mt-1 w-full border rounded px-3 py-2" required>
+                                    class="mt-1 w-full border rounded px-3 py-2"
+                                    @if (!isset($editUser) || !$editUser) required @endif>
                             </div>
 
-                            <div class="md:col-span-2 flex items-end">
+                            <div class="md:col-span-3 flex items-end gap-2">
                                 <button type="submit"
                                     class="w-full md:w-auto px-4 py-2 bg-gray-800 text-white rounded">
-                                    Tambah
+                                    {{ isset($editUser) && $editUser ? 'Simpan' : 'Tambah' }}
                                 </button>
+
+                                @if (isset($editUser) && $editUser)
+                                    <a href="{{ route('admin.users.index') }}"
+                                        class="w-full md:w-auto px-4 py-2 border border-gray-300 text-gray-800 rounded text-center">
+                                        Batal
+                                    </a>
+                                @endif
                             </div>
                         </form>
                     </div>
@@ -88,6 +123,9 @@
                             <thead>
                                 <tr class="text-left text-gray-600">
                                     <th class="py-2 pr-4">Nama</th>
+                                    <th class="py-2 pr-4">Username</th>
+                                    <th class="py-2 pr-4">NIK</th>
+                                    <th class="py-2 pr-4">No. Telepon</th>
                                     <th class="py-2 pr-4">Email</th>
                                     <th class="py-2 pr-4">Role</th>
                                     <th class="py-2 pr-4">Aktif</th>
@@ -98,6 +136,9 @@
                                 @forelse($users as $user)
                                     <tr class="border-t">
                                         <td class="py-2 pr-4 whitespace-nowrap">{{ $user->name }}</td>
+                                        <td class="py-2 pr-4 whitespace-nowrap">{{ $user->username ?? '—' }}</td>
+                                        <td class="py-2 pr-4 whitespace-nowrap">{{ $user->nik ?? '—' }}</td>
+                                        <td class="py-2 pr-4 whitespace-nowrap">{{ $user->phone ?? '—' }}</td>
                                         <td class="py-2 pr-4 whitespace-nowrap">{{ $user->email }}</td>
                                         <td class="py-2 pr-4 whitespace-nowrap">
                                             <form method="POST" action="{{ route('admin.users.role', $user) }}"
@@ -131,13 +172,28 @@
                                             @if (auth()->id() === $user->id)
                                                 Akun sendiri
                                             @else
-                                                —
+                                                <div class="flex items-center gap-2">
+                                                    <a href="{{ route('admin.users.index', ['edit' => $user->id]) }}"
+                                                        class="px-3 py-1.5 border border-gray-300 rounded text-gray-800">
+                                                        Edit
+                                                    </a>
+                                                    <form method="POST"
+                                                        action="{{ route('admin.users.destroy', $user) }}"
+                                                        onsubmit="return confirm('Hapus user ini?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="px-3 py-1.5 bg-rose-600 text-white rounded">
+                                                            Hapus
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             @endif
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="py-3 text-gray-600">Belum ada user.</td>
+                                        <td colspan="8" class="py-3 text-gray-600">Belum ada user.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
