@@ -15,7 +15,7 @@
         </div>
 
         @if ($errors->any())
-            <div class="text-sm text-red-600">
+            <div class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
                 {{ $errors->first() }}
             </div>
         @endif
@@ -30,10 +30,20 @@
                 Check-out
             </button>
         </div>
+
+        <div class="flex flex-wrap gap-2 pt-1">
+            <a href="{{ route('attendance.qr') }}" class="text-sm text-gray-700 underline">
+                Scan ulang QR
+            </a>
+            <span class="text-sm text-gray-400">•</span>
+            <a href="{{ route('dashboard') }}" class="text-sm text-gray-700 underline">
+                Kembali ke Dashboard
+            </a>
+        </div>
     </form>
 
     <script>
-        (function () {
+        (function() {
             const statusEl = document.getElementById('geo-status');
             const latEl = document.getElementById('geo-lat');
             const lngEl = document.getElementById('geo-lng');
@@ -62,8 +72,7 @@
                     (err) => {
                         setStatus('Gagal mengambil lokasi. Aktifkan GPS dan izinkan akses lokasi.');
                         console.warn(err);
-                    },
-                    {
+                    }, {
                         enableHighAccuracy: true,
                         maximumAge: 0,
                         timeout: 10000,
@@ -73,7 +82,7 @@
 
             getLocation();
 
-            form?.addEventListener('submit', function (e) {
+            form?.addEventListener('submit', function(e) {
                 if (!latEl.value || !lngEl.value) {
                     e.preventDefault();
                     setStatus('Lokasi belum tersedia. Coba lagi & pastikan izin lokasi aktif.');

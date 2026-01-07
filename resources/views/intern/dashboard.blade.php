@@ -8,13 +8,24 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 space-y-3">
                     <div class="text-sm text-gray-700">
-                        Gunakan HP untuk scan QR yang tampil di kiosk untuk melakukan presensi.
+                        Presensi dilakukan dengan cara scan QR yang tampil di layar kiosk (monitor).
                     </div>
 
-                    <div>
-                        <a href="{{ route('intern.attendance.history') }}"
+                    <div class="rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                        <div class="font-semibold">Langkah cepat</div>
+                        <div>1) Tekan <span class="font-semibold">Scan QR Presensi</span></div>
+                        <div>2) Arahkan kamera ke QR di monitor</div>
+                        <div>3) Pilih Check-in / Check-out (GPS diminta dari HP)</div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                        <a href="{{ route('attendance.qr') }}"
                             class="inline-flex items-center px-4 py-2 bg-gray-800 text-white rounded">
-                            Lihat Riwayat Presensi
+                            Scan QR Presensi
+                        </a>
+                        <a href="{{ route('intern.attendance.history') }}"
+                            class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-800 rounded">
+                            Riwayat Presensi
                         </a>
                     </div>
                 </div>

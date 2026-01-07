@@ -16,10 +16,10 @@
         <div class="grid gap-4 sm:gap-6 sm:grid-cols-2">
             <div class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur p-5 shadow-sm">
                 <div class="text-sm font-semibold text-gray-900">Kiosk</div>
-                <div class="mt-1 text-sm text-gray-600">Mode layanan cepat untuk absensi dan akses kiosk.</div>
+                <div class="mt-1 text-sm text-gray-600">Untuk Admin/Magang (perlu login) — presensi via QR.</div>
                 <a href="{{ route('kiosk.index') }}"
                     class="mt-4 w-full inline-flex justify-center items-center px-4 py-3 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white tracking-wide hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                    Buka Kiosk
+                    Buka Portal Presensi
                 </a>
             </div>
 
@@ -42,7 +42,7 @@
             @else
                 <a href="{{ route('login') }}"
                     class="inline-flex justify-center items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-sm text-gray-800 tracking-wide hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                    Admin Login
+                    Login Admin/Magang
                 </a>
             @endauth
         </div>
