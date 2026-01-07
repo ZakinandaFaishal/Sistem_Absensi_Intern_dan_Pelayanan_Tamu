@@ -114,11 +114,11 @@
                             <p class="mt-1 text-xs text-slate-500">Umpan balik layanan</p>
                         </div>
 
-                        <div class="rounded-2xl border border-slate-200/60 bg-white/50 backdrop-blur p-4 shadow-sm">
+                        <!-- <div class="rounded-2xl border border-slate-200/60 bg-white/50 backdrop-blur p-4 shadow-sm">
                             <p class="text-xs font-semibold text-slate-500">Status Sistem</p>
                             <p class="mt-1 text-2xl font-extrabold text-emerald-700">OK</p>
                             <p class="mt-1 text-xs text-slate-500">Normal</p>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -126,12 +126,11 @@
             {{-- MAIN MENU (4 cards) --}}
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
 
-                @php $presensiRoute = 'admin.attendance.index'; @endphp
+                {{-- ✅ PRESENSI: route yang PASTI ADA --}}
                 <a
-                    href="{{ Route::has($presensiRoute) ? route($presensiRoute) : 'javascript:void(0)' }}"
+                    href="{{ route('attendance.scan.show') }}"
                     class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl shadow-lg shadow-slate-900/5
-                           hover:-translate-y-0.5 hover:shadow-xl transition
-                           {{ Route::has($presensiRoute) ? '' : 'opacity-60 cursor-not-allowed' }}"
+                           hover:-translate-y-0.5 hover:shadow-xl transition"
                 >
                     <div class="absolute inset-0 bg-gradient-to-br from-slate-900/5 via-transparent to-transparent"></div>
                     <div class="relative p-5">
@@ -139,9 +138,7 @@
                             <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900/5 ring-1 ring-inset ring-slate-200/70">
                                 📌
                             </div>
-                            <span class="text-xs font-semibold text-slate-500">
-                                {{ Route::has($presensiRoute) ? 'Buka' : 'Segera' }}
-                            </span>
+                            <span class="text-xs font-semibold text-slate-500">Buka</span>
                         </div>
                         <p class="mt-4 text-sm font-extrabold text-slate-900">Log Presensi</p>
                         <p class="mt-1 text-xs text-slate-600">Riwayat check-in/check-out dan rekap.</p>
@@ -152,6 +149,7 @@
                     </div>
                 </a>
 
+                {{-- ✅ BUKU TAMU: route yang PASTI ADA --}}
                 <a
                     href="{{ route('admin.guest.index') }}"
                     class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl shadow-lg shadow-slate-900/5
@@ -174,12 +172,11 @@
                     </div>
                 </a>
 
-                @php $surveyRoute = 'admin.survey.index'; @endphp
+                {{-- ✅ SURVEY: sementara arahkan ke buku tamu / nanti ganti ke route survey admin --}}
                 <a
-                    href="{{ Route::has($surveyRoute) ? route($surveyRoute) : 'javascript:void(0)' }}"
+                    href="{{ route('admin.guest.index') }}"
                     class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl shadow-lg shadow-slate-900/5
-                           hover:-translate-y-0.5 hover:shadow-xl transition
-                           {{ Route::has($surveyRoute) ? '' : 'opacity-60 cursor-not-allowed' }}"
+                           hover:-translate-y-0.5 hover:shadow-xl transition"
                 >
                     <div class="absolute inset-0 bg-gradient-to-br from-sky-700/10 via-transparent to-transparent"></div>
                     <div class="relative p-5">
@@ -187,9 +184,7 @@
                             <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-700/10 ring-1 ring-inset ring-sky-200/70">
                                 ⭐
                             </div>
-                            <span class="text-xs font-semibold text-slate-500">
-                                {{ Route::has($surveyRoute) ? 'Buka' : 'Segera' }}
-                            </span>
+                            <span class="text-xs font-semibold text-slate-500">Buka</span>
                         </div>
                         <p class="mt-4 text-sm font-extrabold text-slate-900">Survey Pelayanan</p>
                         <p class="mt-1 text-xs text-slate-600">Kepuasan & masukan pengunjung.</p>
@@ -200,12 +195,11 @@
                     </div>
                 </a>
 
-                @php $userRoute = 'admin.users.index'; @endphp
+                {{-- ✅ USER: sementara arahkan ke profile (route pasti ada) / nanti ganti ke user management --}}
                 <a
-                    href="{{ Route::has($userRoute) ? route($userRoute) : 'javascript:void(0)' }}"
+                    href="{{ route('profile.mahasiswa') }}"
                     class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl shadow-lg shadow-slate-900/5
-                           hover:-translate-y-0.5 hover:shadow-xl transition
-                           {{ Route::has($userRoute) ? '' : 'opacity-60 cursor-not-allowed' }}"
+                           hover:-translate-y-0.5 hover:shadow-xl transition"
                 >
                     <div class="absolute inset-0 bg-gradient-to-br from-fuchsia-700/10 via-transparent to-transparent"></div>
                     <div class="relative p-5">
@@ -213,9 +207,7 @@
                             <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-fuchsia-700/10 ring-1 ring-inset ring-fuchsia-200/70">
                                 👥
                             </div>
-                            <span class="text-xs font-semibold text-slate-500">
-                                {{ Route::has($userRoute) ? 'Buka' : 'Segera' }}
-                            </span>
+                            <span class="text-xs font-semibold text-slate-500">Buka</span>
                         </div>
                         <p class="mt-4 text-sm font-extrabold text-slate-900">User Management</p>
                         <p class="mt-1 text-xs text-slate-600">Kelola akun, role, dan akses.</p>
