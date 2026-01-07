@@ -36,12 +36,11 @@
         class="relative min-h-screen overflow-hidden py-10
                 bg-gradient-to-b from-slate-50 via-white to-slate-50">
 
-        {{-- glow super subtle (opacity kecil + warna lebih netral) --}}
+        {{-- Background layers --}}
         <div class="pointer-events-none absolute inset-0">
-            <div class="absolute -top-48 left-1/4 h-[34rem] w-[34rem] rounded-full bg-fuchsia-100/25 blur-3xl"></div>
-            <div class="absolute top-24 right-1/4 h-[34rem] w-[34rem] rounded-full bg-sky-100/25 blur-3xl"></div>
-            <div class="absolute -bottom-56 left-1/3 h-[36rem] w-[36rem] rounded-full bg-rose-100/20 blur-3xl"></div>
-        </div>
+            <div class="absolute -top-48 left-1/4 h-[34rem] w-[34rem] rounded-full bg-fuchsia-100/20 blur-3xl"></div>
+            <div class="absolute top-16 right-1/4 h-[34rem] w-[34rem] rounded-full bg-sky-100/20 blur-3xl"></div>
+            <div class="absolute -bottom-56 left-1/3 h-[36rem] w-[36rem] rounded-full bg-rose-100/15 blur-3xl"></div>
 
         {{-- “noise” tipis biar menyatu (tidak flat) --}}
         <div
@@ -102,34 +101,20 @@
                         </div>
                     </div>
 
-                    {{-- mini stats --}}
-                    <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="rounded-2xl border border-slate-200/60 bg-white/50 backdrop-blur p-4 shadow-sm">
-                            <p class="text-xs font-semibold text-slate-500">Presensi Hari Ini</p>
-                            <p class="mt-1 text-2xl font-extrabold text-slate-900">—</p>
-                            <p class="mt-1 text-xs text-slate-500">Total check-in/out</p>
-                        </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold
+                                     bg-gradient-to-r from-emerald-400 to-teal-500
+                                     text-white shadow-sm ring-1 ring-white/40">
+                            ● Aktif
+                        </span>
 
-                        <div class="rounded-2xl border border-slate-200/60 bg-white/50 backdrop-blur p-4 shadow-sm">
-                            <p class="text-xs font-semibold text-slate-500">Buku Tamu Hari Ini</p>
-                            <p class="mt-1 text-2xl font-extrabold text-slate-900">—</p>
-                            <p class="mt-1 text-xs text-slate-500">Total kunjungan</p>
-                        </div>
-
-                        <div class="rounded-2xl border border-slate-200/60 bg-white/50 backdrop-blur p-4 shadow-sm">
-                            <p class="text-xs font-semibold text-slate-500">Survey Masuk</p>
-                            <p class="mt-1 text-2xl font-extrabold text-slate-900">—</p>
-                            <p class="mt-1 text-xs text-slate-500">Umpan balik layanan</p>
-                        </div>
-
-                        <!-- <div class="rounded-2xl border border-slate-200/60 bg-white/50 backdrop-blur p-4 shadow-sm">
-                            <p class="text-xs font-semibold text-slate-500">Status Sistem</p>
-                            <p class="mt-1 text-2xl font-extrabold text-emerald-700">OK</p>
-                            <p class="mt-1 text-xs text-slate-500">Normal</p>
-                        </div> -->
+                        <span class="hidden sm:inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold
+                                     bg-white/60 backdrop-blur-md
+                                     text-slate-700 shadow-sm ring-1 ring-white/40">
+                            {{ now()->format('d M Y • H:i') }} WIB
+                        </span>
                     </div>
                 </div>
-            </div>
 
             {{-- MAIN MENU (4 cards) --}}
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -146,10 +131,6 @@
                                 class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900/5 ring-1 ring-inset ring-slate-200/70">
                                 📌
                             </div>
-                            <span class="text-xs font-semibold text-slate-500">Buka</span>
-                        </div>
-                        <p class="mt-4 text-sm font-extrabold text-slate-900">Log Presensi</p>
-                        <p class="mt-1 text-xs text-slate-600">Riwayat check-in/check-out dan rekap.</p>
 
                         <div
                             class="mt-5 inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white">
@@ -218,18 +199,77 @@
                                 class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-fuchsia-700/10 ring-1 ring-inset ring-fuchsia-200/70">
                                 👥
                             </div>
-                            <span class="text-xs font-semibold text-slate-500">Buka</span>
-                        </div>
-                        <p class="mt-4 text-sm font-extrabold text-slate-900">User Management</p>
-                        <p class="mt-1 text-xs text-slate-600">Kelola akun, role, dan akses.</p>
+                        </a>
+
+                        {{-- Buku Tamu --}}
+                        <a href="{{ route('admin.guest.index') }}"
+                           class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl
+                                  shadow-lg shadow-slate-900/5 transition hover:-translate-y-0.5 hover:shadow-xl">
+                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-600/10 via-transparent to-transparent"></div>
+                            <div class="relative flex h-full flex-col p-5">
+                                <div class="flex items-start justify-between">
+                                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600/10 ring-1 ring-inset ring-emerald-200/70">📝</div>
+                                    <span class="text-xs font-semibold text-slate-500">Buka</span>
+                                </div>
+                                <p class="mt-4 text-sm font-extrabold text-slate-900">Log Buku Tamu</p>
+                                <p class="mt-1 text-xs text-slate-600">Daftar kunjungan, status, dan detail.</p>
+
+                                <div class="mt-auto pt-4">
+                                    <span class="inline-flex items-center rounded-xl bg-emerald-700 px-4 py-2 text-xs font-semibold text-white">
+                                        Lihat Data →
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+
+                        {{-- Survey --}}
+                        <a href="{{ route('admin.guest.index') }}"
+                           class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl
+                                  shadow-lg shadow-slate-900/5 transition hover:-translate-y-0.5 hover:shadow-xl">
+                            <div class="absolute inset-0 bg-gradient-to-br from-sky-700/10 via-transparent to-transparent"></div>
+                            <div class="relative flex h-full flex-col p-5">
+                                <div class="flex items-start justify-between">
+                                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-700/10 ring-1 ring-inset ring-sky-200/70">⭐</div>
+                                    <span class="text-xs font-semibold text-slate-500">Buka</span>
+                                </div>
+                                <p class="mt-4 text-sm font-extrabold text-slate-900">Survey Pelayanan</p>
+                                <p class="mt-1 text-xs text-slate-600">Kepuasan & masukan pengunjung.</p>
+
+                                <div class="mt-auto pt-4">
+                                    <span class="inline-flex items-center rounded-xl bg-sky-700 px-4 py-2 text-xs font-semibold text-white">
+                                        Lihat Survey →
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+
+                        {{-- Users --}}
+                        <a href="{{ route('profile.mahasiswa') }}"
+                           class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl
+                                  shadow-lg shadow-slate-900/5 transition hover:-translate-y-0.5 hover:shadow-xl">
+                            <div class="absolute inset-0 bg-gradient-to-br from-fuchsia-700/10 via-transparent to-transparent"></div>
+                            <div class="relative flex h-full flex-col p-5">
+                                <div class="flex items-start justify-between">
+                                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-fuchsia-700/10 ring-1 ring-inset ring-fuchsia-200/70">👥</div>
+                                    <span class="text-xs font-semibold text-slate-500">Buka</span>
+                                </div>
+                                <p class="mt-4 text-sm font-extrabold text-slate-900">User Management</p>
+                                <p class="mt-1 text-xs text-slate-600">Kelola akun, role, dan akses.</p>
+
+                                <div class="mt-auto pt-4">
+                                    <span class="inline-flex items-center rounded-xl bg-fuchsia-700 px-4 py-2 text-xs font-semibold text-white">
+                                        Kelola User →
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
 
                         <div
                             class="mt-5 inline-flex items-center rounded-xl bg-fuchsia-700 px-4 py-2 text-xs font-semibold text-white">
                             Kelola User →
                         </div>
                     </div>
-                </a>
-            </div>
 
             {{-- Note --}}
             <div
@@ -239,7 +279,6 @@
                     Gunakan menu log untuk rekap dan pelaporan. Survey membantu evaluasi kualitas layanan.
                 </p>
             </div>
-
         </div>
     </div>
 </x-app-layout>

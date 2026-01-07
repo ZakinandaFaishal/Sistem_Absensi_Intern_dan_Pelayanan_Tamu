@@ -8,7 +8,7 @@
         </div>
 
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-white flex justify-between h-16">
+            <div class="flex justify-between h-16">
 
                 <div class="flex">
                     <!-- Brand -->
@@ -79,15 +79,9 @@
                         </x-slot>
 
                         <x-slot name="content">
-                            @if(Auth::user()->role === 'mahasiswa')
-                                <x-dropdown-link :href="route('profile.mahasiswa')">
-                                    Profil
-                                </x-dropdown-link>
-                            @else
-                                <x-dropdown-link :href="route('profile.edit')">
-                                    Profil
-                                </x-dropdown-link>
-                            @endif
+                            <x-dropdown-link :href="route('profile.edit')">
+                                Profil
+                            </x-dropdown-link>
 
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
