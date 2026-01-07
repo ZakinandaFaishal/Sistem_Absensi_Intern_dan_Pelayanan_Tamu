@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,33 +15,68 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans text-gray-900 antialiased">
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50">
-        <div class="min-h-screen flex flex-col items-center justify-center px-4 py-10">
-            <div class="w-full max-w-lg">
-                <div class="flex flex-col items-center">
-                    <a href="/" class="inline-flex items-center gap-3">
-                        <x-application-logo class="w-14 h-14 fill-current text-gray-700" />
-                        <div class="text-center sm:text-left">
-                            <div class="text-sm font-semibold text-gray-900">{{ config('app.name', 'Laravel') }}</div>
-                            <div class="text-xs text-gray-500">Absensi internal & buku tamu</div>
-                        </div>
-                    </a>
+<body class="font-sans antialiased">
+    <main class="relative min-h-screen w-full overflow-hidden">
+
+        {{-- Background (selaras landing) --}}
+        <div class="absolute inset-0">
+            <img
+                src="{{ asset('img/background.png') }}"
+                class="h-full w-full object-cover scale-[1.03]"
+                alt="Kabupaten Magelang"
+            >
+            <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/75"></div>
+            <div class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(0,0,0,0.06)_0%,rgba(0,0,0,0.55)_70%,rgba(0,0,0,0.82)_100%)]"></div>
+        </div>
+
+        {{-- Top bar (logo kiri + tombol kembali / login di kanan opsional) --}}
+        <header class="relative z-10 flex items-start justify-between px-6 py-5 sm:px-10">
+            <a href="{{ route('kiosk.index') }}" class="flex items-center gap-3">
+                <div class="rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md shadow-lg p-2">
+                    <img
+                        src="{{ asset('img/logo kab.mgl.png') }}"
+                        alt="Logo Kabupaten Magelang"
+                        class="h-12 w-12 object-contain"
+                    >
                 </div>
 
-                <div
-                    class="mt-8 rounded-2xl bg-white/80 backdrop-blur border border-gray-200 shadow-xl shadow-gray-200/40">
-                    <div class="px-6 py-6 sm:px-8">
+                <div class="hidden sm:block text-left">
+                    <div class="text-sm font-semibold text-white drop-shadow">
+                        Dinas Komunikasi &amp; Informatika
+                    </div>
+                    <div class="text-xs text-white/75">
+                        Kabupaten Magelang
+                    </div>
+                </div>
+            </a>
+
+            <a
+                href="{{ route('kiosk.index') }}"
+                class="rounded-xl bg-white/15 px-5 py-2.5 text-sm font-semibold text-white
+                       backdrop-blur-md border border-white/25 shadow-lg
+                       hover:bg-white/25 hover:-translate-y-0.5 transition duration-200"
+            >
+                ← Kembali
+            </a>
+        </header>
+
+        {{-- Content wrapper --}}
+        <div class="relative z-10 min-h-[calc(100vh-88px)] flex flex-col items-center justify-center px-4 py-10">
+            <div class="w-full max-w-3xl">
+
+                {{-- Glass card container --}}
+                <div class="rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl overflow-hidden">
+                    <div class="px-6 py-6 sm:px-8 sm:py-8">
                         {{ $slot }}
                     </div>
                 </div>
 
-                <p class="mt-6 text-center text-xs text-gray-500">
-                    © {{ now()->year }} {{ config('app.name', 'Laravel') }}
+                <p class="mt-6 text-center text-xs text-white/70">
+                    © {{ now()->year }} {{ config('app.name', 'Laravel') }} • Diskominfo Kabupaten Magelang
                 </p>
             </div>
         </div>
-    </div>
-</body>
 
+    </main>
+</body>
 </html>
