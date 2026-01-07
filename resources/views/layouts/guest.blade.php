@@ -18,7 +18,7 @@
 <body class="font-sans antialiased">
     <main class="relative min-h-screen w-full overflow-hidden">
 
-        {{-- Background (selaras landing) --}}
+        {{-- Background --}}
         <div class="absolute inset-0">
             <img
                 src="{{ asset('img/background.png') }}"
@@ -29,7 +29,7 @@
             <div class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(0,0,0,0.06)_0%,rgba(0,0,0,0.55)_70%,rgba(0,0,0,0.82)_100%)]"></div>
         </div>
 
-        {{-- Top bar (logo kiri + tombol kembali / login di kanan opsional) --}}
+        {{-- Top bar --}}
         <header class="relative z-10 flex items-start justify-between px-6 py-5 sm:px-10">
             <a href="{{ route('kiosk.index') }}" class="flex items-center gap-3">
                 <div class="rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md shadow-lg p-2">
@@ -72,7 +72,7 @@
                 </div>
 
                 <p class="mt-6 text-center text-xs text-white/70">
-                    © {{ now()->year }} {{ config('app.name', 'Laravel') }} • Diskominfo Kabupaten Magelang
+                    © {{ now()->year }} • Diskominfo Kabupaten Magelang
                 </p>
             </div>
         </div>
