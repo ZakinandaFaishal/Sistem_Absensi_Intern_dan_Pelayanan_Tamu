@@ -4,7 +4,7 @@
 
         <div>
             <h1 class="text-lg font-semibold">Survey Kepuasan</h1>
-            <p class="text-sm text-gray-600">Mohon isi penilaian Anda.</p>
+            <p class="text-sm text-gray-600">Opsional. Mohon isi penilaian Anda.</p>
         </div>
 
         <div>
@@ -25,5 +25,9 @@
         </div>
 
         <x-primary-button class="w-full justify-center">Kirim</x-primary-button>
+
+        <div class="pt-1 text-center">
+            <a href="{{ url('/') }}" class="text-sm text-gray-700 underline">Lewati survey</a>
+        </div>
     </form>
 </x-guest-layout>

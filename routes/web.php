@@ -13,7 +13,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('kiosk.index');
+    return redirect()->route('kiosk.index');
 });
 
 Route::get('/kiosk', [KioskController::class, 'index'])->name('kiosk.index');
@@ -26,6 +26,10 @@ Route::post('/kiosk/token', [KioskController::class, 'token'])
 
 Route::get('/presensi/scan', [AttendanceScanController::class, 'show'])->middleware('auth')->name('attendance.scan.show');
 Route::post('/presensi/scan', [AttendanceScanController::class, 'store'])->middleware('auth')->name('attendance.scan.store');
+
+Route::view('/presensi/scan-qr', 'attendance.qr')
+    ->middleware(['auth', 'verified', 'role:intern,admin'])
+    ->name('attendance.qr');
 
 Route::get('/tamu', [GuestVisitController::class, 'create'])->name('guest.create');
 Route::post('/tamu', [GuestVisitController::class, 'store'])->name('guest.store');
@@ -46,6 +50,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::get('/survey', [AdminSurveyController::class, 'index'])->name('survey.index');
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
     Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
+    Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
     Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.role');
     Route::patch('/users/{user}/active', [AdminUserController::class, 'updateActive'])->name('users.active');
 });

@@ -13,9 +13,17 @@ class AttendanceScanController extends Controller
     public function show(Request $request)
     {
         $token = (string) $request->query('k', '');
-        $claims = $token !== '' ? KioskToken::validate($token) : null;
+        if ($token === '') {
+            return redirect()
+                ->route('attendance.qr')
+                ->withErrors(['k' => 'Silakan scan QR absensi terlebih dahulu.']);
+        }
+
+        $claims = KioskToken::validate($token);
         if ($claims === null) {
-            abort(404);
+            return redirect()
+                ->route('attendance.qr')
+                ->withErrors(['k' => 'QR tidak valid atau sudah kedaluwarsa. Silakan scan ulang.']);
         }
 
         return view('attendance.scan', [

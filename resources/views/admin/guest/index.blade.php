@@ -9,6 +9,12 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 space-y-3">
+                    @if (session('status'))
+                        <div class="rounded border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+
                     @forelse($visits as $visit)
                         <div class="border rounded p-3 flex items-center justify-between">
                             <div>
@@ -18,8 +24,7 @@
                             </div>
                             <div class="flex gap-2">
                                 @if ($visit->completed_at)
-                                    <a class="px-3 py-2 bg-gray-100 rounded"
-                                        href="{{ route('guest.survey.show', $visit) }}">Survey</a>
+                                    <span class="px-3 py-2 bg-gray-100 rounded text-sm text-gray-700">Selesai</span>
                                 @else
                                     <form method="POST" action="{{ route('admin.guest.complete', $visit) }}">
                                         @csrf

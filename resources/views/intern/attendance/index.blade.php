@@ -13,6 +13,7 @@
                                 <tr class="text-left text-gray-600">
                                     <th class="py-2 pr-4">Tanggal</th>
                                     <th class="py-2 pr-4">Lokasi</th>
+                                    <th class="py-2 pr-4">Koordinat</th>
                                     <th class="py-2 pr-4">Check-in</th>
                                     <th class="py-2 pr-4">Check-out</th>
                                 </tr>
@@ -25,13 +26,25 @@
                                         <td class="py-2 pr-4 whitespace-nowrap">
                                             {{ $attendance->location?->name ?? '-' }}</td>
                                         <td class="py-2 pr-4 whitespace-nowrap">
-                                            {{ $attendance->check_in_at?->format('H:i') ?? '-' }}</td>
+                                            @if ($attendance->lat !== null && $attendance->lng !== null)
+                                                <div class="text-xs text-gray-900">
+                                                    {{ $attendance->lat }}, {{ $attendance->lng }}
+                                                </div>
+                                                <div class="text-xs text-gray-500">
+                                                    Akurasi: {{ $attendance->accuracy_m ?? '-' }} m
+                                                </div>
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
                                         <td class="py-2 pr-4 whitespace-nowrap">
-                                            {{ $attendance->check_out_at?->format('H:i') ?? '-' }}</td>
+                                            {{ $attendance->check_in_at?->format('H:i:s') ?? '-' }}</td>
+                                        <td class="py-2 pr-4 whitespace-nowrap">
+                                            {{ $attendance->check_out_at?->format('H:i:s') ?? '-' }}</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="py-3 text-gray-600">Belum ada data presensi.</td>
+                                        <td colspan="5" class="py-3 text-gray-600">Belum ada data presensi.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
