@@ -12,13 +12,11 @@ async function setupKioskQr() {
 	if (!canvas) return;
 
 	const endpoint = canvas.dataset.tokenEndpoint;
-	const locationSelect = document.getElementById('kiosk-location');
 	const urlEl = document.getElementById('kiosk-scan-url');
 	const expiresEl = document.getElementById('kiosk-expires');
 
 	async function refresh() {
-		const locationId = locationSelect?.value;
-		if (!endpoint || !locationId) return;
+		if (!endpoint) return;
 
 		const res = await fetch(endpoint, {
 			method: 'POST',
@@ -27,7 +25,7 @@ async function setupKioskQr() {
 				'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
 				'Accept': 'application/json',
 			},
-			body: JSON.stringify({ location_id: locationId }),
+			body: JSON.stringify({}),
 		});
 
 		if (!res.ok) return;
@@ -40,7 +38,6 @@ async function setupKioskQr() {
 
 	await refresh();
 	setInterval(refresh, 5000);
-	locationSelect?.addEventListener('change', refresh);
 }
 
 setupKioskQr();

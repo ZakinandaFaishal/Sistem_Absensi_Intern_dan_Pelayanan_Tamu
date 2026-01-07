@@ -12,13 +12,12 @@ final class KioskToken
     /**
      * @return array{token: string, scan_url: string, expires_in: int}
      */
-    public static function issue(int $locationId, ?string $baseUrl = null): array
+    public static function issue(?string $baseUrl = null): array
     {
         $now = time();
         $window = intdiv($now, self::WINDOW_SECONDS);
 
         $payload = [
-            'loc' => $locationId,
             'w' => $window,
             'n' => Str::random(10),
         ];
@@ -39,7 +38,7 @@ final class KioskToken
     }
 
     /**
-     * @return array{loc:int}|null
+     * @return array{}|null
      */
     public static function validate(string $token): ?array
     {
@@ -60,11 +59,10 @@ final class KioskToken
         }
 
         $payload = json_decode($json, true);
-        if (!is_array($payload) || !isset($payload['loc'], $payload['w'])) {
+        if (!is_array($payload) || !isset($payload['w'])) {
             return null;
         }
 
-        $loc = (int) $payload['loc'];
         $w = (int) $payload['w'];
         $nowW = intdiv(time(), self::WINDOW_SECONDS);
 
@@ -72,7 +70,7 @@ final class KioskToken
             return null;
         }
 
-        return ['loc' => $loc];
+        return [];
     }
 
     private static function signingKey(): string
