@@ -1,21 +1,28 @@
 <x-guest-layout>
-    {{-- Session Status --}}
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <div class="space-y-6">
+        {{-- Session Status --}}
+        <x-auth-session-status class="text-white/80" :status="session('status')" />
 
-    {{-- Background wrapper --}}
-    <div class="min-h-[70vh] flex items-center justify-center px-4 py-10">
-        <div class="w-full max-w-md">
+        {{-- Header --}}
+        <div class="text-center">
+            <h1 class="mt-4 text-2xl sm:text-3xl font-semibold tracking-wide text-white drop-shadow">
+                Login
+            </h1>
+            <p class="mt-1 text-sm text-white/75">
+                Silakan masuk untuk melanjutkan.
+            </p>
+            <div class="mx-auto mt-5 h-[2px] w-20 rounded-full bg-white/35"></div>
+        </div>
 
-            {{-- Card --}}
-            <div class="rounded-2xl bg-white/90 backdrop-blur border border-gray-200 shadow-sm p-6 sm:p-8">
-                {{-- Header --}}
-                <div class="text-center mb-6">
-                    <h1 class="text-2xl font-extrabold text-gray-900">Login</h1>
-                    <p class="mt-1 text-sm text-gray-600">Silakan masuk untuk melanjutkan.</p>
+        <form method="POST" action="{{ route('login') }}" class="space-y-6">
+            @csrf
+
+            {{-- Section: Kredensial --}}
+            <section class="rounded-2xl border border-white/15 bg-white/10 backdrop-blur shadow-xl">
+                <div class="border-b border-white/10 px-5 py-4">
+                    <p class="text-sm font-semibold text-white">Akun</p>
+                    <p class="mt-0.5 text-xs text-white/65">Masukkan email dan password</p>
                 </div>
-
-                <form method="POST" action="{{ route('login') }}" class="space-y-4">
-                    @csrf
 
                     {{-- Email / Username / NIK --}}
                     <div>
@@ -50,12 +57,21 @@
                             </a>
                         @endif
                     </div>
+                </div>
+            </section>
 
-                    {{-- Submit --}}
-                    <div class="pt-2">
-                        <x-primary-button class="w-full justify-center py-3 rounded-xl">
-                            {{ __('Log in') }}
-                        </x-primary-button>
+            {{-- Actions --}}
+            <div class="flex flex-col gap-4">
+                <button
+                    type="submit"
+                    class="w-full inline-flex items-center justify-center rounded-xl
+                           bg-white/20 px-5 py-3 text-base font-semibold text-white
+                           border border-white/25 shadow-xl
+                           hover:bg-white/30 hover:-translate-y-0.5 transition duration-200
+                           focus:outline-none focus:ring-2 focus:ring-white/50"
+                >
+                    {{ __('Log in') }}
+                </button>
 
                         @if (Route::has('register'))
                             <p class="mt-4 text-center text-sm text-gray-600">
@@ -70,11 +86,9 @@
                 </form>
             </div>
 
-            {{-- Optional small footer text --}}
-            <p class="mt-5 text-center text-xs text-gray-500">
+            <p class="text-center text-xs text-white/65">
                 Sistem Buku Tamu & Absensi Peserta Magang
             </p>
-
-        </div>
+        </form>
     </div>
 </x-guest-layout>

@@ -175,95 +175,57 @@
     </div>
 
     <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
-    <script>
-        let html5QrCode = null;
-        let scannedToken = null;
 
-        document.getElementById('start-scan').addEventListener('click', function() {
-            const qrReader = document.getElementById('qr-reader');
-            qrReader.style.display = 'block';
-            this.style.display = 'none';
-            document.getElementById('stop-scan').style.display = 'inline-flex';
-            document.getElementById('attendance-actions').style.display = 'none';
-            document.getElementById('scan-result').innerHTML = '';
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const qrRegionId = "qr-reader";
+    const resultEl = document.getElementById("scan-result");
+    const stopBtn = document.getElementById("stop-scan");
 
-            html5QrCode = new Html5Qrcode("qr-reader");
-            html5QrCode.start(
-                { facingMode: "environment" },
+    const html5QrCode = new Html5Qrcode(qrRegionId);
+
+    async function startCamera() {
+        try {
+            const devices = await Html5Qrcode.getCameras();
+            if (!devices || devices.length === 0) {
+                resultEl.innerText = "Kamera tidak ditemukan";
+                return;
+            }
+
+            await html5QrCode.start(
+                { facingMode: "environment" }, // kamera belakang
                 {
                     fps: 10,
                     qrbox: { width: 250, height: 250 }
                 },
-                qrCodeMessage => {
-                    // QR code scanned
-                    scannedToken = qrCodeMessage;
-                    document.getElementById('scan-result').innerHTML = 'QR Code terdeteksi. Pilih aksi presensi:';
-                    document.getElementById('attendance-actions').style.display = 'flex';
-                    stopScan();
-                },
-                errorMessage => {
-                    // console.log(errorMessage);
+                (decodedText) => {
+                    resultEl.innerHTML = `
+                        <span class="font-semibold text-emerald-700">
+                            QR Terdeteksi
+                        </span><br>${decodedText}
+                    `;
+
+                    // 🔴 OPSIONAL: stop setelah scan pertama
+                    html5QrCode.stop();
                 }
-            ).catch(err => {
-                console.log(`Unable to start scanning, error: ${err}`);
-            });
-        });
-
-        document.getElementById('stop-scan').addEventListener('click', function() {
-            stopScan();
-        });
-
-        document.getElementById('check-in').addEventListener('click', function() {
-            processAttendance('in');
-        });
-
-        document.getElementById('check-out').addEventListener('click', function() {
-            processAttendance('out');
-        });
-
-        function stopScan() {
-            if (html5QrCode) {
-                html5QrCode.stop().then(ignore => {
-                    html5QrCode.clear();
-                }).catch(err => {
-                    console.log(`Unable to stop scanning, error: ${err}`);
-                });
-            }
-            document.getElementById('qr-reader').style.display = 'none';
-            document.getElementById('start-scan').style.display = 'inline-flex';
-            document.getElementById('stop-scan').style.display = 'none';
+            );
+        } catch (err) {
+            resultEl.innerText = "Gagal membuka kamera";
+            console.error(err);
         }
+    }
 
-        function processAttendance(action) {
-            if (!scannedToken) {
-                document.getElementById('scan-result').innerHTML = 'Token tidak ditemukan.';
-                return;
-            }
+    // AUTO START
+    startCamera();
 
-            fetch('/presensi/scan', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: new URLSearchParams({
-                    k: scannedToken,
-                    action: action
-                })
-            })
-            .then(response => {
-                if (response.ok) {
-                    document.getElementById('scan-result').innerHTML = `Presensi ${action === 'in' ? 'check-in' : 'check-out'} berhasil!`;
-                    document.getElementById('attendance-actions').style.display = 'none';
-                } else {
-                    return response.text().then(text => {
-                        document.getElementById('scan-result').innerHTML = 'Error: ' + text;
-                    });
-                }
-            })
-            .catch(error => {
-                document.getElementById('scan-result').innerHTML = 'Error: ' + error.message;
-            });
+    // STOP CAMERA
+    stopBtn.addEventListener("click", async () => {
+        if (html5QrCode.isScanning) {
+            await html5QrCode.stop();
+            resultEl.innerText = "Scan dihentikan";
         }
-    </script>
+    });
+});
+</script>
+
 </x-app-layout>

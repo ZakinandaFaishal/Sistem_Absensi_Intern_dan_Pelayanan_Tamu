@@ -1,6 +1,15 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Dashboard Magang</h2>
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="font-extrabold text-xl tracking-tight text-slate-900">
+                    Dashboard Magang
+                </h2>
+                <p class="mt-1 text-sm text-slate-600">
+                    Presensi harian peserta magang
+                </p>
+            </div>
+        </div>
     </x-slot>
 
     <div class="py-12">
@@ -28,8 +37,18 @@
                             Riwayat Presensi
                         </a>
                     </div>
+
+                    <a
+                        href="{{ route('intern.attendance.history') }}"
+                        class="mt-4 inline-flex items-center justify-center rounded-xl
+                               bg-slate-900 px-5 py-3 text-sm font-semibold text-white
+                               hover:bg-slate-800 transition"
+                    >
+                        Lihat Riwayat Presensi →
+                    </a>
                 </div>
             </div>
+
         </div>
     </div>
 </x-app-layout>
