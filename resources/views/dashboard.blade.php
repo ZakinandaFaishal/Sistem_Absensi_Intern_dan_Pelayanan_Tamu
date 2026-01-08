@@ -1,284 +1,193 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h2
-                    class="font-extrabold text-xl leading-tight
-                           bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500
-                           bg-clip-text text-transparent">
-                    Dashboard Admin
-                </h2>
-                <p class="mt-1 text-sm text-slate-600">
-                    Log Presensi, Buku Tamu, Survey Pelayanan, dan User Management.
-                </p>
-            </div>
+@extends('layouts.navigation')
 
-            <div class="flex items-center gap-2">
-                <span
-                    class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold
-                           bg-gradient-to-r from-emerald-400 to-teal-500
-                           text-white shadow-sm ring-1 ring-white/40">
-                    ● Aktif
-                </span>
+@section('title', 'Dashboard Admin - Diskominfo Kab. Magelang')
+@section('page_title', 'Dashboard Admin')
 
-                <span
-                    class="hidden sm:inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold
-                           bg-white/60 backdrop-blur-md
-                           text-slate-700 shadow-sm ring-1 ring-white/40">
-                    {{ now()->format('d M Y • H:i') }} WIB
-                </span>
-            </div>
-        </div>
-    </x-slot>
+@section('content')
 
-    {{-- BACKGROUND: dibuat lebih “abu susu” + glow super halus (tidak kontras) --}}
-    <div
-        class="relative min-h-screen overflow-hidden py-10
-                bg-gradient-to-b from-slate-50 via-white to-slate-50">
+    {{-- ROW: CHART + KPI --}}
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
 
-        {{-- Background layers --}}
-        <div class="pointer-events-none absolute inset-0">
-            <div class="absolute -top-48 left-1/4 h-[34rem] w-[34rem] rounded-full bg-fuchsia-100/20 blur-3xl"></div>
-            <div class="absolute top-16 right-1/4 h-[34rem] w-[34rem] rounded-full bg-sky-100/20 blur-3xl"></div>
-            <div class="absolute -bottom-56 left-1/3 h-[36rem] w-[36rem] rounded-full bg-rose-100/15 blur-3xl"></div>
-
-        {{-- “noise” tipis biar menyatu (tidak flat) --}}
-        <div
-            class="pointer-events-none absolute inset-0 opacity-[0.035]
-                    [background-image:radial-gradient(rgba(15,23,42,0.9)_1px,transparent_1px)]
-                    [background-size:18px_18px]">
-        </div>
-
-        <div class="relative max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-
-            {{-- HERO (glass diturunin biar nggak putih banget) --}}
-            <div
-                class="relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl shadow-lg shadow-slate-900/5">
-                <div class="absolute inset-0 bg-gradient-to-r from-white/35 via-white/10 to-white/35"></div>
-
-                <div class="relative p-6 sm:p-8">
-                    <div class="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-                        <div>
-                            <div
-                                class="inline-flex items-center gap-2 rounded-full border border-slate-200/60 bg-white/55 px-3 py-1 text-xs font-semibold text-slate-700">
-                                🏛️ Diskominfo Kabupaten Magelang
-                            </div>
-
-                            <h3 class="mt-3 text-lg sm:text-xl font-extrabold tracking-tight text-slate-900">
-                                Selamat datang, {{ Auth::user()->name ?? 'Admin' }} 👋
-                            </h3>
-                            <p class="mt-1 text-sm text-slate-600">
-                                Monitor data harian, kelola hasil survey, dan atur pengguna.
-                            </p>
-
-                            <div class="mt-4 flex flex-wrap gap-2">
-                                <span
-                                    class="inline-flex items-center rounded-full bg-slate-900/5 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-inset ring-slate-200/60">
-                                    Panel Admin
-                                </span>
-                                <span
-                                    class="inline-flex items-center rounded-full bg-emerald-600/10 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200/60">
-                                    Monitoring
-                                </span>
-                                <span
-                                    class="inline-flex items-center rounded-full bg-sky-700/10 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-inset ring-sky-200/60">
-                                    Survey
-                                </span>
-                                <span
-                                    class="inline-flex items-center rounded-full bg-fuchsia-700/10 px-3 py-1 text-xs font-semibold text-fuchsia-700 ring-1 ring-inset ring-fuchsia-200/60">
-                                    Users
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="md:text-right">
-                            <div
-                                class="inline-flex flex-col rounded-2xl border border-slate-200/60 bg-white/55 backdrop-blur px-4 py-3 shadow-sm">
-                                <span class="text-xs font-semibold text-slate-500">Hari ini</span>
-                                <span class="text-lg font-extrabold text-slate-900">{{ now()->format('d M Y') }}</span>
-                                <span class="text-xs text-slate-500">{{ now()->format('H:i') }} WIB</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold
-                                     bg-gradient-to-r from-emerald-400 to-teal-500
-                                     text-white shadow-sm ring-1 ring-white/40">
-                            ● Aktif
-                        </span>
-
-                        <span class="hidden sm:inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold
-                                     bg-white/60 backdrop-blur-md
-                                     text-slate-700 shadow-sm ring-1 ring-white/40">
-                            {{ now()->format('d M Y • H:i') }} WIB
-                        </span>
-                    </div>
+        {{-- "Chart" card (dummy visual biar mirip) --}}
+        <div class="xl:col-span-2 rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-xs text-slate-500">Ringkasan</p>
+                    <p class="mt-1 text-lg font-bold text-slate-900">Aktivitas Mingguan</p>
+                    <p class="mt-1 text-sm text-slate-600">Presensi, kunjungan, dan survey.</p>
                 </div>
 
-            {{-- MAIN MENU (4 cards) --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                        Total Presensi
+                    </span>
+                    <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                        Total Kunjungan
+                    </span>
+                </div>
+            </div>
 
-                {{-- ✅ PRESENSI: buka log admin --}}
-                <a href="{{ route('admin.attendance.index') }}"
-                    class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl shadow-lg shadow-slate-900/5
-                           hover:-translate-y-0.5 hover:shadow-xl transition">
-                    <div class="absolute inset-0 bg-gradient-to-br from-slate-900/5 via-transparent to-transparent">
+            {{-- fake chart --}}
+            <div class="mt-5 h-52 rounded-xl bg-slate-50 border border-slate-200 relative overflow-hidden">
+                <div class="absolute inset-0 opacity-60
+                            [background-image:linear-gradient(to_right,rgba(15,23,42,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.07)_1px,transparent_1px)]
+                            [background-size:40px_40px]"></div>
+                <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-200/50 to-transparent"></div>
+                <div class="absolute left-6 bottom-10 text-xs text-slate-500">Grafik (placeholder)</div>
+            </div>
+        </div>
+
+        {{-- KPI cards --}}
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-4">
+            <div class="rounded-2xl bg-orange-500 text-white shadow-sm p-5">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-xs text-white/80">Presensi Hari Ini</p>
+                        <p class="mt-2 text-2xl font-extrabold">—</p>
+                        <p class="mt-1 text-xs text-white/80">Update realtime</p>
                     </div>
-                    <div class="relative p-5">
-                        <div class="flex items-start justify-between">
-                            <div
-                                class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900/5 ring-1 ring-inset ring-slate-200/70">
-                                📌
-                            </div>
+                    <div class="h-10 w-10 rounded-xl bg-white/15 flex items-center justify-center">📌</div>
+                </div>
+            </div>
 
-                        <div
-                            class="mt-5 inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white">
-                            Lihat Log →
-                        </div>
+            <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-xs text-slate-500">Buku Tamu Hari Ini</p>
+                        <p class="mt-2 text-2xl font-extrabold text-slate-900">—</p>
+                        <p class="mt-1 text-xs text-emerald-700 font-semibold">+0% dari biasanya</p>
                     </div>
-                </a>
+                    <div class="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">📝</div>
+                </div>
+            </div>
 
-                {{-- ✅ BUKU TAMU: route yang PASTI ADA --}}
-                <a href="{{ route('admin.guest.index') }}"
-                    class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl shadow-lg shadow-slate-900/5
-                           hover:-translate-y-0.5 hover:shadow-xl transition">
-                    <div class="absolute inset-0 bg-gradient-to-br from-emerald-600/10 via-transparent to-transparent">
+            <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-xs text-slate-500">Survey Masuk</p>
+                        <p class="mt-2 text-2xl font-extrabold text-slate-900">—</p>
+                        <p class="mt-1 text-xs text-emerald-700 font-semibold">+0% dari biasanya</p>
                     </div>
-                    <div class="relative p-5">
-                        <div class="flex items-start justify-between">
-                            <div
-                                class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600/10 ring-1 ring-inset ring-emerald-200/70">
-                                📝
-                            </div>
-                            <span class="text-xs font-semibold text-slate-500">Buka</span>
-                        </div>
-                        <p class="mt-4 text-sm font-extrabold text-slate-900">Log Buku Tamu</p>
-                        <p class="mt-1 text-xs text-slate-600">Daftar kunjungan, status, dan detail.</p>
+                    <div class="h-10 w-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center">⭐</div>
+                </div>
+            </div>
 
-                        <div
-                            class="mt-5 inline-flex items-center rounded-xl bg-emerald-700 px-4 py-2 text-xs font-semibold text-white">
-                            Lihat Data →
-                        </div>
+            <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-xs text-slate-500">Total Users</p>
+                        <p class="mt-2 text-2xl font-extrabold text-slate-900">—</p>
+                        <p class="mt-1 text-xs text-slate-500">Akun aktif terdaftar</p>
                     </div>
-                </a>
-
-                {{-- ✅ SURVEY: buka log survey admin --}}
-                <a href="{{ route('admin.survey.index') }}"
-                    class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl shadow-lg shadow-slate-900/5
-                           hover:-translate-y-0.5 hover:shadow-xl transition">
-                    <div class="absolute inset-0 bg-gradient-to-br from-sky-700/10 via-transparent to-transparent">
-                    </div>
-                    <div class="relative p-5">
-                        <div class="flex items-start justify-between">
-                            <div
-                                class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-700/10 ring-1 ring-inset ring-sky-200/70">
-                                ⭐
-                            </div>
-                            <span class="text-xs font-semibold text-slate-500">Buka</span>
-                        </div>
-                        <p class="mt-4 text-sm font-extrabold text-slate-900">Survey Pelayanan</p>
-                        <p class="mt-1 text-xs text-slate-600">Kepuasan & masukan pengunjung.</p>
-
-                        <div
-                            class="mt-5 inline-flex items-center rounded-xl bg-sky-700 px-4 py-2 text-xs font-semibold text-white">
-                            Lihat Survey →
-                        </div>
-                    </div>
-                </a>
-
-                {{-- ✅ USER: buka user management admin --}}
-                <a href="{{ route('admin.users.index') }}"
-                    class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl shadow-lg shadow-slate-900/5
-                           hover:-translate-y-0.5 hover:shadow-xl transition">
-                    <div class="absolute inset-0 bg-gradient-to-br from-fuchsia-700/10 via-transparent to-transparent">
-                    </div>
-                    <div class="relative p-5">
-                        <div class="flex items-start justify-between">
-                            <div
-                                class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-fuchsia-700/10 ring-1 ring-inset ring-fuchsia-200/70">
-                                👥
-                            </div>
-                        </a>
-
-                        {{-- Buku Tamu --}}
-                        <a href="{{ route('admin.guest.index') }}"
-                           class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl
-                                  shadow-lg shadow-slate-900/5 transition hover:-translate-y-0.5 hover:shadow-xl">
-                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-600/10 via-transparent to-transparent"></div>
-                            <div class="relative flex h-full flex-col p-5">
-                                <div class="flex items-start justify-between">
-                                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600/10 ring-1 ring-inset ring-emerald-200/70">📝</div>
-                                    <span class="text-xs font-semibold text-slate-500">Buka</span>
-                                </div>
-                                <p class="mt-4 text-sm font-extrabold text-slate-900">Log Buku Tamu</p>
-                                <p class="mt-1 text-xs text-slate-600">Daftar kunjungan, status, dan detail.</p>
-
-                                <div class="mt-auto pt-4">
-                                    <span class="inline-flex items-center rounded-xl bg-emerald-700 px-4 py-2 text-xs font-semibold text-white">
-                                        Lihat Data →
-                                    </span>
-                                </div>
-                            </div>
-                        </a>
-
-                        {{-- Survey --}}
-                        <a href="{{ route('admin.guest.index') }}"
-                           class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl
-                                  shadow-lg shadow-slate-900/5 transition hover:-translate-y-0.5 hover:shadow-xl">
-                            <div class="absolute inset-0 bg-gradient-to-br from-sky-700/10 via-transparent to-transparent"></div>
-                            <div class="relative flex h-full flex-col p-5">
-                                <div class="flex items-start justify-between">
-                                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-700/10 ring-1 ring-inset ring-sky-200/70">⭐</div>
-                                    <span class="text-xs font-semibold text-slate-500">Buka</span>
-                                </div>
-                                <p class="mt-4 text-sm font-extrabold text-slate-900">Survey Pelayanan</p>
-                                <p class="mt-1 text-xs text-slate-600">Kepuasan & masukan pengunjung.</p>
-
-                                <div class="mt-auto pt-4">
-                                    <span class="inline-flex items-center rounded-xl bg-sky-700 px-4 py-2 text-xs font-semibold text-white">
-                                        Lihat Survey →
-                                    </span>
-                                </div>
-                            </div>
-                        </a>
-
-                        {{-- Users --}}
-                        <a href="{{ route('profile.mahasiswa') }}"
-                           class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur-xl
-                                  shadow-lg shadow-slate-900/5 transition hover:-translate-y-0.5 hover:shadow-xl">
-                            <div class="absolute inset-0 bg-gradient-to-br from-fuchsia-700/10 via-transparent to-transparent"></div>
-                            <div class="relative flex h-full flex-col p-5">
-                                <div class="flex items-start justify-between">
-                                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-fuchsia-700/10 ring-1 ring-inset ring-fuchsia-200/70">👥</div>
-                                    <span class="text-xs font-semibold text-slate-500">Buka</span>
-                                </div>
-                                <p class="mt-4 text-sm font-extrabold text-slate-900">User Management</p>
-                                <p class="mt-1 text-xs text-slate-600">Kelola akun, role, dan akses.</p>
-
-                                <div class="mt-auto pt-4">
-                                    <span class="inline-flex items-center rounded-xl bg-fuchsia-700 px-4 py-2 text-xs font-semibold text-white">
-                                        Kelola User →
-                                    </span>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                        <div
-                            class="mt-5 inline-flex items-center rounded-xl bg-fuchsia-700 px-4 py-2 text-xs font-semibold text-white">
-                            Kelola User →
-                        </div>
-                    </div>
-
-            {{-- Note --}}
-            <div
-                class="rounded-3xl border border-slate-200/60 bg-white/45 backdrop-blur p-5 shadow-lg shadow-slate-900/5">
-                <p class="text-sm font-semibold text-slate-900">Catatan</p>
-                <p class="mt-1 text-sm text-slate-600">
-                    Gunakan menu log untuk rekap dan pelaporan. Survey membantu evaluasi kualitas layanan.
-                </p>
+                    <div class="h-10 w-10 rounded-xl bg-fuchsia-50 text-fuchsia-700 flex items-center justify-center">👥</div>
+                </div>
             </div>
         </div>
     </div>
-</x-app-layout>
+
+    {{-- TABLE SECTION --}}
+    <section class="rounded-2xl bg-white border border-slate-200 shadow-sm">
+        <div class="p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h3 class="text-base font-bold text-slate-900">Ringkasan Data</h3>
+                <p class="text-sm text-slate-500">Preview cepat data terbaru.</p>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <a href="{{ route('admin.attendance.index') }}"
+                   class="rounded-xl bg-slate-900 text-white px-4 py-2 text-sm font-semibold hover:bg-slate-800 transition">
+                    Presensi
+                </a>
+                <a href="{{ route('admin.guest.index') }}"
+                   class="rounded-xl bg-white border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    Buku Tamu
+                </a>
+                <a href="{{ route('admin.survey.index') }}"
+                   class="rounded-xl bg-white border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    Survey
+                </a>
+                <a href="{{ route('admin.users.index') }}"
+                   class="rounded-xl bg-white border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    Users
+                </a>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50 text-slate-600">
+                    <tr class="text-left">
+                        <th class="px-5 py-3 font-semibold">No</th>
+                        <th class="px-5 py-3 font-semibold">Modul</th>
+                        <th class="px-5 py-3 font-semibold">Keterangan</th>
+                        <th class="px-5 py-3 font-semibold">Status</th>
+                        <th class="px-5 py-3 font-semibold text-right">Aksi</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-slate-200">
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-5 py-4">1</td>
+                        <td class="px-5 py-4 font-semibold text-slate-900">Presensi</td>
+                        <td class="px-5 py-4 text-slate-600">Lihat riwayat check-in/out</td>
+                        <td class="px-5 py-4">
+                            <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Aktif</span>
+                        </td>
+                        <td class="px-5 py-4 text-right">
+                            <a href="{{ route('admin.attendance.index') }}"
+                               class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition">
+                                Buka →
+                            </a>
+                        </td>
+                    </tr>
+
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-5 py-4">2</td>
+                        <td class="px-5 py-4 font-semibold text-slate-900">Buku Tamu</td>
+                        <td class="px-5 py-4 text-slate-600">Data kunjungan & keperluan</td>
+                        <td class="px-5 py-4">
+                            <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Aktif</span>
+                        </td>
+                        <td class="px-5 py-4 text-right">
+                            <a href="{{ route('admin.guest.index') }}"
+                               class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition">
+                                Buka →
+                            </a>
+                        </td>
+                    </tr>
+
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-5 py-4">3</td>
+                        <td class="px-5 py-4 font-semibold text-slate-900">Survey</td>
+                        <td class="px-5 py-4 text-slate-600">Rekap penilaian layanan</td>
+                        <td class="px-5 py-4">
+                            <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Aktif</span>
+                        </td>
+                        <td class="px-5 py-4 text-right">
+                            <a href="{{ route('admin.survey.index') }}"
+                               class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition">
+                                Buka →
+                            </a>
+                        </td>
+                    </tr>
+
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-5 py-4">4</td>
+                        <td class="px-5 py-4 font-semibold text-slate-900">Users</td>
+                        <td class="px-5 py-4 text-slate-600">Kelola akun & role</td>
+                        <td class="px-5 py-4">
+                            <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Aktif</span>
+                        </td>
+                        <td class="px-5 py-4 text-right">
+                            <a href="{{ route('admin.users.index') }}"
+                               class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition">
+                                Buka →
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+@endsection
