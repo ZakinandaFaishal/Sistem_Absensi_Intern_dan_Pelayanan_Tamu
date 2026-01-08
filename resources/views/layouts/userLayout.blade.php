@@ -59,7 +59,7 @@
             @endphp
 
             {{-- Menu (scrollable kalau layar pendek) --}}
-                        <nav class="px-4 py-5 space-y-2 text-sm overflow-y-auto grow min-h-0">
+            <nav class="px-4 py-5 space-y-2 text-sm overflow-y-auto grow min-h-0">
                 <a href="{{ $urlProfile }}"
                     class="flex items-center gap-3 rounded-xl px-3 py-2 transition
                       {{ $isActiveProfile() ? 'bg-white/25 font-semibold' : 'text-white/70 hover:bg-white/15 hover:text-white' }}">
