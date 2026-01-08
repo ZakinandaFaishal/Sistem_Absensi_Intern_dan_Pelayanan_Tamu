@@ -11,7 +11,7 @@ class DashboardController
         $user = $request->user();
 
         if (($user->role ?? null) === 'admin') {
-            return view('userProfile');
+            return view('dashboard');
         }
 
         return redirect()->route('intern.userProfile');
