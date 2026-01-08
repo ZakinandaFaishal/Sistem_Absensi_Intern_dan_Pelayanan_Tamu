@@ -113,6 +113,7 @@
 
             {{-- Action --}}
             <button
+                href="{{ route('intern.userProfile') }}"
                 type="submit"
                 class="w-full inline-flex items-center justify-center rounded-xl
                        bg-white/20 px-5 py-3 text-base font-semibold text-white

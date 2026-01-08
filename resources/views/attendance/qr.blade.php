@@ -1,5 +1,10 @@
-<x-app-layout>
-    <x-slot name="header">
+@extends('layouts.userLayout')
+
+@section('title', 'Profil / Dashboard Magang')
+@section('page_title', 'Profil')
+
+@section('content')
+<x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">Scan QR Absensi</h2>
     </x-slot>
 
@@ -33,4 +38,5 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+@endsection
+
