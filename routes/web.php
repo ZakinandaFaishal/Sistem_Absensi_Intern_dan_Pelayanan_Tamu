@@ -10,13 +10,22 @@ use App\Http\Controllers\GuestSurveyController;
 use App\Http\Controllers\GuestVisitController;
 use App\Http\Controllers\KioskController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('kiosk.index');
+    return redirect()->route('kiosk.display');
 });
 
-Route::get('/kiosk', [KioskController::class, 'index'])->name('kiosk.index');
+// Public-facing kiosk entrypoint should always be the locked-down display view.
+Route::get('/kiosk', function () {
+    return redirect()->route('kiosk.display');
+})->name('kiosk.index');
+
+// Kiosk Mode Display (front display) - blank layout, no sidebar/logout.
+Route::get('/kiosk/display', [KioskController::class, 'display'])
+    ->middleware(['auth', 'verified'])
+    ->name('kiosk.display');
 Route::get('/kiosk/absensi', [KioskController::class, 'absensi'])
     ->middleware(['auth', 'verified', 'role:admin'])
     ->name('kiosk.absensi');
@@ -36,6 +45,18 @@ Route::post('/tamu', [GuestVisitController::class, 'store'])->name('guest.store'
 Route::get('/tamu/{visit}/survey', [GuestSurveyController::class, 'show'])->name('guest.survey.show');
 Route::post('/tamu/{visit}/survey', [GuestSurveyController::class, 'store'])->name('guest.survey.store');
 
+Route::get('/admin', function () {
+    if (!Auth::check()) {
+        return redirect()->route('login');
+    }
+
+    if ((Auth::user()->role ?? null) !== 'admin') {
+        return redirect()->route('dashboard');
+    }
+
+    return redirect()->route('admin.dashboard');
+})->middleware(['auth', 'verified'])->name('admin.home');
+
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/admin/tamu', [GuestVisitController::class, 'index'])->name('admin.guest.index');
     Route::post('/admin/tamu/{visit}/complete', [GuestVisitController::class, 'complete'])->name('admin.guest.complete');
@@ -46,6 +67,7 @@ Route::get('/dashboard', DashboardController::class)
     ->name('dashboard');
 
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::view('/dashboard', 'dashboard')->name('dashboard');
     Route::get('/presensi', [AdminAttendanceController::class, 'index'])->name('attendance.index');
     Route::get('/survey', [AdminSurveyController::class, 'index'])->name('survey.index');
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');

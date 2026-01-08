@@ -4,12 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Support\KioskToken;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class KioskController extends Controller
 {
     public function index()
     {
         return view('kiosk.index');
+    }
+
+    public function display()
+    {
+        $user = Auth::user();
+
+        if (($user->role ?? null) !== 'admin') {
+            return redirect()->route('dashboard');
+        }
+
+        return view('kiosk.display');
     }
 
     public function absensi()
