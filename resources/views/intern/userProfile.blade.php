@@ -8,10 +8,10 @@
     $user = Auth::user();
 @endphp
 
-<div class="relative">
+<div class="max-w-5xl mx-auto space-y-6">
 
     {{-- Header --}}
-    <div class="relative rounded-3xl border border-white/15 bg-white/10 backdrop-blur-xl shadow-xl p-6 sm:p-7">
+    <section class="rounded-3xl border border-white/15 bg-white/10 backdrop-blur-xl shadow-xl p-6 sm:p-7">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div class="min-w-0">
                 <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white drop-shadow">
@@ -24,7 +24,7 @@
 
             <div class="flex items-center gap-3">
                 <div class="h-12 w-12 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center shadow">
-                    <span class="text-xl font-extrabold">
+                    <span class="text-xl font-extrabold text-white">
                         {{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}
                     </span>
                 </div>
@@ -37,7 +37,7 @@
 
         <div class="mt-6 h-[2px] w-full rounded-full bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
 
-        {{-- Alerts --}}
+        {{-- Alerts (opsional, kalau kamu masih mau tampilkan di sini) --}}
         <div class="mt-5 space-y-3">
             @if (session('status'))
                 <div class="rounded-2xl border border-emerald-300/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
@@ -56,24 +56,21 @@
                 </div>
             @endif
         </div>
-    </div>
+    </section>
 
-    {{-- Content --}}
-    <div class="relative mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    {{-- Content (sejajar ke bawah) --}}
+    <section class="space-y-6">
 
-        {{-- Kiri: Profile + Password --}}
-        <div class="lg:col-span-7 space-y-6">
-            {{-- gunakan partial bawaan --}}
-            @include('profile.partials.update-profile-information-form', ['user' => $user])
+        {{-- Profile info --}}
+        @include('profile.partials.update-profile-information-form', ['user' => $user])
 
-            @include('profile.partials.update-password-form')
-        </div>
+        {{-- Update password --}}
+        @include('profile.partials.update-password-form')
 
-        {{-- Kanan: Delete user --}}
-        <div class="lg:col-span-5">
-            @include('profile.partials.delete-user-form')
-        </div>
+        {{-- Delete user --}}
+        @include('profile.partials.delete-user-form')
 
-    </div>
+    </section>
+
 </div>
 @endsection
