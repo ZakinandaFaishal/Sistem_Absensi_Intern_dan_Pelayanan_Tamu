@@ -79,6 +79,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
 });
 
 Route::middleware(['auth', 'verified', 'role:intern,admin'])->prefix('intern')->name('intern.')->group(function () {
+    Route::get('/dashboard', function () {
+        return redirect()->route('intern.userProfile');
+    })->name('dashboard');
     Route::view('/userProfile', 'intern.userProfile')->name('userProfile');
     Route::get('/presensi', [InternAttendanceController::class, 'index'])->name('attendance.history');
 });
