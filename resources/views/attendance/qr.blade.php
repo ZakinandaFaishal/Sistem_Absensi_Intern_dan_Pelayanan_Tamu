@@ -6,11 +6,11 @@
 @section('content')
 @php
     $backUrl =
-        \Illuminate\Support\Facades\Route::has('intern.dashboard')
-            ? route('intern.dashboard')
+        \Illuminate\Support\Facades\Route::has('intern.userProfile')
+            ? route('intern.userProfile')
             : (\Illuminate\Support\Facades\Route::has('profile.edit')
                 ? route('profile.edit')
-                : url('/dashboard'));
+                : url('/userProfile'));
 @endphp
 
 <div class="max-w-3xl mx-auto space-y-6">
