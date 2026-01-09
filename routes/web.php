@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttendanceScanController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
 use App\Http\Controllers\Admin\SurveyController as AdminSurveyController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -17,24 +18,29 @@ Route::get('/', function () {
     return redirect()->route('kiosk.display');
 });
 
-// Public-facing kiosk entrypoint should always be the locked-down display view.
 Route::get('/kiosk', function () {
     return redirect()->route('kiosk.display');
 })->name('kiosk.index');
 
-// Kiosk Mode Display (front display) - blank layout, no sidebar/logout.
 Route::get('/kiosk/display', [KioskController::class, 'display'])
     ->middleware(['auth', 'verified'])
     ->name('kiosk.display');
+
 Route::get('/kiosk/absensi', [KioskController::class, 'absensi'])
     ->middleware(['auth', 'verified', 'role:admin'])
     ->name('kiosk.absensi');
+
 Route::post('/kiosk/token', [KioskController::class, 'token'])
     ->middleware(['auth', 'verified', 'role:admin', 'throttle:120,1'])
     ->name('kiosk.token');
 
-Route::get('/presensi/scan', [AttendanceScanController::class, 'show'])->middleware('auth')->name('attendance.scan.show');
-Route::post('/presensi/scan', [AttendanceScanController::class, 'store'])->middleware('auth')->name('attendance.scan.store');
+Route::get('/presensi/scan', [AttendanceScanController::class, 'show'])
+    ->middleware('auth')
+    ->name('attendance.scan.show');
+
+Route::post('/presensi/scan', [AttendanceScanController::class, 'store'])
+    ->middleware('auth')
+    ->name('attendance.scan.store');
 
 Route::view('/presensi/scan-qr', 'attendance.qr')
     ->middleware(['auth', 'verified', 'role:intern,admin'])
@@ -66,30 +72,42 @@ Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::view('/dashboard', 'dashboard')->name('dashboard');
-    Route::get('/presensi', [AdminAttendanceController::class, 'index'])->name('attendance.index');
-    Route::get('/survey', [AdminSurveyController::class, 'index'])->name('survey.index');
-    Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
-    Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
-    Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
-    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
-    Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.role');
-    Route::patch('/users/{user}/active', [AdminUserController::class, 'updateActive'])->name('users.active');
-});
+Route::middleware(['auth', 'verified', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
 
-Route::middleware(['auth', 'verified', 'role:intern,admin'])->prefix('intern')->name('intern.')->group(function () {
-    Route::get('/dashboard', function () {
-        return redirect()->route('intern.userProfile');
-    })->name('dashboard');
-    Route::view('/userProfile', 'intern.userProfile')->name('userProfile');
-    Route::get('/presensi', [InternAttendanceController::class, 'index'])->name('attendance.history');
-});
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/presensi', [AdminAttendanceController::class, 'index'])->name('attendance.index');
+        Route::get('/survey', [AdminSurveyController::class, 'index'])->name('survey.index');
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+
+        Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
+        Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+        Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.role');
+        Route::patch('/users/{user}/active', [AdminUserController::class, 'updateActive'])->name('users.active');
+    });
+
+Route::middleware(['auth', 'verified', 'role:intern,admin'])
+    ->prefix('intern')
+    ->name('intern.')
+    ->group(function () {
+
+        Route::get('/dashboard', function () {
+            return redirect()->route('intern.userProfile');
+        })->name('dashboard');
+
+        Route::view('/userProfile', 'intern.userProfile')->name('userProfile');
+        Route::get('/presensi', [InternAttendanceController::class, 'index'])->name('attendance.history');
+    });
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
     Route::get('/profile/mahasiswa', function () {
         return view('profile.mahasiswa');
     })->name('profile.mahasiswa');
