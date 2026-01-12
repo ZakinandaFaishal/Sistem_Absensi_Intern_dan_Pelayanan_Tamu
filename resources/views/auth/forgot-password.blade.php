@@ -35,23 +35,15 @@
                         <x-input-label for="email" value="Alamat Email" class="text-white/85" />
                         <div class="mt-1 relative">
                             <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
-                                ✉️
+                                <x-icon name="envelope" class="h-5 w-5" />
                             </span>
 
-                            <x-text-input
-                                id="email"
-                                name="email"
-                                type="email"
-                                value="{{ old('email') }}"
-                                required
-                                autofocus
-                                autocomplete="email"
-                                placeholder="contoh@domain.com"
+                            <x-text-input id="email" name="email" type="email" value="{{ old('email') }}"
+                                required autofocus autocomplete="email" placeholder="contoh@domain.com"
                                 class="block w-full pl-10 rounded-xl
                                        border-white/20 bg-white/10 text-white
                                        placeholder:text-white/45
-                                       focus:border-white/35 focus:ring-white/25"
-                            />
+                                       focus:border-white/35 focus:ring-white/25" />
                         </div>
                         <x-input-error class="mt-2 text-red-200" :messages="$errors->get('email')" />
                     </div>
@@ -60,25 +52,21 @@
 
             {{-- Actions --}}
             <div class="flex flex-col sm:flex-row gap-3">
-                <a
-                    href="{{ route('login') }}"
+                <a href="{{ route('login') }}"
                     class="w-full sm:w-auto inline-flex items-center justify-center rounded-xl
                            bg-white/10 px-5 py-3 text-sm font-semibold text-white
                            border border-white/15 shadow-xl
                            hover:bg-white/20 transition
-                           focus:outline-none focus:ring-2 focus:ring-white/40"
-                >
+                           focus:outline-none focus:ring-2 focus:ring-white/40">
                     ← Kembali ke Login
                 </a>
 
-                <button
-                    type="submit"
+                <button type="submit"
                     class="w-full inline-flex items-center justify-center rounded-xl
                            bg-white/20 px-5 py-3 text-sm font-semibold text-white
                            border border-white/25 shadow-xl
                            hover:bg-white/30 hover:-translate-y-0.5 transition
-                           focus:outline-none focus:ring-2 focus:ring-white/50"
-                >
+                           focus:outline-none focus:ring-2 focus:ring-white/50">
                     Kirim Link Reset
                 </button>
             </div>
