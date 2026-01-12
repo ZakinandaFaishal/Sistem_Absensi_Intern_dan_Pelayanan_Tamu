@@ -47,7 +47,7 @@
                 <div class="mt-6 h-[2px] w-24 rounded-full bg-white/40"></div>
 
                 @php
-                    $btnBase = 'w-72 max-w-full rounded-2xl bg-white/15 px-6 py-5 text-base font-semibold text-white
+                    $btnBase = 'w-72 max-w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-white/15 px-6 py-5 text-base font-semibold text-white
                                 backdrop-blur-md border border-white/25 shadow-xl
                                 hover:bg-white/25 hover:-translate-y-0.5 hover:shadow-2xl
                                 focus:outline-none focus:ring-2 focus:ring-white/50
@@ -56,11 +56,11 @@
 
                 <div class="mt-10 w-full flex flex-col items-center gap-6">
                     <a href="{{ route('kiosk.absensi') }}" class="{{ $btnBase }}">
-                        📌 Absensi Magang
+                        <x-icon name="map-pin" class="h-7 w-7 shrink-0" /> Absensi Magang
                     </a>
 
                     <a href="{{ route('guest.create') }}" class="{{ $btnBase }}">
-                        📝 Buku Tamu
+                        <x-icon name="clipboard-document" class="h-7 w-7 shrink-0" /> Buku Tamu
                     </a>
                 </div>
             </div>

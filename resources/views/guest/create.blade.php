@@ -39,8 +39,9 @@
                 <div>
                     <x-input-label for="name" value="Nama *" class="text-white/85" />
                     <div class="mt-1 relative">
-                        <span
-                            class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">👤</span>
+                        <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                            <x-icon name="user" class="h-5 w-5" />
+                        </span>
                         <x-text-input id="name" name="name" type="text" required autofocus
                             value="{{ old('name') }}" placeholder="Contoh: Budi Santoso"
                             class="block w-full pl-10 rounded-xl
@@ -70,8 +71,9 @@
                     <div>
                         <x-input-label for="phone" value="No. HP (Opsional)" class="text-white/85" />
                         <div class="mt-1 relative">
-                            <span
-                                class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">📞</span>
+                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                                <x-icon name="phone" class="h-5 w-5" />
+                            </span>
                             <x-text-input id="phone" name="phone" type="text" inputmode="numeric"
                                 value="{{ old('phone') }}" placeholder="08xxxxxxxxxx"
                                 class="block w-full pl-10 rounded-xl
@@ -101,8 +103,9 @@
                 <div>
                     <x-input-label for="jabatan" value="Jabatan (Opsional)" class="text-white/85" />
                     <div class="mt-1 relative">
-                        <span
-                            class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">🪪</span>
+                        <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                            <x-icon name="identification" class="h-5 w-5" />
+                        </span>
                         <x-text-input id="jabatan" name="jabatan" type="text" value="{{ old('jabatan') }}"
                             placeholder="Staf / Kepala Seksi / dll."
                             class="block w-full pl-10 rounded-xl
@@ -126,8 +129,9 @@
                 <div>
                     <x-input-label for="service_type" value="Jenis Keperluan *" class="text-white/85" />
                     <div class="mt-1 relative">
-                        <span
-                            class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">📌</span>
+                        <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                            <x-icon name="map-pin" class="h-5 w-5" />
+                        </span>
 
                         <select id="service_type" name="service_type" required
                             class="block w-full pl-10 rounded-xl

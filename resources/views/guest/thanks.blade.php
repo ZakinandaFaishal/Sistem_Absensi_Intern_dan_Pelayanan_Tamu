@@ -3,9 +3,10 @@
 
         {{-- Header --}}
         <div class="text-center">
-            <div class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl
+            <div
+                class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl
                         border border-white/15 bg-white/10 backdrop-blur shadow-xl">
-                ✅
+                <x-icon name="check-circle" class="h-8 w-8" />
             </div>
 
             <h1 class="mt-4 text-2xl sm:text-3xl font-semibold tracking-wide text-white drop-shadow">
@@ -37,16 +38,16 @@
                     {{-- Actions --}}
                     <div class="flex flex-col sm:flex-row gap-3">
                         <a href="{{ route('guest.survey.show', $visit) }}"
-                           class="w-full inline-flex items-center justify-center rounded-xl
+                            class="w-full inline-flex items-center justify-center rounded-xl
                                   bg-white/20 px-5 py-3 text-base font-semibold text-white
                                   border border-white/25 shadow-xl
                                   hover:bg-white/30 hover:-translate-y-0.5 transition duration-200
                                   focus:outline-none focus:ring-2 focus:ring-white/50">
-                            ⭐ Isi Survey
+                            <x-icon name="star" class="h-5 w-5" /> Isi Survey
                         </a>
 
                         <a href="{{ url('/') }}"
-                           class="w-full inline-flex items-center justify-center rounded-xl
+                            class="w-full inline-flex items-center justify-center rounded-xl
                                   bg-white/10 px-5 py-3 text-base font-semibold text-white
                                   border border-white/20 shadow-xl
                                   hover:bg-white/20 hover:-translate-y-0.5 transition duration-200
@@ -68,7 +69,7 @@
                 <div class="px-5 py-5 text-center">
                     <p class="text-sm text-white/80">Silakan kembali ke halaman utama.</p>
                     <a href="{{ url('/') }}"
-                       class="mt-4 inline-flex items-center justify-center rounded-xl
+                        class="mt-4 inline-flex items-center justify-center rounded-xl
                               bg-white/20 px-5 py-3 text-base font-semibold text-white
                               border border-white/25 shadow-xl
                               hover:bg-white/30 hover:-translate-y-0.5 transition duration-200">

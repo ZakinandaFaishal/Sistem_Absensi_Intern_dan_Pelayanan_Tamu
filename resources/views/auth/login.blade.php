@@ -32,55 +32,35 @@
 
                     {{-- Email / Username / NIK --}}
                     <div>
-                        <x-input-label
-                            for="email"
-                            value="Email / Username / NIK"
-                            class="text-white/85"
-                        />
+                        <x-input-label for="email" value="Email / Username / NIK" class="text-white/85" />
                         <div class="mt-1 relative">
                             <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
-                                👤
+                                <x-icon name="user" class="h-5 w-5" />
                             </span>
-                            <x-text-input
-                                id="email"
-                                name="email"
-                                type="text"
-                                value="{{ old('email') }}"
-                                required
-                                autofocus
-                                autocomplete="username"
+                            <x-text-input id="email" name="email" type="text" value="{{ old('email') }}"
+                                required autofocus autocomplete="username"
                                 placeholder="email@domain.com / username / 16 digit NIK"
                                 class="block w-full pl-10 rounded-xl
                                        border-white/20 bg-white/10 text-white
                                        placeholder:text-white/45
-                                       focus:border-white/35 focus:ring-white/25"
-                            />
+                                       focus:border-white/35 focus:ring-white/25" />
                         </div>
                         <x-input-error class="mt-2 text-red-200" :messages="$errors->get('email')" />
                     </div>
 
                     {{-- Password --}}
                     <div>
-                        <x-input-label
-                            for="password"
-                            value="Password"
-                            class="text-white/85"
-                        />
+                        <x-input-label for="password" value="Password" class="text-white/85" />
                         <div class="mt-1 relative">
                             <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
-                                🔒
+                                <x-icon name="lock-closed" class="h-5 w-5" />
                             </span>
-                            <x-text-input
-                                id="password"
-                                name="password"
-                                type="password"
-                                required
+                            <x-text-input id="password" name="password" type="password" required
                                 autocomplete="current-password"
                                 class="block w-full pl-10 rounded-xl
                                        border-white/20 bg-white/10 text-white
                                        placeholder:text-white/45
-                                       focus:border-white/35 focus:ring-white/25"
-                            />
+                                       focus:border-white/35 focus:ring-white/25" />
                         </div>
                         <x-input-error class="mt-2 text-red-200" :messages="$errors->get('password')" />
                     </div>
@@ -88,21 +68,14 @@
                     {{-- Remember + Forgot --}}
                     <div class="flex items-center justify-between text-sm">
                         <label for="remember_me" class="inline-flex items-center text-white/80">
-                            <input
-                                id="remember_me"
-                                type="checkbox"
-                                name="remember"
+                            <input id="remember_me" type="checkbox" name="remember"
                                 class="rounded border-white/30 bg-white/10 text-white
-                                       focus:ring-white/40"
-                            >
+                                       focus:ring-white/40">
                             <span class="ms-2">Remember me</span>
                         </label>
 
                         @if (Route::has('password.request'))
-                            <a
-                                href="{{ route('password.request') }}"
-                                class="text-white/70 hover:text-white underline"
-                            >
+                            <a href="{{ route('password.request') }}" class="text-white/70 hover:text-white underline">
                                 Lupa password?
                             </a>
                         @endif
@@ -112,15 +85,12 @@
             </section>
 
             {{-- Action --}}
-            <button
-                href="{{ route('intern.userProfile') }}"
-                type="submit"
+            <button href="{{ route('intern.userProfile') }}" type="submit"
                 class="w-full inline-flex items-center justify-center rounded-xl
                        bg-white/20 px-5 py-3 text-base font-semibold text-white
                        border border-white/25 shadow-xl
                        hover:bg-white/30 hover:-translate-y-0.5 transition
-                       focus:outline-none focus:ring-2 focus:ring-white/50"
-            >
+                       focus:outline-none focus:ring-2 focus:ring-white/50">
                 Login
             </button>
 
@@ -128,10 +98,7 @@
             @if (Route::has('register'))
                 <p class="text-center text-sm text-white/75">
                     Belum punya akun?
-                    <a
-                        href="{{ route('register') }}"
-                        class="font-semibold text-white underline hover:text-white/90"
-                    >
+                    <a href="{{ route('register') }}" class="font-semibold text-white underline hover:text-white/90">
                         Registrasi di sini
                     </a>
                 </p>
