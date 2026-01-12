@@ -28,20 +28,15 @@
                     <div>
                         <x-input-label for="name" value="Nama Lengkap *" class="text-white/85" />
                         <div class="mt-1 relative">
-                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">👤</span>
-                            <x-text-input
-                                id="name"
-                                name="name"
-                                type="text"
-                                required
-                                autofocus
-                                value="{{ old('name') }}"
-                                placeholder="Contoh: Budi Santoso"
+                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                                <x-icon name="user" class="h-5 w-5" />
+                            </span>
+                            <x-text-input id="name" name="name" type="text" required autofocus
+                                value="{{ old('name') }}" placeholder="Contoh: Budi Santoso"
                                 class="block w-full pl-10 rounded-xl
                                        border-white/20 bg-white/10 text-white
                                        placeholder:text-white/45
-                                       focus:border-white/35 focus:ring-white/25"
-                            />
+                                       focus:border-white/35 focus:ring-white/25" />
                         </div>
                         <x-input-error class="mt-2 text-red-200" :messages="$errors->get('name')" />
                     </div>
@@ -50,20 +45,15 @@
                     <div>
                         <x-input-label for="nik" value="NIK *" class="text-white/85" />
                         <div class="mt-1 relative">
-                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">🪪</span>
-                            <x-text-input
-                                id="nik"
-                                name="nik"
-                                type="text"
-                                inputmode="numeric"
-                                required
-                                value="{{ old('nik') }}"
-                                placeholder="16 digit NIK"
+                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                                <x-icon name="identification" class="h-5 w-5" />
+                            </span>
+                            <x-text-input id="nik" name="nik" type="text" inputmode="numeric" required
+                                value="{{ old('nik') }}" placeholder="16 digit NIK"
                                 class="block w-full pl-10 rounded-xl
                                        border-white/20 bg-white/10 text-white
                                        placeholder:text-white/45
-                                       focus:border-white/35 focus:ring-white/25"
-                            />
+                                       focus:border-white/35 focus:ring-white/25" />
                         </div>
                         <x-input-error class="mt-2 text-red-200" :messages="$errors->get('nik')" />
                     </div>
@@ -72,20 +62,15 @@
                     <div>
                         <x-input-label for="phone" value="Nomor Telepon *" class="text-white/85" />
                         <div class="mt-1 relative">
-                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">📞</span>
-                            <x-text-input
-                                id="phone"
-                                name="phone"
-                                type="text"
-                                inputmode="tel"
-                                required
-                                value="{{ old('phone') }}"
-                                placeholder="08xxxxxxxxxx"
+                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                                <x-icon name="phone" class="h-5 w-5" />
+                            </span>
+                            <x-text-input id="phone" name="phone" type="text" inputmode="tel" required
+                                value="{{ old('phone') }}" placeholder="08xxxxxxxxxx"
                                 class="block w-full pl-10 rounded-xl
                                        border-white/20 bg-white/10 text-white
                                        placeholder:text-white/45
-                                       focus:border-white/35 focus:ring-white/25"
-                            />
+                                       focus:border-white/35 focus:ring-white/25" />
                         </div>
                         <x-input-error class="mt-2 text-red-200" :messages="$errors->get('phone')" />
                     </div>
@@ -105,19 +90,15 @@
                     <div>
                         <x-input-label for="username" value="Username *" class="text-white/85" />
                         <div class="mt-1 relative">
-                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">👤</span>
-                            <x-text-input
-                                id="username"
-                                name="username"
-                                type="text"
-                                required
-                                value="{{ old('username') }}"
-                                placeholder="contoh: budi.santoso"
+                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                                <x-icon name="user" class="h-5 w-5" />
+                            </span>
+                            <x-text-input id="username" name="username" type="text" required
+                                value="{{ old('username') }}" placeholder="contoh: budi.santoso"
                                 class="block w-full pl-10 rounded-xl
                                        border-white/20 bg-white/10 text-white
                                        placeholder:text-white/45
-                                       focus:border-white/35 focus:ring-white/25"
-                            />
+                                       focus:border-white/35 focus:ring-white/25" />
                         </div>
                         <x-input-error class="mt-2 text-red-200" :messages="$errors->get('username')" />
                     </div>
@@ -126,19 +107,15 @@
                     <div>
                         <x-input-label for="email" value="Email *" class="text-white/85" />
                         <div class="mt-1 relative">
-                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">✉️</span>
-                            <x-text-input
-                                id="email"
-                                name="email"
-                                type="email"
-                                required
-                                value="{{ old('email') }}"
-                                placeholder="contoh@email.com"
+                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                                <x-icon name="envelope" class="h-5 w-5" />
+                            </span>
+                            <x-text-input id="email" name="email" type="email" required
+                                value="{{ old('email') }}" placeholder="contoh@email.com"
                                 class="block w-full pl-10 rounded-xl
                                        border-white/20 bg-white/10 text-white
                                        placeholder:text-white/45
-                                       focus:border-white/35 focus:ring-white/25"
-                            />
+                                       focus:border-white/35 focus:ring-white/25" />
                         </div>
                         <x-input-error class="mt-2 text-red-200" :messages="$errors->get('email')" />
                     </div>
@@ -148,37 +125,34 @@
                         <div>
                             <x-input-label for="password" value="Password *" class="text-white/85" />
                             <div class="mt-1 relative">
-                                <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">🔒</span>
-                                <x-text-input
-                                    id="password"
-                                    name="password"
-                                    type="password"
-                                    required
+                                <span
+                                    class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                                    <x-icon name="lock-closed" class="h-5 w-5" />
+                                </span>
+                                <x-text-input id="password" name="password" type="password" required
                                     placeholder="Minimal 8 karakter"
                                     class="block w-full pl-10 rounded-xl
                                            border-white/20 bg-white/10 text-white
                                            placeholder:text-white/45
-                                           focus:border-white/35 focus:ring-white/25"
-                                />
+                                           focus:border-white/35 focus:ring-white/25" />
                             </div>
                             <x-input-error class="mt-2 text-red-200" :messages="$errors->get('password')" />
                         </div>
 
                         <div>
-                            <x-input-label for="password_confirmation" value="Konfirmasi Password *" class="text-white/85" />
+                            <x-input-label for="password_confirmation" value="Konfirmasi Password *"
+                                class="text-white/85" />
                             <div class="mt-1 relative">
-                                <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">🔒</span>
-                                <x-text-input
-                                    id="password_confirmation"
-                                    name="password_confirmation"
-                                    type="password"
-                                    required
-                                    placeholder="Ulangi password"
+                                <span
+                                    class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                                    <x-icon name="lock-closed" class="h-5 w-5" />
+                                </span>
+                                <x-text-input id="password_confirmation" name="password_confirmation" type="password"
+                                    required placeholder="Ulangi password"
                                     class="block w-full pl-10 rounded-xl
                                            border-white/20 bg-white/10 text-white
                                            placeholder:text-white/45
-                                           focus:border-white/35 focus:ring-white/25"
-                                />
+                                           focus:border-white/35 focus:ring-white/25" />
                             </div>
                         </div>
                     </div>
@@ -187,24 +161,20 @@
 
             {{-- Actions --}}
             <div class="flex flex-col sm:flex-row gap-3">
-                <a
-                    href="{{ route('login') }}"
+                <a href="{{ route('login') }}"
                     class="w-full sm:w-auto inline-flex items-center justify-center rounded-xl
                            bg-white/10 px-5 py-3 text-sm font-semibold text-white
                            border border-white/15 shadow-xl
-                           hover:bg-white/20 transition"
-                >
+                           hover:bg-white/20 transition">
                     Sudah punya akun?
                 </a>
 
-                <button
-                    type="submit"
+                <button type="submit"
                     class="w-full inline-flex items-center justify-center rounded-xl
                            bg-white/20 px-6 py-3 text-base font-semibold text-white
                            border border-white/25 shadow-xl
                            hover:bg-white/30 hover:-translate-y-0.5 transition
-                           focus:outline-none focus:ring-2 focus:ring-white/50"
-                >
+                           focus:outline-none focus:ring-2 focus:ring-white/50">
                     Daftar
                 </button>
             </div>

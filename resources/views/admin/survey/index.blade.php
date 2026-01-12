@@ -28,7 +28,9 @@
             <div
                 class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
                 <div class="flex items-center gap-2">
-                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">⭐</span>
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
+                        <x-icon name="star" class="h-5 w-5 text-slate-700" />
+                    </span>
                     <div>
                         <p class="text-sm font-semibold text-slate-900">Daftar Survey</p>
                         <p class="text-xs text-slate-500">Menampilkan data terbaru (paginasi).</p>
