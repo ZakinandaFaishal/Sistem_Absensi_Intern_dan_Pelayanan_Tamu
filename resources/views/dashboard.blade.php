@@ -348,6 +348,40 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
+
+                {{-- EXPORT (READY + WORKING UI) --}}
+                <div class="relative">
+                    <button type="button" id="btnExportMenu"
+                        class="soft-ring btn-shine inline-flex items-center gap-2 rounded-xl bg-slate-900 text-white px-4 py-2 text-sm font-semibold
+                               transition duration-200 hover:bg-slate-800 active:scale-[0.98]">
+                        <span>Export</span>
+                        <span class="inline-block transition" id="exportChevron">▾</span>
+                    </button>
+
+                    <div id="exportMenu"
+                        class="hidden absolute right-0 mt-2 w-52 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-50">
+                        <button type="button"
+                            class="export-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+                            data-url="{{ route('admin.export.excel') }}"
+                            data-label="Excel">
+                            <span>Export Excel</span>
+                            <span class="text-xs text-slate-400">.xlsx</span>
+                        </button>
+
+                        <button type="button"
+                            class="export-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+                            data-url="{{ route('admin.export.pdf') }}"
+                            data-label="PDF">
+                            <span>Export PDF</span>
+                            <span class="text-xs text-slate-400">.pdf</span>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Hidden iframe: download tanpa pindah halaman --}}
+                <iframe id="dlFrame" class="hidden"></iframe>
+
+                {{-- QUICK ACCESS --}}
                 <a href="{{ route('admin.attendance.index') }}"
                     class="soft-ring btn-shine rounded-xl bg-slate-900 text-white px-4 py-2 text-sm font-semibold
                       transition duration-200 hover:bg-slate-800 active:scale-[0.98]">
@@ -418,4 +452,66 @@
             </table>
         </div>
     </section>
+
+    {{-- EXPORT UI SCRIPT (dropdown + loading + trigger download via iframe) --}}
+    <script>
+        (function () {
+            const menuBtn = document.getElementById('btnExportMenu');
+            const menu = document.getElementById('exportMenu');
+            const chevron = document.getElementById('exportChevron');
+            const dlFrame = document.getElementById('dlFrame');
+
+            function openMenu() {
+                if (!menu) return;
+                menu.classList.remove('hidden');
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+            }
+
+            function closeMenu() {
+                if (!menu) return;
+                menu.classList.add('hidden');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+
+            menuBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!menu) return;
+                if (menu.classList.contains('hidden')) openMenu();
+                else closeMenu();
+            });
+
+            document.addEventListener('click', closeMenu);
+            menu?.addEventListener('click', (e) => e.stopPropagation());
+
+            const actions = document.querySelectorAll('.export-action');
+            actions.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const url = btn.getAttribute('data-url');
+                    const label = btn.getAttribute('data-label') || 'Export';
+
+                    // loading state
+                    const original = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = `
+                        <span class="inline-flex items-center gap-2">
+                            <span class="h-3 w-3 rounded-full border-2 border-slate-300 border-t-slate-700 animate-spin"></span>
+                            <span>Mengekspor ${label}...</span>
+                        </span>
+                        <span class="text-xs text-slate-400">harap tunggu</span>
+                    `;
+
+                    closeMenu();
+
+                    // download without redirect
+                    if (url && dlFrame) dlFrame.src = url;
+
+                    // restore after a moment
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = original;
+                    }, 1800);
+                });
+            });
+        })();
+    </script>
 @endsection

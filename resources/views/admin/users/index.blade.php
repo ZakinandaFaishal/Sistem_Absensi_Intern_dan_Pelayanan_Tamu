@@ -5,6 +5,32 @@
 
 @section('content')
 
+@php
+    // ====== FILTER & SORT STATE (dari query string) ======
+    $q       = request('q', '');
+    $role    = request('role', '');
+    $active  = request('active', ''); // '', '1', '0'
+    $sort    = request('sort', 'created_at');
+    $dir     = request('dir', 'desc');
+
+    // helper bikin URL dengan query merge
+    $mergeQuery = function(array $extra = []) {
+        return url()->current() . '?' . http_build_query(array_merge(request()->query(), $extra));
+    };
+
+    // helper toggle sorting untuk column tertentu
+    $sortUrl = function(string $col) use ($sort, $dir, $mergeQuery) {
+        $nextDir = ($sort === $col && $dir === 'asc') ? 'desc' : 'asc';
+        return $mergeQuery(['sort' => $col, 'dir' => $nextDir, 'page' => 1]);
+    };
+
+    // helper icon sort (simple)
+    $sortIcon = function(string $col) use ($sort, $dir) {
+        if ($sort !== $col) return '↕';
+        return $dir === 'asc' ? '↑' : '↓';
+    };
+@endphp
+
     {{-- HEADER PAGE --}}
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -13,9 +39,42 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
+
+            {{-- EXPORT LAPORAN (READY + WORKING UI) --}}
+            <div class="relative">
+                <button type="button" id="btnExportUsers"
+                    class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white
+                           hover:bg-slate-800 transition active:scale-[0.98]">
+                    <span>Export Laporan</span>
+                    <span class="inline-block transition" id="exportUsersChevron">▾</span>
+                </button>
+
+                <div id="menuExportUsers"
+                    class="hidden absolute right-0 mt-2 w-56 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-50">
+                    <button type="button"
+                        class="export-users-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+                        data-url="{{ route('admin.users.export.excel', request()->query()) }}"
+                        data-label="Excel">
+                        <span>Export Excel (Users)</span>
+                        <span class="text-xs text-slate-400">.xlsx</span>
+                    </button>
+
+                    <button type="button"
+                        class="export-users-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+                        data-url="{{ route('admin.users.export.pdf', request()->query()) }}"
+                        data-label="PDF">
+                        <span>Export PDF (Users)</span>
+                        <span class="text-xs text-slate-400">.pdf</span>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Hidden iframe untuk download tanpa redirect --}}
+            <iframe id="dlUsersFrame" class="hidden"></iframe>
+
             <a href="{{ route('dashboard') }}"
                 class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700
-                  hover:bg-slate-50 transition">
+                      hover:bg-slate-50 transition">
                 ← Kembali
             </a>
         </div>
@@ -42,8 +101,7 @@
 
         {{-- FORM CARD --}}
         <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div
-                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
                 <div class="flex items-center gap-2">
                     <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
                         <x-icon name="users" class="h-5 w-5 text-slate-700" />
@@ -59,8 +117,7 @@
                 </div>
 
                 @if (isset($editUser) && $editUser)
-                    <span
-                        class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                    <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
                         Mode Edit
                     </span>
                 @endif
@@ -104,7 +161,8 @@
                         <div class="mt-2 flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
                             <input type="hidden" name="active" value="0">
                             <input id="active" type="checkbox" name="active" value="1"
-                                class="rounded border-slate-300" @checked(old('active', $editUser->active ?? true ? '1' : '0') === '1')>
+                                class="rounded border-slate-300"
+                                @checked(old('active', (($editUser->active ?? true) ? '1' : '0')) === '1')>
                             <label for="active" class="text-sm text-slate-700">Aktif</label>
                         </div>
                     </div>
@@ -205,7 +263,7 @@
                         @if (isset($editUser) && $editUser)
                             <a href="{{ route('admin.users.index') }}"
                                 class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700
-                                  hover:bg-slate-50 transition">
+                                      hover:bg-slate-50 transition">
                                 Batal
                             </a>
                         @endif
@@ -269,14 +327,78 @@
 
         {{-- TABLE CARD --}}
         <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div
-                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
+
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
                 <div>
                     <h3 class="text-base font-extrabold text-slate-900">Daftar Users</h3>
                     <p class="text-sm text-slate-500">Kelola role, status aktif, dan aksi akun.</p>
                 </div>
                 <div class="text-xs text-slate-500">
                     Menampilkan data (paginasi).
+                </div>
+            </div>
+
+            {{-- FILTER BAR --}}
+            <div class="px-6 pt-5">
+                <form method="GET" action="{{ route('admin.users.index') }}"
+                      class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+
+                    <div class="sm:col-span-5">
+                        <label class="block text-xs font-semibold text-slate-600">Cari</label>
+                        <input type="text" name="q" value="{{ $q }}"
+                            placeholder="Nama / email / username / NIK / telepon…"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                   focus:outline-none focus:ring-2 focus:ring-slate-200">
+                    </div>
+
+                    <div class="sm:col-span-3">
+                        <label class="block text-xs font-semibold text-slate-600">Role</label>
+                        <select name="role"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                   focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            <option value="" @selected($role === '')>Semua</option>
+                            <option value="intern" @selected($role === 'intern')>intern</option>
+                            <option value="admin" @selected($role === 'admin')>admin</option>
+                        </select>
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold text-slate-600">Status</label>
+                        <select name="active"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                   focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            <option value="" @selected($active === '')>Semua</option>
+                            <option value="1" @selected($active === '1')>Aktif</option>
+                            <option value="0" @selected($active === '0')>Nonaktif</option>
+                        </select>
+                    </div>
+
+                    <div class="sm:col-span-2 flex items-end gap-2">
+                        {{-- keep sort state --}}
+                        <input type="hidden" name="sort" value="{{ $sort }}">
+                        <input type="hidden" name="dir" value="{{ $dir }}">
+
+                        <button type="submit"
+                            class="w-full inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white
+                                   hover:bg-slate-800 transition">
+                            Terapkan
+                        </button>
+
+                        <a href="{{ route('admin.users.index') }}"
+                            class="w-full inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700
+                                   hover:bg-slate-50 transition">
+                            Reset
+                        </a>
+                    </div>
+                </form>
+
+                {{-- INFO FILTER --}}
+                <div class="mt-3 text-xs text-slate-500">
+                    Sort: <span class="font-semibold text-slate-700">{{ $sort }}</span> ({{ $dir }})
+                    @if($q || $role || $active !== '')
+                        <span class="mx-2 opacity-40">|</span>
+                        Filter aktif
+                    @endif
                 </div>
             </div>
 
@@ -306,24 +428,28 @@
                                         <div class="text-xs text-slate-500">{{ $user->email }}</div>
                                     </td>
 
-                                    <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->username ?? '—' }}
-                                    </td>
+                                    <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->username ?? '—' }}</td>
                                     <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->nik ?? '—' }}</td>
                                     <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->phone ?? '—' }}</td>
                                     <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->email }}</td>
 
-                                    <td class="py-3 pr-4 whitespace-nowrap">
+                                    <td class="py-3 pr-4 whitespace-nowrap align-middle">
                                         <form method="POST" action="{{ route('admin.users.role', $user) }}"
                                             class="flex items-center gap-2">
                                             @csrf
                                             @method('PATCH')
-                                            <select name="role"
-                                                class="rounded-xl border border-slate-200 bg-white px-2 py-1 text-sm">
-                                                <option value="intern" @selected(($user->role ?? 'intern') === 'intern')>intern</option>
-                                                <option value="admin" @selected(($user->role ?? null) === 'admin')>admin</option>
-                                            </select>
+
+                                            <div class="relative">
+                                                <select name="role"
+                                                    class="appearance-none h-8 rounded-lg border border-slate-200 bg-white
+                                                           pl-3 pr-7 text-xs focus:outline-none focus:ring-2 focus:ring-slate-200">
+                                                    <option value="intern" @selected(($user->role ?? 'intern') === 'intern')>intern</option>
+                                                    <option value="admin"  @selected(($user->role ?? null) === 'admin')>admin</option>
+                                                </select>
+                                            </div>
+
                                             <button type="submit"
-                                                class="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 transition">
+                                                class="h-8 rounded-lg bg-slate-900 px-3 text-xs font-semibold text-white hover:bg-slate-800 transition">
                                                 Simpan
                                             </button>
                                         </form>
@@ -361,8 +487,7 @@
                                             @method('PATCH')
                                             <input type="hidden" name="active" value="0">
 
-                                            <label
-                                                class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                                            <label class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
                                                 <input type="checkbox" name="active" value="1"
                                                     class="rounded border-slate-300" @checked(($user->active ?? true) === true)>
                                                 <span class="text-sm text-slate-700">Aktif</span>
@@ -377,13 +502,12 @@
 
                                     <td class="py-3 pr-0 whitespace-nowrap text-right">
                                         @if (auth()->id() === $user->id)
-                                            <span
-                                                class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                                            <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                                                 Akun sendiri
                                             </span>
                                         @else
                                             <div class="inline-flex items-center gap-2">
-                                                <a href="{{ route('admin.users.index', ['edit' => $user->id]) }}"
+                                                <a href="{{ $mergeQuery(['edit' => $user->id]) }}"
                                                     class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
                                                     Edit
                                                 </a>
@@ -413,11 +537,68 @@
                 </div>
 
                 <div class="mt-6">
+                    {{-- penting: pagination harus appends() di controller --}}
                     {{ $users->links() }}
                 </div>
             </div>
         </section>
 
     </div>
+
+    {{-- EXPORT USERS SCRIPT --}}
+    <script>
+        (function () {
+            const btn = document.getElementById('btnExportUsers');
+            const menu = document.getElementById('menuExportUsers');
+            const chevron = document.getElementById('exportUsersChevron');
+            const dlFrame = document.getElementById('dlUsersFrame');
+
+            function openMenu() {
+                if (!menu) return;
+                menu.classList.remove('hidden');
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+            }
+            function closeMenu() {
+                if (!menu) return;
+                menu.classList.add('hidden');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+
+            btn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!menu) return;
+                menu.classList.contains('hidden') ? openMenu() : closeMenu();
+            });
+
+            document.addEventListener('click', closeMenu);
+            menu?.addEventListener('click', (e) => e.stopPropagation());
+
+            document.querySelectorAll('.export-users-action').forEach(el => {
+                el.addEventListener('click', () => {
+                    const url = el.getAttribute('data-url');
+                    const label = el.getAttribute('data-label') || 'Export';
+
+                    const original = el.innerHTML;
+                    el.disabled = true;
+                    el.innerHTML = `
+                        <span class="inline-flex items-center gap-2">
+                            <span class="h-3 w-3 rounded-full border-2 border-slate-300 border-t-slate-700 animate-spin"></span>
+                            <span>Mengekspor ${label}...</span>
+                        </span>
+                        <span class="text-xs text-slate-400">harap tunggu</span>
+                    `;
+
+                    closeMenu();
+
+                    if (url && dlFrame) dlFrame.src = url;
+
+                    setTimeout(() => {
+                        el.disabled = false;
+                        el.innerHTML = original;
+                    }, 1800);
+                });
+            });
+        })();
+    </script>
 
 @endsection

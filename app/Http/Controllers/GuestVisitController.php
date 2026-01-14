@@ -81,4 +81,25 @@ class GuestVisitController extends Controller
             ->route('admin.guest.index')
             ->with('status', 'Kunjungan berhasil ditandai selesai.');
     }
+
+    public function active()
+    {
+        $visits = \App\Models\GuestVisit::query()
+            ->whereNull('completed_at')
+            ->orderByDesc('arrived_at')
+            ->limit(20)
+            ->get(['id', 'name', 'purpose', 'arrived_at', 'completed_at']);
+
+        return response()->json([
+            'data' => $visits->map(function ($v) {
+                return [
+                    'id' => $v->id,
+                    'name' => $v->name,
+                    'purpose' => $v->purpose,
+                    'arrived_at' => optional($v->arrived_at)->format('d M Y H:i') ?? (string) $v->arrived_at,
+                    'status' => 'Sedang berkunjung',
+                ];
+            })->values(),
+        ]);
+    }
 }
