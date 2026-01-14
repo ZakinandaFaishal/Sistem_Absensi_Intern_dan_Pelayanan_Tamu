@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -26,6 +27,11 @@ class User extends Authenticatable
         'password',
         'role',
         'active',
+        'intern_status',
+        'internship_start_date',
+        'internship_end_date',
+        'score_override',
+        'score_override_note',
     ];
 
     /**
@@ -49,6 +55,14 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'active' => 'boolean',
+            'score_override' => 'integer',
+            'internship_start_date' => 'date',
+            'internship_end_date' => 'date',
         ];
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Support\AppSettings;
+use App\Support\Geo;
 use App\Support\KioskToken;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -33,6 +35,11 @@ class AttendanceScanController extends Controller
 
     public function store(Request $request)
     {
+        $user = $request->user();
+        if (($user?->role ?? null) === 'intern' && ($user?->intern_status ?? 'aktif') === 'tamat') {
+            return back()->withErrors(['action' => 'Status Anda sudah TAMAT. Presensi dinonaktifkan.']);
+        }
+
         $validated = $request->validate([
             'k' => ['required', 'string'],
             'action' => ['required', Rule::in(['in', 'out'])],
@@ -41,6 +48,70 @@ class AttendanceScanController extends Controller
             'accuracy_m' => ['nullable', 'numeric', 'min:0'],
         ]);
 
+        // Enforce time windows (server time: Asia/Jakarta).
+        $now = CarbonImmutable::now();
+        $time = $now->format('H:i');
+
+        $checkinStart = AppSettings::getString(AppSettings::CHECKIN_START, '08:00');
+        $checkinEnd = AppSettings::getString(AppSettings::CHECKIN_END, '12:00');
+        $checkoutStart = AppSettings::getString(AppSettings::CHECKOUT_START, '13:00');
+        $checkoutEnd = AppSettings::getString(AppSettings::CHECKOUT_END, '16:30');
+
+        if ($validated['action'] === 'in') {
+            if ($time < $checkinStart || $time > $checkinEnd) {
+                return back()->withErrors([
+                    'action' => "Check-in hanya diizinkan pada jam {$checkinStart} - {$checkinEnd}.",
+                ]);
+            }
+        }
+
+        if ($validated['action'] === 'out') {
+            if ($time < $checkoutStart || $time > $checkoutEnd) {
+                return back()->withErrors([
+                    'action' => "Check-out hanya diizinkan pada jam {$checkoutStart} - {$checkoutEnd}.",
+                ]);
+            }
+        }
+
+        // Geofence + accuracy threshold.
+        $officeLat = AppSettings::getFloat(AppSettings::OFFICE_LAT, 0.0);
+        $officeLng = AppSettings::getFloat(AppSettings::OFFICE_LNG, 0.0);
+        // Strict rule: presensi hanya boleh dalam radius 50 meter dari titik kantor.
+        // Even if settings are changed, we cap radius to 50m server-side.
+        $radiusM = min(AppSettings::getInt(AppSettings::RADIUS_M, 50), 50);
+        $maxAccuracyM = AppSettings::getInt(AppSettings::MAX_ACCURACY_M, 50);
+
+        $accuracy = isset($validated['accuracy_m']) ? (float) $validated['accuracy_m'] : null;
+        if ($accuracy === null) {
+            return back()->withErrors([
+                'accuracy_m' => 'Lokasi belum siap. Pastikan GPS aktif & izin lokasi untuk browser diizinkan, lalu coba lagi.',
+            ]);
+        }
+        if ($accuracy > $maxAccuracyM) {
+            return back()->withErrors([
+                'accuracy_m' => 'Sinyal lokasi belum cukup akurat. Pindah ke area terbuka, tunggu lokasi stabil, lalu coba lagi.',
+            ]);
+        }
+
+        // If office coords are set, enforce distance.
+        if ($officeLat !== 0.0 || $officeLng !== 0.0) {
+            $distanceM = Geo::distanceMeters(
+                (float) $validated['lat'],
+                (float) $validated['lng'],
+                (float) $officeLat,
+                (float) $officeLng
+            );
+
+            if ($distanceM > $radiusM) {
+                $prettyDistance = $distanceM >= 1000
+                    ? number_format($distanceM / 1000, 2, ',', '.') . ' km'
+                    : number_format($distanceM, 0, ',', '.') . ' m';
+                return back()->withErrors([
+                    'lat' => "Anda berada di luar area presensi (jarak ~{$prettyDistance} dari kantor). Presensi hanya bisa dalam radius {$radiusM} m dari kantor.",
+                ]);
+            }
+        }
+
         $claims = KioskToken::validate($validated['k']);
         if ($claims === null) {
             return back()->withErrors(['k' => 'QR sudah tidak berlaku. Silakan scan ulang.']);
@@ -48,8 +119,8 @@ class AttendanceScanController extends Controller
 
         $userId = (int) $request->user()->id;
 
-        $today = CarbonImmutable::now()->toDateString();
-        $now = CarbonImmutable::now();
+        $today = $now->toDateString();
+        // $now already computed above.
 
         $attendance = Attendance::query()
             ->where('user_id', $userId)

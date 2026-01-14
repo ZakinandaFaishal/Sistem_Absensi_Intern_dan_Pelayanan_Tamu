@@ -170,8 +170,7 @@
                         latEl.value = String(pos.coords.latitude);
                         lngEl.value = String(pos.coords.longitude);
                         accEl.value = pos.coords.accuracy != null ? String(Math.round(pos.coords.accuracy)) : '';
-                        const accText = accEl.value ? ` (akurasi ±${accEl.value} m)` : '';
-                        setStatus('Lokasi terdeteksi' + accText, 'success');
+                        setStatus('Lokasi terdeteksi', 'success');
                     },
                     (err) => {
                         console.warn(err);

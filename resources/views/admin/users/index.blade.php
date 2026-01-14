@@ -138,6 +138,52 @@
                     </div>
 
                     <div class="md:col-span-4">
+                        <label class="block text-sm font-semibold text-slate-700">Status Intern</label>
+                        <select name="intern_status"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                   focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            @php($internStatusValue = old('intern_status', $editUser->intern_status ?? 'aktif'))
+                            <option value="aktif" @selected($internStatusValue === 'aktif')>aktif</option>
+                            <option value="tamat" @selected($internStatusValue === 'tamat')>tamat</option>
+                        </select>
+                        <p class="mt-1 text-xs text-slate-500">Jika <span class="font-semibold">tamat</span>, user tidak
+                            bisa presensi lagi.</p>
+                    </div>
+
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-semibold text-slate-700">Mulai Magang</label>
+                        <input name="internship_start_date" type="date"
+                            value="{{ old('internship_start_date', $editUser->internship_start_date ?? '') }}"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-slate-200">
+                    </div>
+
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-semibold text-slate-700">Selesai Magang</label>
+                        <input name="internship_end_date" type="date"
+                            value="{{ old('internship_end_date', $editUser->internship_end_date ?? '') }}"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-slate-200">
+                    </div>
+
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-semibold text-slate-700">Override Nilai (0–100)</label>
+                        <input name="score_override" value="{{ old('score_override', $editUser->score_override ?? '') }}"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-slate-200"
+                            inputmode="numeric" placeholder="Kosongkan untuk auto">
+                    </div>
+
+                    <div class="md:col-span-12">
+                        <label class="block text-sm font-semibold text-slate-700">Catatan Override (opsional)</label>
+                        <input name="score_override_note"
+                            value="{{ old('score_override_note', $editUser->score_override_note ?? '') }}"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-slate-200"
+                            placeholder="Contoh: penugasan khusus / dispensasi">
+                    </div>
+
+                    <div class="md:col-span-4">
                         <label class="block text-sm font-semibold text-slate-700">
                             Password {{ isset($editUser) && $editUser ? '(Kosongkan jika tidak diubah)' : '' }}
                         </label>
@@ -174,6 +220,53 @@
             </div>
         </section>
 
+        {{-- SCORING SETTINGS CARD --}}
+        <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div
+                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
+                        <x-icon name="star" class="h-5 w-5 text-slate-700" />
+                    </span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-900">Aturan Penilaian</p>
+                        <p class="text-xs text-slate-500">Nilai otomatis berbasis jumlah hari presensi.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <form method="POST" action="{{ route('admin.users.scoring.settings') }}"
+                    class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    @csrf
+
+                    <div class="md:col-span-6">
+                        <label class="block text-sm font-semibold text-slate-700">Poin per Hari Presensi</label>
+                        <input name="points_per_attendance"
+                            value="{{ old('points_per_attendance', $scoring['points_per_attendance'] ?? 4) }}"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-slate-200"
+                            inputmode="numeric" required>
+                    </div>
+
+                    <div class="md:col-span-6">
+                        <label class="block text-sm font-semibold text-slate-700">Nilai Maksimal</label>
+                        <input name="max_score" value="{{ old('max_score', $scoring['max_score'] ?? 100) }}"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-slate-200"
+                            inputmode="numeric" required>
+                    </div>
+
+                    <div class="md:col-span-12 flex items-center justify-end">
+                        <button type="submit"
+                            class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
+                            Simpan Aturan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
         {{-- TABLE CARD --}}
         <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div
@@ -198,6 +291,8 @@
                                 <th class="py-3 pr-4 font-semibold">No. Telepon</th>
                                 <th class="py-3 pr-4 font-semibold">Email</th>
                                 <th class="py-3 pr-4 font-semibold">Role</th>
+                                <th class="py-3 pr-4 font-semibold">Status</th>
+                                <th class="py-3 pr-4 font-semibold">Nilai</th>
                                 <th class="py-3 pr-4 font-semibold">Aktif</th>
                                 <th class="py-3 pr-0 font-semibold text-right">Aksi</th>
                             </tr>
@@ -232,6 +327,31 @@
                                                 Simpan
                                             </button>
                                         </form>
+                                    </td>
+
+                                    <td class="py-3 pr-4 whitespace-nowrap">
+                                        @if (($user->role ?? 'intern') === 'intern')
+                                            @php($st = $user->intern_status ?? 'aktif')
+                                            <span
+                                                class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $st === 'tamat' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800' }}">
+                                                {{ $st }}
+                                            </span>
+                                        @else
+                                            <span class="text-slate-400">—</span>
+                                        @endif
+                                    </td>
+
+                                    <td class="py-3 pr-4 whitespace-nowrap">
+                                        @if (($user->role ?? 'intern') !== 'intern')
+                                            <span class="text-slate-400">—</span>
+                                        @else
+                                            <div class="font-semibold text-slate-900">
+                                                {{ (int) ($user->computed_score ?? 0) }}</div>
+                                            @if (!empty($user->computed_score_subtitle))
+                                                <div class="text-xs text-slate-500">{{ $user->computed_score_subtitle }}
+                                                </div>
+                                            @endif
+                                        @endif
                                     </td>
 
                                     <td class="py-3 pr-4 whitespace-nowrap">
@@ -283,7 +403,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="py-10 text-center text-slate-600">
+                                    <td colspan="10" class="py-10 text-center text-slate-600">
                                         Belum ada user.
                                     </td>
                                 </tr>

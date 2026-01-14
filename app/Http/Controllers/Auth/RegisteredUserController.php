@@ -36,6 +36,8 @@ class RegisteredUserController extends Controller
             'phone' => ['required', 'string', 'max:30'],
             'username' => ['required', 'string', 'lowercase', 'alpha_dash', 'max:50', 'unique:users,username'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'internship_start_date' => ['required', 'date'],
+            'internship_end_date' => ['required', 'date', 'after_or_equal:internship_start_date'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -45,6 +47,8 @@ class RegisteredUserController extends Controller
             'phone' => $request->phone,
             'username' => Str::lower($request->username),
             'email' => $request->email,
+            'internship_start_date' => $request->internship_start_date,
+            'internship_end_date' => $request->internship_end_date,
             'password' => Hash::make($request->password),
         ]);
 
