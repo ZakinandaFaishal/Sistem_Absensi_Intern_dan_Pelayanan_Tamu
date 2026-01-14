@@ -50,6 +50,9 @@ Route::get('/tamu', [GuestVisitController::class, 'create'])->name('guest.create
 Route::post('/tamu', [GuestVisitController::class, 'store'])->name('guest.store');
 Route::get('/tamu/{visit}/survey', [GuestSurveyController::class, 'show'])->name('guest.survey.show');
 Route::post('/tamu/{visit}/survey', [GuestSurveyController::class, 'store'])->name('guest.survey.store');
+Route::get('/tamu/active', [GuestVisitController::class, 'active'])->name('guest.active');
+
+
 
 Route::get('/admin', function () {
     if (!Auth::check()) {
@@ -79,6 +82,94 @@ Route::middleware(['auth', 'verified', 'role:admin'])
 
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
+        // ======================================================
+        // EXPORT - DASHBOARD (SELURUH DATA)
+        // ======================================================
+        Route::get('/export/excel', function () {
+            return response("Export Excel (Dashboard) belum diisi datanya.\n", 200, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="export-dashboard.xlsx"',
+            ]);
+        })->name('export.excel');
+
+        Route::get('/export/pdf', function () {
+            return response("%PDF-1.4\n% Dummy PDF Dashboard\n", 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="export-dashboard.pdf"',
+            ]);
+        })->name('export.pdf');
+
+        // ======================================================
+        // EXPORT - USERS (LAPORAN)
+        // ======================================================
+        Route::get('/users/export/excel', function () {
+            return response("Export Excel Users (dummy).\n", 200, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="laporan-users.xlsx"',
+            ]);
+        })->name('users.export.excel');
+
+        Route::get('/users/export/pdf', function () {
+            return response("%PDF-1.4\n% Dummy PDF Users\n", 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="laporan-users.pdf"',
+            ]);
+        })->name('users.export.pdf');
+
+        // ======================================================
+        // EXPORT - SURVEY (LAPORAN)
+        // ======================================================
+        Route::get('/survey/export/excel', function () {
+            return response("Export Excel Survey (dummy).\n", 200, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="laporan-survey.xlsx"',
+            ]);
+        })->name('survey.export.excel');
+
+        Route::get('/survey/export/pdf', function () {
+            return response("%PDF-1.4\n% Dummy PDF Survey\n", 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="laporan-survey.pdf"',
+            ]);
+        })->name('survey.export.pdf');
+
+        // ======================================================
+        // EXPORT - BUKU TAMU (LAPORAN)
+        // ======================================================
+        Route::get('/tamu/export/excel', function () {
+            return response("Export Excel Buku Tamu (dummy).\n", 200, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="laporan-buku-tamu.xlsx"',
+            ]);
+        })->name('guest.export.excel');
+
+        Route::get('/tamu/export/pdf', function () {
+            return response("%PDF-1.4\n% Dummy PDF Buku Tamu\n", 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="laporan-buku-tamu.pdf"',
+            ]);
+        })->name('guest.export.pdf');
+
+        // ======================================================
+        // EXPORT - PRESENSI (LAPORAN)
+        // ======================================================
+        Route::get('/presensi/export/excel', function () {
+            return response("Export Excel Presensi (dummy).\n", 200, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="laporan-presensi.xlsx"',
+            ]);
+        })->name('attendance.export.excel');
+
+        Route::get('/presensi/export/pdf', function () {
+            return response("%PDF-1.4\n% Dummy PDF Presensi\n", 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="laporan-presensi.pdf"',
+            ]);
+        })->name('attendance.export.pdf');
+
+        // ======================================================
+        // ROUTE UTAMA ADMIN
+        // ======================================================
         Route::get('/presensi', [AdminAttendanceController::class, 'index'])->name('attendance.index');
         Route::get('/survey', [AdminSurveyController::class, 'index'])->name('survey.index');
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
