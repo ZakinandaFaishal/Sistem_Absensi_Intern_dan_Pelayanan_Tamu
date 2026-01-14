@@ -171,10 +171,12 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         // ROUTE UTAMA ADMIN
         // ======================================================
         Route::get('/presensi', [AdminAttendanceController::class, 'index'])->name('attendance.index');
+        Route::post('/presensi/settings', [AdminAttendanceController::class, 'updateSettings'])->name('attendance.settings');
         Route::get('/survey', [AdminSurveyController::class, 'index'])->name('survey.index');
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
 
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
+        Route::post('/users/scoring-settings', [AdminUserController::class, 'updateScoringSettings'])->name('users.scoring.settings');
         Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.role');

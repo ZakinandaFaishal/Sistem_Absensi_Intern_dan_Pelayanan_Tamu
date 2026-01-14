@@ -55,13 +55,13 @@
                 </a>
 
                 <!-- <a href="{{ route('intern.userProfile') }}"
-                   class="inline-flex items-center justify-center gap-2 rounded-xl
+                       class="inline-flex items-center justify-center gap-2 rounded-xl
                       bg-white/10 px-4 py-2 text-sm font-semibold text-white
                       border border-white/20 shadow
                       hover:bg-white/20 hover:-translate-y-0.5 transition duration-200
                       focus:outline-none focus:ring-2 focus:ring-white/30">
-                    ← Kembali
-                </a> -->
+                        ← Kembali
+                    </a> -->
             </div>
         </section>
 
@@ -123,9 +123,6 @@
                                                 <span
                                                     class="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/90 border border-white/15">
                                                     {{ $attendance->lat }}, {{ $attendance->lng }}
-                                                </span>
-                                                <span class="text-xs text-white/60">
-                                                    Akurasi: {{ $attendance->accuracy_m ?? '-' }} m
                                                 </span>
                                             </div>
                                         @else

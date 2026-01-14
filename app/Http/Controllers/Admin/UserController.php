@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
 use App\Models\User;
+use App\Support\AppSettings;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -19,13 +23,85 @@ class UserController extends Controller
         }
 
         $users = User::query()
+            ->withCount([
+                'attendances as attended_days' => function ($query) {
+                    $query->select(DB::raw('count(distinct `date`)'));
+                },
+            ])
             ->orderBy('name')
             ->paginate(25)
             ->withQueryString();
 
+        $scoring = [
+            'points_per_attendance' => AppSettings::getInt(AppSettings::SCORE_POINTS_PER_ATTENDANCE, 4),
+            'max_score' => AppSettings::getInt(AppSettings::SCORE_MAX, 100),
+        ];
+
+        $users->getCollection()->transform(function (User $user) use ($scoring) {
+            if (($user->role ?? 'intern') !== 'intern') {
+                $user->computed_score = null;
+                $user->computed_score_is_override = false;
+                $user->computed_score_attended_days = null;
+                $user->computed_score_expected_days = null;
+                $user->computed_score_subtitle = null;
+                return $user;
+            }
+
+            $maxScore = (int) ($scoring['max_score'] ?? 100);
+            $points = (int) ($scoring['points_per_attendance'] ?? 4);
+            $attendedDays = (int) ($user->attended_days ?? 0);
+
+            $expectedDays = null;
+            if (!empty($user->internship_start_date) && !empty($user->internship_end_date)) {
+                $start = Carbon::parse($user->internship_start_date)->startOfDay();
+                $end = Carbon::parse($user->internship_end_date)->startOfDay();
+
+                if ($end->greaterThanOrEqualTo($start)) {
+                    $expectedDays = 0;
+                    $cursor = $start->copy();
+                    while ($cursor->lessThanOrEqualTo($end)) {
+                        if ($cursor->isWeekday()) {
+                            $expectedDays++;
+                        }
+                        $cursor->addDay();
+                    }
+
+                    // Safety: if date range is too large, fallback.
+                    if ($expectedDays > 500) {
+                        $expectedDays = null;
+                    }
+                }
+            }
+
+            if ($expectedDays !== null && $expectedDays > 0) {
+                $autoScore = min($maxScore, min($attendedDays, $expectedDays) * $points);
+            } else {
+                $autoScore = min($maxScore, $attendedDays * $points);
+            }
+            $finalScore = ($user->score_override !== null) ? (int) $user->score_override : $autoScore;
+
+            $user->computed_score = $finalScore;
+            $user->computed_score_is_override = ($user->score_override !== null);
+            $user->computed_score_attended_days = $attendedDays;
+            $user->computed_score_expected_days = $expectedDays;
+
+            if ($user->computed_score_is_override) {
+                $user->computed_score_subtitle = 'Override';
+            } else {
+                if ($expectedDays !== null) {
+                    $user->computed_score_subtitle = "Auto ({$attendedDays}/{$expectedDays} hari)";
+                } else {
+                    $user->computed_score_subtitle = "Auto ({$attendedDays} hari)";
+                }
+            }
+
+            return $user;
+        });
+
         return view('admin.users.index', [
             'users' => $users,
             'editUser' => $editUser,
+            'scoring' => $scoring,
         ]);
     }
 
@@ -39,8 +115,17 @@ class UserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users', 'email')],
             'role' => ['required', 'string', Rule::in(['admin', 'intern'])],
             'active' => ['required', 'boolean'],
+            'intern_status' => ['nullable', 'string', Rule::in(['aktif', 'tamat'])],
+            'internship_start_date' => ['nullable', 'date'],
+            'internship_end_date' => ['nullable', 'date', 'after_or_equal:internship_start_date'],
+            'score_override' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'score_override_note' => ['nullable', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
+
+        $internStatus = ($validated['role'] === 'intern')
+            ? ($validated['intern_status'] ?? 'aktif')
+            : 'aktif';
 
         User::query()->create([
             'name' => $validated['name'],
@@ -50,6 +135,11 @@ class UserController extends Controller
             'email' => $validated['email'],
             'role' => $validated['role'],
             'active' => (bool) $validated['active'],
+            'intern_status' => $internStatus,
+            'internship_start_date' => ($validated['role'] === 'intern') ? ($validated['internship_start_date'] ?? null) : null,
+            'internship_end_date' => ($validated['role'] === 'intern') ? ($validated['internship_end_date'] ?? null) : null,
+            'score_override' => ($validated['role'] === 'intern') ? ($validated['score_override'] ?? null) : null,
+            'score_override_note' => ($validated['role'] === 'intern') ? ($validated['score_override_note'] ?? null) : null,
             'password' => $validated['password'],
         ]);
 
@@ -66,6 +156,11 @@ class UserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'role' => ['required', 'string', Rule::in(['admin', 'intern'])],
             'active' => ['required', 'boolean'],
+            'intern_status' => ['nullable', 'string', Rule::in(['aktif', 'tamat'])],
+            'internship_start_date' => ['nullable', 'date'],
+            'internship_end_date' => ['nullable', 'date', 'after_or_equal:internship_start_date'],
+            'score_override' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'score_override_note' => ['nullable', 'string', 'max:255'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -90,6 +185,20 @@ class UserController extends Controller
             'role' => $validated['role'],
             'active' => (bool) $validated['active'],
         ];
+
+        if (($validated['role'] ?? 'intern') === 'intern') {
+            $payload['intern_status'] = $validated['intern_status'] ?? ($user->intern_status ?? 'aktif');
+            $payload['internship_start_date'] = $validated['internship_start_date'] ?? null;
+            $payload['internship_end_date'] = $validated['internship_end_date'] ?? null;
+            $payload['score_override'] = $validated['score_override'] ?? null;
+            $payload['score_override_note'] = $validated['score_override_note'] ?? null;
+        } else {
+            $payload['intern_status'] = 'aktif';
+            $payload['internship_start_date'] = null;
+            $payload['internship_end_date'] = null;
+            $payload['score_override'] = null;
+            $payload['score_override_note'] = null;
+        }
 
         if (!empty($validated['password'] ?? '')) {
             $payload['password'] = $validated['password'];
@@ -149,5 +258,18 @@ class UserController extends Controller
         ])->save();
 
         return back()->with('status', 'Status user berhasil diperbarui.');
+    }
+
+    public function updateScoringSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'points_per_attendance' => ['required', 'integer', 'min:0', 'max:100'],
+            'max_score' => ['required', 'integer', 'min:0', 'max:100'],
+        ]);
+
+        Setting::setValue(AppSettings::SCORE_POINTS_PER_ATTENDANCE, (string) $validated['points_per_attendance']);
+        Setting::setValue(AppSettings::SCORE_MAX, (string) $validated['max_score']);
+
+        return back()->with('status', 'Aturan penilaian berhasil disimpan.');
     }
 }
