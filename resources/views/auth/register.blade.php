@@ -159,6 +159,50 @@
                 </div>
             </section>
 
+            {{-- Section: Masa Magang --}}
+            <section class="rounded-2xl border border-white/15 bg-white/10 backdrop-blur shadow-xl">
+                <div class="border-b border-white/10 px-5 py-4">
+                    <p class="text-sm font-semibold text-white">Masa Magang</p>
+                    <p class="mt-0.5 text-xs text-white/65">Digunakan untuk menghitung nilai berdasarkan kehadiran.</p>
+                </div>
+
+                <div class="px-5 py-5 space-y-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <x-input-label for="internship_start_date" value="Mulai *" class="text-white/85" />
+                            <div class="mt-1 relative">
+                                <span
+                                    class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                                    <x-icon name="calendar-days" class="h-5 w-5" />
+                                </span>
+                                <x-text-input id="internship_start_date" name="internship_start_date" type="date"
+                                    required value="{{ old('internship_start_date') }}"
+                                    class="block w-full pl-10 rounded-xl
+                                           border-white/20 bg-white/10 text-white
+                                           focus:border-white/35 focus:ring-white/25" />
+                            </div>
+                            <x-input-error class="mt-2 text-red-200" :messages="$errors->get('internship_start_date')" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="internship_end_date" value="Selesai *" class="text-white/85" />
+                            <div class="mt-1 relative">
+                                <span
+                                    class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                                    <x-icon name="calendar-days" class="h-5 w-5" />
+                                </span>
+                                <x-text-input id="internship_end_date" name="internship_end_date" type="date"
+                                    required value="{{ old('internship_end_date') }}"
+                                    class="block w-full pl-10 rounded-xl
+                                           border-white/20 bg-white/10 text-white
+                                           focus:border-white/35 focus:ring-white/25" />
+                            </div>
+                            <x-input-error class="mt-2 text-red-200" :messages="$errors->get('internship_end_date')" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {{-- Actions --}}
             <div class="flex flex-col sm:flex-row gap-3">
                 <a href="{{ route('login') }}"

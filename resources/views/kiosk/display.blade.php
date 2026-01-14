@@ -56,11 +56,13 @@
 
                 <div class="mt-10 w-full flex flex-col items-center gap-6">
                     <a href="{{ route('kiosk.absensi') }}" class="{{ $btnBase }}">
-                        <x-icon name="map-pin" class="h-7 w-7 shrink-0" /> Absensi Magang
+                        <x-icon name="map-pin" class="h-7 w-7 shrink-0" />
+                        <span class="leading-none">Absensi Magang</span>
                     </a>
 
                     <a href="{{ route('guest.create') }}" class="{{ $btnBase }}">
-                        <x-icon name="clipboard-document" class="h-7 w-7 shrink-0" /> Buku Tamu
+                        <x-icon name="clipboard-document" class="h-7 w-7 shrink-0" />
+                        <span class="leading-none">Buku Tamu</span>
                     </a>
                 </div>
             </div>
