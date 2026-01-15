@@ -16,27 +16,90 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
+        // ===== Edit mode =====
         $editUserId = $request->query('edit');
         $editUser = null;
         if ($editUserId !== null && $editUserId !== '') {
             $editUser = User::query()->find($editUserId);
         }
 
-        $users = User::query()
+        // ===== Filters (sesuai blade) =====
+        $q      = trim((string) $request->query('q', ''));
+        $role   = (string) $request->query('role', '');
+        $active = (string) $request->query('active', ''); // '', '1', '0'
+
+        // ===== Sorting (sesuai blade) =====
+        $sort = (string) $request->query('sort', 'created_at');
+        $dir  = strtolower((string) $request->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        // Kolom sorting yang aman (whitelist)
+        $allowedSort = [
+            'created_at',
+            'name',
+            'email',
+            'username',
+            'nik',
+            'phone',
+            'role',
+            'active',
+            'intern_status',
+            'internship_start_date',
+            'internship_end_date',
+            'attended_days', // alias from withCount
+        ];
+
+        if (!in_array($sort, $allowedSort, true)) {
+            $sort = 'created_at';
+        }
+
+        $usersQuery = User::query()
             ->withCount([
                 'attendances as attended_days' => function ($query) {
                     $query->select(DB::raw('count(distinct `date`)'));
                 },
-            ])
-            ->orderBy('name')
+            ]);
+
+        // ===== Apply search =====
+        if ($q !== '') {
+            $usersQuery->where(function ($w) use ($q) {
+                $w->where('name', 'like', "%{$q}%")
+                ->orWhere('email', 'like', "%{$q}%")
+                ->orWhere('username', 'like', "%{$q}%")
+                ->orWhere('nik', 'like', "%{$q}%")
+                ->orWhere('phone', 'like', "%{$q}%");
+            });
+        }
+
+        // ===== Apply role filter =====
+        if ($role !== '' && in_array($role, ['intern', 'admin'], true)) {
+            $usersQuery->where('role', $role);
+        }
+
+        // ===== Apply active filter =====
+        if ($active === '1' || $active === '0') {
+            $usersQuery->where('active', (int) $active);
+        }
+
+        // ===== Apply sorting =====
+        // NOTE: attended_days itu alias dari withCount, bisa di-orderBy langsung.
+        $usersQuery->orderBy($sort, $dir);
+
+        // Secondary sort biar stabil (opsional)
+        if ($sort !== 'name') {
+            $usersQuery->orderBy('name', 'asc');
+        }
+
+        $users = $usersQuery
             ->paginate(25)
             ->withQueryString();
 
+        // ===== Scoring settings =====
         $scoring = [
             'points_per_attendance' => AppSettings::getInt(AppSettings::SCORE_POINTS_PER_ATTENDANCE, 4),
             'max_score' => AppSettings::getInt(AppSettings::SCORE_MAX, 100),
         ];
 
+        // ===== Compute score (tetap sama) =====
         $users->getCollection()->transform(function (User $user) use ($scoring) {
             if (($user->role ?? 'intern') !== 'intern') {
                 $user->computed_score = null;
@@ -66,7 +129,6 @@ class UserController extends Controller
                         $cursor->addDay();
                     }
 
-                    // Safety: if date range is too large, fallback.
                     if ($expectedDays > 500) {
                         $expectedDays = null;
                     }
@@ -78,6 +140,7 @@ class UserController extends Controller
             } else {
                 $autoScore = min($maxScore, $attendedDays * $points);
             }
+
             $finalScore = ($user->score_override !== null) ? (int) $user->score_override : $autoScore;
 
             $user->computed_score = $finalScore;
@@ -104,6 +167,7 @@ class UserController extends Controller
             'scoring' => $scoring,
         ]);
     }
+
 
     public function store(Request $request)
     {

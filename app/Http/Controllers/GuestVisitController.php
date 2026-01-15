@@ -55,14 +55,59 @@ class GuestVisitController extends Controller
         ]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $visits = GuestVisit::query()->latest('arrived_at')->limit(50)->get();
+        // ambil filter/sort dari query string (sesuai blade)
+        $q      = $request->query('q', '');
+        $status = $request->query('status', ''); // '', 'pending', 'done'
+        $from   = $request->query('from', '');
+        $to     = $request->query('to', '');
+        $sort   = $request->query('sort', 'arrived_at');
+        $dir    = $request->query('dir', 'desc');
+
+        // whitelist sorting biar aman
+        $allowedSort = ['arrived_at', 'completed_at', 'name'];
+        if (!in_array($sort, $allowedSort, true)) {
+            $sort = 'arrived_at';
+        }
+        $dir = strtolower($dir) === 'asc' ? 'asc' : 'desc';
+
+        $query = GuestVisit::query();
+
+        // search (nama / purpose)
+        if ($q !== '') {
+            $query->where(function ($qq) use ($q) {
+                $qq->where('name', 'like', "%{$q}%")
+                ->orWhere('purpose', 'like', "%{$q}%");
+            });
+        }
+
+        // status filter
+        if ($status === 'pending') {
+            $query->whereNull('completed_at');
+        } elseif ($status === 'done') {
+            $query->whereNotNull('completed_at');
+        }
+
+        // date range filter (pakai arrived_at)
+        if ($from) {
+            $query->whereDate('arrived_at', '>=', $from);
+        }
+        if ($to) {
+            $query->whereDate('arrived_at', '<=', $to);
+        }
+
+        // sorting
+        $query->orderBy($sort, $dir);
+
+        // paginate + pertahankan query params agar links() ikut filter/sort
+        $visits = $query->paginate(10)->appends($request->query());
 
         return view('admin.guest.index', [
             'visits' => $visits,
         ]);
     }
+
 
     public function complete(Request $request, GuestVisit $visit)
     {

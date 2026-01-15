@@ -102,7 +102,7 @@
                 </div>
 
                 <div class="text-xs text-slate-500">
-                    Total data: <span class="font-semibold text-slate-700">{{ $visits->count() }}</span>
+                    Total data: <span class="font-semibold text-slate-700">{{ $visits->total() }}</span>
                 </div>
             </div>
 
