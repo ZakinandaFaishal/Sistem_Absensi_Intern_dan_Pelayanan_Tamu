@@ -5,31 +5,33 @@
 
 @section('content')
 
-@php
-    // ===== FILTER & SORT STATE =====
-    $q      = request('q', '');
-    $status = request('status', ''); // '', 'pending', 'done'
-    $from   = request('from', '');
-    $to     = request('to', '');
-    $sort   = request('sort', 'arrived_at');
-    $dir    = request('dir', 'desc');
+    @php
+        // ===== FILTER & SORT STATE =====
+        $q = request('q', '');
+        $status = request('status', ''); // '', 'pending', 'done'
+        $from = request('from', '');
+        $to = request('to', '');
+        $sort = request('sort', 'arrived_at');
+        $dir = request('dir', 'desc');
 
-    $mergeQuery = function(array $extra = []) {
-        return url()->current() . '?' . http_build_query(array_merge(request()->query(), $extra));
-    };
+        $mergeQuery = function (array $extra = []) {
+            return url()->current() . '?' . http_build_query(array_merge(request()->query(), $extra));
+        };
 
-    $sortUrl = function(string $col) use ($sort, $dir, $mergeQuery) {
-        $nextDir = ($sort === $col && $dir === 'asc') ? 'desc' : 'asc';
-        return $mergeQuery(['sort' => $col, 'dir' => $nextDir, 'page' => 1]);
-    };
+        $sortUrl = function (string $col) use ($sort, $dir, $mergeQuery) {
+            $nextDir = $sort === $col && $dir === 'asc' ? 'desc' : 'asc';
+            return $mergeQuery(['sort' => $col, 'dir' => $nextDir, 'page' => 1]);
+        };
 
-    $sortIcon = function(string $col) use ($sort, $dir) {
-        if ($sort !== $col) return '↕';
-        return $dir === 'asc' ? '↑' : '↓';
-    };
+        $sortIcon = function (string $col) use ($sort, $dir) {
+            if ($sort !== $col) {
+                return '↕';
+            }
+            return $dir === 'asc' ? '↑' : '↓';
+        };
 
-    $activeFilter = ($q || $status !== '' || $from || $to);
-@endphp
+        $activeFilter = $q || $status !== '' || $from || $to;
+    @endphp
 
     {{-- HEADER PAGE --}}
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -53,16 +55,14 @@
                     class="hidden absolute right-0 mt-2 w-56 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-50">
                     <button type="button"
                         class="export-guest-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
-                        data-url="{{ route('admin.guest.export.excel', request()->query()) }}"
-                        data-label="Excel">
+                        data-url="{{ route('admin.guest.export.excel', request()->query()) }}" data-label="Excel">
                         <span>Export Excel (Buku Tamu)</span>
                         <span class="text-xs text-slate-400">.xlsx</span>
                     </button>
 
                     <button type="button"
                         class="export-guest-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
-                        data-url="{{ route('admin.guest.export.pdf', request()->query()) }}"
-                        data-label="PDF">
+                        data-url="{{ route('admin.guest.export.pdf', request()->query()) }}" data-label="PDF">
                         <span>Export PDF (Buku Tamu)</span>
                         <span class="text-xs text-slate-400">.pdf</span>
                     </button>
@@ -90,7 +90,8 @@
 
         {{-- CARD --}}
         <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
+            <div
+                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
                 <div class="flex items-center gap-2">
                     <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
                         <x-icon name="clipboard-document" class="h-5 w-5 text-slate-700" />
@@ -102,14 +103,15 @@
                 </div>
 
                 <div class="text-xs text-slate-500">
-                    Total data: <span class="font-semibold text-slate-700">{{ $visits->total() }}</span>
+                    Total data: <span
+                        class="font-semibold text-slate-700">{{ method_exists($visits, 'total') ? $visits->total() : $visits->count() }}</span>
                 </div>
             </div>
 
             {{-- FILTER BAR --}}
             <div class="px-6 pt-5">
                 <form method="GET" action="{{ route('admin.guest.index') }}"
-                      class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                    class="grid grid-cols-1 sm:grid-cols-12 gap-3">
 
                     <div class="sm:col-span-5">
                         <label class="block text-xs font-semibold text-slate-600">Cari</label>
@@ -148,7 +150,7 @@
                         <div class="text-xs text-slate-500">
                             Sort:
                             <span class="font-semibold text-slate-700">{{ $sort }}</span> ({{ $dir }})
-                            @if($activeFilter)
+                            @if ($activeFilter)
                                 <span class="mx-2 opacity-40">|</span> Filter aktif
                             @endif
                         </div>
@@ -199,11 +201,13 @@
                                 <div class="font-semibold text-slate-900 truncate">{{ $visit->name }}</div>
 
                                 @if ($visit->completed_at)
-                                    <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                                    <span
+                                        class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                                         Selesai
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                                    <span
+                                        class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
                                         Menunggu
                                     </span>
                                 @endif
@@ -216,14 +220,16 @@
                             <div class="mt-1 text-xs text-slate-500">
                                 Datang: <span class="font-semibold text-slate-700">{{ $visit->arrived_at }}</span>
                                 @if ($visit->completed_at)
-                                    • Selesai: <span class="font-semibold text-slate-700">{{ $visit->completed_at }}</span>
+                                    • Selesai: <span
+                                        class="font-semibold text-slate-700">{{ $visit->completed_at }}</span>
                                 @endif
                             </div>
                         </div>
 
                         <div class="flex items-center gap-2 shrink-0">
                             @if ($visit->completed_at)
-                                <span class="inline-flex items-center rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+                                <span
+                                    class="inline-flex items-center rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
                                     ✓ Selesai
                                 </span>
                             @else
@@ -243,13 +249,19 @@
                         Belum ada data kunjungan.
                     </div>
                 @endforelse
+
+                @if (method_exists($visits, 'links'))
+                    <div class="pt-3">
+                        {{ $visits->links() }}
+                    </div>
+                @endif
             </div>
         </div>
     </div>
 
     {{-- EXPORT GUEST SCRIPT (UI only, route nanti) --}}
     <script>
-        (function () {
+        (function() {
             const btn = document.getElementById('btnExportGuest');
             const menu = document.getElementById('menuExportGuest');
             const chevron = document.getElementById('exportGuestChevron');
@@ -260,6 +272,7 @@
                 menu.classList.remove('hidden');
                 if (chevron) chevron.style.transform = 'rotate(180deg)';
             }
+
             function closeMenu() {
                 if (!menu) return;
                 menu.classList.add('hidden');

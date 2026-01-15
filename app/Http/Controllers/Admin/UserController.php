@@ -6,11 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\AppSettings;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class UserController extends Controller
 {
@@ -168,6 +175,238 @@ class UserController extends Controller
         ]);
     }
 
+    public function exportPdf(Request $request)
+    {
+        $scoring = [
+            'points_per_attendance' => AppSettings::getInt(AppSettings::SCORE_POINTS_PER_ATTENDANCE, 4),
+            'max_score' => AppSettings::getInt(AppSettings::SCORE_MAX, 100),
+        ];
+
+        $users = User::query()
+            ->withCount([
+                'attendances as attended_days' => function ($query) {
+                    $query->select(DB::raw('count(distinct `date`)'));
+                },
+            ])
+            ->orderBy('name')
+            ->get();
+
+        $users->transform(function (User $user) use ($scoring) {
+            if (($user->role ?? 'intern') !== 'intern') {
+                $user->computed_score = null;
+                $user->computed_score_is_override = false;
+                $user->computed_score_attended_days = null;
+                $user->computed_score_expected_days = null;
+                return $user;
+            }
+
+            $maxScore = (int) ($scoring['max_score'] ?? 100);
+            $points = (int) ($scoring['points_per_attendance'] ?? 4);
+            $attendedDays = (int) ($user->attended_days ?? 0);
+
+            $expectedDays = null;
+            if (!empty($user->internship_start_date) && !empty($user->internship_end_date)) {
+                $start = Carbon::parse($user->internship_start_date)->startOfDay();
+                $end = Carbon::parse($user->internship_end_date)->startOfDay();
+
+                if ($end->greaterThanOrEqualTo($start)) {
+                    $expectedDays = 0;
+                    $cursor = $start->copy();
+                    while ($cursor->lessThanOrEqualTo($end)) {
+                        if ($cursor->isWeekday()) {
+                            $expectedDays++;
+                        }
+                        $cursor->addDay();
+                    }
+
+                    if ($expectedDays > 500) {
+                        $expectedDays = null;
+                    }
+                }
+            }
+
+            if ($expectedDays !== null && $expectedDays > 0) {
+                $autoScore = min($maxScore, min($attendedDays, $expectedDays) * $points);
+            } else {
+                $autoScore = min($maxScore, $attendedDays * $points);
+            }
+            $finalScore = ($user->score_override !== null) ? (int) $user->score_override : $autoScore;
+
+            $user->computed_score = $finalScore;
+            $user->computed_score_is_override = ($user->score_override !== null);
+            $user->computed_score_attended_days = $attendedDays;
+            $user->computed_score_expected_days = $expectedDays;
+            return $user;
+        });
+
+        $generatedAt = now();
+        $html = view('admin.users.export_pdf', [
+            'generatedAt' => $generatedAt,
+            'users' => $users,
+            'scoring' => $scoring,
+        ])->render();
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', false);
+        $options->set('defaultFont', 'DejaVu Sans');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $filename = 'laporan-users-' . now()->format('Ymd-His') . '.pdf';
+
+        return response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $scoring = [
+            'points_per_attendance' => AppSettings::getInt(AppSettings::SCORE_POINTS_PER_ATTENDANCE, 4),
+            'max_score' => AppSettings::getInt(AppSettings::SCORE_MAX, 100),
+        ];
+
+        $users = User::query()
+            ->withCount([
+                'attendances as attended_days' => function ($query) {
+                    $query->select(DB::raw('count(distinct `date`)'));
+                },
+            ])
+            ->orderBy('name')
+            ->get();
+
+        $users->transform(function (User $user) use ($scoring) {
+            if (($user->role ?? 'intern') !== 'intern') {
+                $user->computed_score = null;
+                $user->computed_score_is_override = false;
+                $user->computed_score_attended_days = null;
+                $user->computed_score_expected_days = null;
+                return $user;
+            }
+
+            $maxScore = (int) ($scoring['max_score'] ?? 100);
+            $points = (int) ($scoring['points_per_attendance'] ?? 4);
+            $attendedDays = (int) ($user->attended_days ?? 0);
+
+            $expectedDays = null;
+            if (!empty($user->internship_start_date) && !empty($user->internship_end_date)) {
+                $start = Carbon::parse($user->internship_start_date)->startOfDay();
+                $end = Carbon::parse($user->internship_end_date)->startOfDay();
+
+                if ($end->greaterThanOrEqualTo($start)) {
+                    $expectedDays = 0;
+                    $cursor = $start->copy();
+                    while ($cursor->lessThanOrEqualTo($end)) {
+                        if ($cursor->isWeekday()) {
+                            $expectedDays++;
+                        }
+                        $cursor->addDay();
+                    }
+
+                    if ($expectedDays > 500) {
+                        $expectedDays = null;
+                    }
+                }
+            }
+
+            if ($expectedDays !== null && $expectedDays > 0) {
+                $autoScore = min($maxScore, min($attendedDays, $expectedDays) * $points);
+            } else {
+                $autoScore = min($maxScore, $attendedDays * $points);
+            }
+            $finalScore = ($user->score_override !== null) ? (int) $user->score_override : $autoScore;
+
+            $user->computed_score = $finalScore;
+            $user->computed_score_is_override = ($user->score_override !== null);
+            $user->computed_score_attended_days = $attendedDays;
+            $user->computed_score_expected_days = $expectedDays;
+            return $user;
+        });
+
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->getProperties()
+            ->setCreator('Sistem Absensi & Buku Tamu')
+            ->setTitle('Laporan Users');
+
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Users');
+        $sheet->fromArray([
+            ['Laporan Users'],
+            ['Generated At', now()->format('Y-m-d H:i:s')],
+            [],
+            ['Nama', 'Username', 'Email', 'Role', 'Aktif', 'Intern Status', 'Hadir (hari)', 'Nilai', 'Override?', 'Catatan', 'Magang Mulai', 'Magang Selesai'],
+        ]);
+
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A4:L4')->applyFromArray([
+            'font' => ['bold' => true],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F3F4F6']],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+                'wrapText' => true,
+            ],
+        ]);
+        $sheet->freezePane('A5');
+
+        $row = 5;
+        foreach ($users as $u) {
+            $role = (string) ($u->role ?? 'intern');
+            $isIntern = $role === 'intern';
+
+            $note = '';
+            if ($isIntern) {
+                $note = $u->computed_score_is_override ? ((string) ($u->score_override_note ?? 'Override')) : 'Auto';
+            }
+
+            $sheet->fromArray([
+                (string) $u->name,
+                (string) $u->username,
+                (string) $u->email,
+                strtoupper($role),
+                ((bool) ($u->active ?? true)) ? 'Ya' : 'Tidak',
+                $isIntern ? (string) ($u->intern_status ?? 'aktif') : '-',
+                $isIntern ? (int) ($u->attended_days ?? 0) : '-',
+                $isIntern && $u->computed_score !== null ? (int) $u->computed_score : '-',
+                $isIntern ? ($u->computed_score_is_override ? 'Ya' : 'Tidak') : '-',
+                $note,
+                $isIntern ? ((string) ($u->internship_start_date ?? '')) : '',
+                $isIntern ? ((string) ($u->internship_end_date ?? '')) : '',
+            ], null, "A{$row}");
+
+            if ($isIntern && !empty($u->internship_start_date)) {
+                $sheet->setCellValue("K{$row}", ExcelDate::PHPToExcel(Carbon::parse($u->internship_start_date)->startOfDay()));
+            }
+            if ($isIntern && !empty($u->internship_end_date)) {
+                $sheet->setCellValue("L{$row}", ExcelDate::PHPToExcel(Carbon::parse($u->internship_end_date)->startOfDay()));
+            }
+            $row++;
+        }
+
+        $lastRow = max(4, $row - 1);
+        $sheet->setAutoFilter("A4:L{$lastRow}");
+        if ($lastRow >= 5) {
+            $sheet->getStyle("J5:J{$lastRow}")->getAlignment()->setWrapText(true);
+            $sheet->getStyle("K5:L{$lastRow}")->getNumberFormat()->setFormatCode('yyyy-mm-dd');
+        }
+
+        foreach (range('A', 'L') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $filename = 'laporan-users-' . now()->format('Ymd-His') . '.xlsx';
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
 
     public function store(Request $request)
     {

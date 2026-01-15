@@ -10,8 +10,15 @@ class GuestVisit extends Model
 {
     protected $fillable = [
         'name',
+        'gender',
+        'email',
+        'education',
         'institution',
         'phone',
+        'job',
+        'jabatan',
+        'service_type',
+        'purpose_detail',
         'purpose',
         'arrived_at',
         'completed_at',
