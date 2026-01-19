@@ -85,87 +85,56 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         // ======================================================
         // EXPORT - DASHBOARD (SELURUH DATA)
         // ======================================================
-        Route::get('/export/excel', function () {
-            return response("Export Excel (Dashboard) belum diisi datanya.\n", 200, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="export-dashboard.xlsx"',
-            ]);
-        })->name('export.excel');
+        Route::get('/export/excel', [AdminDashboardController::class, 'exportExcel'])
+            ->name('export.excel');
 
-        Route::get('/export/pdf', function () {
-            return response("%PDF-1.4\n% Dummy PDF Dashboard\n", 200, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="export-dashboard.pdf"',
-            ]);
-        })->name('export.pdf');
+        Route::get('/export/pdf', [AdminDashboardController::class, 'exportPdf'])
+            ->name('export.pdf');
 
         // ======================================================
         // EXPORT - USERS (LAPORAN)
         // ======================================================
-        Route::get('/users/export/excel', function () {
-            return response("Export Excel Users (dummy).\n", 200, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="laporan-users.xlsx"',
-            ]);
-        })->name('users.export.excel');
+        Route::get('/users/export/excel', [AdminUserController::class, 'exportExcel'])
+            ->name('users.export.excel');
 
-        Route::get('/users/export/pdf', function () {
-            return response("%PDF-1.4\n% Dummy PDF Users\n", 200, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="laporan-users.pdf"',
-            ]);
-        })->name('users.export.pdf');
+        Route::get('/users/export/pdf', [AdminUserController::class, 'exportPdf'])
+            ->name('users.export.pdf');
 
         // ======================================================
         // EXPORT - SURVEY (LAPORAN)
         // ======================================================
-        Route::get('/survey/export/excel', function () {
-            return response("Export Excel Survey (dummy).\n", 200, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="laporan-survey.xlsx"',
-            ]);
-        })->name('survey.export.excel');
+        Route::get('/survey/export/excel', [AdminSurveyController::class, 'exportExcel'])
+            ->name('survey.export.excel');
 
-        Route::get('/survey/export/pdf', function () {
-            return response("%PDF-1.4\n% Dummy PDF Survey\n", 200, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="laporan-survey.pdf"',
-            ]);
-        })->name('survey.export.pdf');
+        Route::get('/survey/export/pdf', [AdminSurveyController::class, 'exportPdf'])
+            ->name('survey.export.pdf');
+
+        Route::get('/survey/export/ikm.pdf', [AdminSurveyController::class, 'exportIkmPdf'])
+            ->name('survey.export.ikm.pdf');
+
+        Route::get('/survey/export/ikm.csv', [AdminSurveyController::class, 'exportIkmCsv'])
+            ->name('survey.export.ikm.csv');
+
+        Route::get('/survey/export/detail.csv', [AdminSurveyController::class, 'exportDetailCsv'])
+            ->name('survey.export.detail.csv');
 
         // ======================================================
         // EXPORT - BUKU TAMU (LAPORAN)
         // ======================================================
-        Route::get('/tamu/export/excel', function () {
-            return response("Export Excel Buku Tamu (dummy).\n", 200, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="laporan-buku-tamu.xlsx"',
-            ]);
-        })->name('guest.export.excel');
+        Route::get('/tamu/export/excel', [GuestVisitController::class, 'exportExcel'])
+            ->name('guest.export.excel');
 
-        Route::get('/tamu/export/pdf', function () {
-            return response("%PDF-1.4\n% Dummy PDF Buku Tamu\n", 200, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="laporan-buku-tamu.pdf"',
-            ]);
-        })->name('guest.export.pdf');
+        Route::get('/tamu/export/pdf', [GuestVisitController::class, 'exportPdf'])
+            ->name('guest.export.pdf');
 
         // ======================================================
         // EXPORT - PRESENSI (LAPORAN)
         // ======================================================
-        Route::get('/presensi/export/excel', function () {
-            return response("Export Excel Presensi (dummy).\n", 200, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="laporan-presensi.xlsx"',
-            ]);
-        })->name('attendance.export.excel');
+        Route::get('/presensi/export/excel', [AdminAttendanceController::class, 'exportExcel'])
+            ->name('attendance.export.excel');
 
-        Route::get('/presensi/export/pdf', function () {
-            return response("%PDF-1.4\n% Dummy PDF Presensi\n", 200, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="laporan-presensi.pdf"',
-            ]);
-        })->name('attendance.export.pdf');
+        Route::get('/presensi/export/pdf', [AdminAttendanceController::class, 'exportPdf'])
+            ->name('attendance.export.pdf');
 
         // ======================================================
         // ROUTE UTAMA ADMIN

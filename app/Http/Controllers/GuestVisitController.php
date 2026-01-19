@@ -4,9 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\GuestVisit;
 use Carbon\CarbonImmutable;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class GuestVisitController extends Controller
 {
@@ -19,6 +26,9 @@ class GuestVisitController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
+            'gender' => ['required', Rule::in(['L', 'P'])],
+            'email' => ['required', 'email', 'max:150'],
+            'education' => ['nullable', 'string', 'max:30'],
             'institution' => ['nullable', 'string', 'max:120'],
             'phone' => ['nullable', 'string', 'max:30'],
             'job' => ['nullable', 'string', 'max:120'],
@@ -44,8 +54,15 @@ class GuestVisitController extends Controller
 
         $visit = GuestVisit::query()->create([
             'name' => $validated['name'],
+            'gender' => $validated['gender'],
+            'email' => $validated['email'],
+            'education' => $validated['education'] ?? null,
             'institution' => $validated['institution'] ?? null,
             'phone' => $validated['phone'] ?? null,
+            'job' => $validated['job'] ?? null,
+            'jabatan' => $validated['jabatan'] ?? null,
+            'service_type' => $validated['service_type'],
+            'purpose_detail' => $validated['purpose_detail'],
             'purpose' => $purpose,
             'arrived_at' => CarbonImmutable::now(),
         ]);
@@ -57,51 +74,48 @@ class GuestVisitController extends Controller
 
     public function index(Request $request)
     {
-        // ambil filter/sort dari query string (sesuai blade)
-        $q      = $request->query('q', '');
-        $status = $request->query('status', ''); // '', 'pending', 'done'
-        $from   = $request->query('from', '');
-        $to     = $request->query('to', '');
-        $sort   = $request->query('sort', 'arrived_at');
-        $dir    = $request->query('dir', 'desc');
+        $q = trim((string) $request->query('q', ''));
+        $status = (string) $request->query('status', '');
+        $from = (string) $request->query('from', '');
+        $to = (string) $request->query('to', '');
+        $sort = (string) $request->query('sort', 'arrived_at');
+        $dir = strtolower((string) $request->query('dir', 'desc'));
 
-        // whitelist sorting biar aman
         $allowedSort = ['arrived_at', 'completed_at', 'name'];
         if (!in_array($sort, $allowedSort, true)) {
             $sort = 'arrived_at';
         }
-        $dir = strtolower($dir) === 'asc' ? 'asc' : 'desc';
+        $dir = $dir === 'asc' ? 'asc' : 'desc';
 
-        $query = GuestVisit::query();
+        $visitsQuery = GuestVisit::query();
 
-        // search (nama / purpose)
         if ($q !== '') {
-            $query->where(function ($qq) use ($q) {
-                $qq->where('name', 'like', "%{$q}%")
-                ->orWhere('purpose', 'like', "%{$q}%");
+            $visitsQuery->where(function ($qb) use ($q) {
+                $qb
+                    ->where('name', 'like', "%{$q}%")
+                    ->orWhere('purpose', 'like', "%{$q}%")
+                    ->orWhere('institution', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
             });
         }
 
-        // status filter
         if ($status === 'pending') {
-            $query->whereNull('completed_at');
+            $visitsQuery->whereNull('completed_at');
         } elseif ($status === 'done') {
-            $query->whereNotNull('completed_at');
+            $visitsQuery->whereNotNull('completed_at');
         }
 
-        // date range filter (pakai arrived_at)
-        if ($from) {
-            $query->whereDate('arrived_at', '>=', $from);
+        if ($from !== '') {
+            $visitsQuery->whereDate('arrived_at', '>=', $from);
         }
-        if ($to) {
-            $query->whereDate('arrived_at', '<=', $to);
+        if ($to !== '') {
+            $visitsQuery->whereDate('arrived_at', '<=', $to);
         }
 
-        // sorting
-        $query->orderBy($sort, $dir);
-
-        // paginate + pertahankan query params agar links() ikut filter/sort
-        $visits = $query->paginate(10)->appends($request->query());
+        $visits = $visitsQuery
+            ->orderBy($sort, $dir)
+            ->paginate(20)
+            ->withQueryString();
 
         return view('admin.guest.index', [
             'visits' => $visits,
@@ -112,6 +126,10 @@ class GuestVisitController extends Controller
     public function complete(Request $request, GuestVisit $visit)
     {
         if ($visit->completed_at !== null) {
+            if ($request->expectsJson() || $request->wantsJson()) {
+                return response()->json(['ok' => true, 'status' => 'already_completed']);
+            }
+
             return redirect()
                 ->route('admin.guest.index')
                 ->with('status', 'Kunjungan sudah ditandai selesai.');
@@ -122,15 +140,226 @@ class GuestVisitController extends Controller
             'handled_by' => $request->user()->id,
         ])->save();
 
+        if ($request->expectsJson() || $request->wantsJson()) {
+            return response()->json(['ok' => true, 'status' => 'completed']);
+        }
+
         return redirect()
             ->route('admin.guest.index')
             ->with('status', 'Kunjungan berhasil ditandai selesai.');
     }
 
+    public function exportPdf(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $status = (string) $request->query('status', '');
+        $from = (string) $request->query('from', '');
+        $to = (string) $request->query('to', '');
+        $sort = (string) $request->query('sort', 'arrived_at');
+        $dir = strtolower((string) $request->query('dir', 'desc'));
+
+        $allowedSort = ['arrived_at', 'completed_at', 'name'];
+        if (!in_array($sort, $allowedSort, true)) {
+            $sort = 'arrived_at';
+        }
+        $dir = $dir === 'asc' ? 'asc' : 'desc';
+
+        $visitsQuery = GuestVisit::query()->with(['handler'])->withExists('survey');
+
+        if ($q !== '') {
+            $visitsQuery->where(function ($qb) use ($q) {
+                $qb
+                    ->where('name', 'like', "%{$q}%")
+                    ->orWhere('purpose', 'like', "%{$q}%")
+                    ->orWhere('institution', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
+            });
+        }
+
+        if ($status === 'pending') {
+            $visitsQuery->whereNull('completed_at');
+        } elseif ($status === 'done') {
+            $visitsQuery->whereNotNull('completed_at');
+        }
+
+        if ($from !== '') {
+            $visitsQuery->whereDate('arrived_at', '>=', $from);
+        }
+        if ($to !== '') {
+            $visitsQuery->whereDate('arrived_at', '<=', $to);
+        }
+
+        $maxRows = 400;
+        $visits = $visitsQuery
+            ->orderBy($sort, $dir)
+            ->limit($maxRows)
+            ->get();
+
+        $filters = [
+            'q' => $q,
+            'status' => $status,
+            'from' => $from,
+            'to' => $to,
+            'sort' => $sort,
+            'dir' => $dir,
+        ];
+
+        $generatedAt = now();
+        $html = view('admin.guest.export_pdf', [
+            'generatedAt' => $generatedAt,
+            'filters' => $filters,
+            'visits' => $visits,
+            'maxRows' => $maxRows,
+        ])->render();
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', false);
+        $options->set('defaultFont', 'DejaVu Sans');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $filename = 'laporan-buku-tamu-' . now()->format('Ymd-His') . '.pdf';
+
+        return response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $status = (string) $request->query('status', '');
+        $from = (string) $request->query('from', '');
+        $to = (string) $request->query('to', '');
+        $sort = (string) $request->query('sort', 'arrived_at');
+        $dir = strtolower((string) $request->query('dir', 'desc'));
+
+        $allowedSort = ['arrived_at', 'completed_at', 'name'];
+        if (!in_array($sort, $allowedSort, true)) {
+            $sort = 'arrived_at';
+        }
+        $dir = $dir === 'asc' ? 'asc' : 'desc';
+
+        $visitsQuery = GuestVisit::query()->with(['handler'])->withExists('survey');
+
+        if ($q !== '') {
+            $visitsQuery->where(function ($qb) use ($q) {
+                $qb
+                    ->where('name', 'like', "%{$q}%")
+                    ->orWhere('purpose', 'like', "%{$q}%")
+                    ->orWhere('institution', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
+            });
+        }
+
+        if ($status === 'pending') {
+            $visitsQuery->whereNull('completed_at');
+        } elseif ($status === 'done') {
+            $visitsQuery->whereNotNull('completed_at');
+        }
+
+        if ($from !== '') {
+            $visitsQuery->whereDate('arrived_at', '>=', $from);
+        }
+        if ($to !== '') {
+            $visitsQuery->whereDate('arrived_at', '<=', $to);
+        }
+
+        $maxRows = 5000;
+        $visits = $visitsQuery
+            ->orderBy($sort, $dir)
+            ->limit($maxRows)
+            ->get();
+
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->getProperties()
+            ->setCreator('Sistem Absensi & Buku Tamu')
+            ->setTitle('Laporan Buku Tamu');
+
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Buku Tamu');
+        $sheet->fromArray([
+            ['Laporan Buku Tamu'],
+            ['Generated At', now()->format('Y-m-d H:i:s')],
+            ['Filter q', $q],
+            ['Filter status', $status],
+            ['Filter from', $from],
+            ['Filter to', $to],
+            [],
+            ['Arrived At', 'Nama', 'Email', 'Instansi', 'Layanan', 'Keperluan', 'Status', 'Survey', 'Petugas', 'Completed At'],
+        ]);
+
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A8:J8')->applyFromArray([
+            'font' => ['bold' => true],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F3F4F6']],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+                'wrapText' => true,
+            ],
+        ]);
+        $sheet->freezePane('A9');
+
+        $row = 9;
+        foreach ($visits as $v) {
+            $done = $v->completed_at !== null;
+
+            $arrivedVal = '';
+            if (!empty($v->arrived_at)) {
+                $arrivedVal = ExcelDate::PHPToExcel($v->arrived_at);
+            }
+            $completedVal = '';
+            if (!empty($v->completed_at)) {
+                $completedVal = ExcelDate::PHPToExcel($v->completed_at);
+            }
+
+            $sheet->fromArray([
+                $arrivedVal,
+                (string) $v->name,
+                (string) $v->email,
+                (string) ($v->institution ?? ''),
+                (string) ($v->service_type ?? ''),
+                (string) ($v->purpose ?? ''),
+                $done ? 'Selesai' : 'Pending',
+                ((bool) ($v->survey_exists ?? false)) ? 'Sudah' : 'Belum',
+                (string) ($v->handler?->name ?? ''),
+                $completedVal,
+            ], null, "A{$row}");
+            $row++;
+        }
+
+        $lastRow = max(8, $row - 1);
+        $sheet->setAutoFilter("A8:J{$lastRow}");
+        if ($lastRow >= 9) {
+            $sheet->getStyle("F9:F{$lastRow}")->getAlignment()->setWrapText(true);
+            $sheet->getStyle("A9:A{$lastRow}")->getNumberFormat()->setFormatCode('yyyy-mm-dd hh:mm:ss');
+            $sheet->getStyle("J9:J{$lastRow}")->getNumberFormat()->setFormatCode('yyyy-mm-dd hh:mm:ss');
+        }
+
+        foreach (range('A', 'J') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $filename = 'laporan-buku-tamu-' . now()->format('Ymd-His') . '.xlsx';
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
     public function active()
     {
-        $visits = \App\Models\GuestVisit::query()
+        $visits = GuestVisit::query()
             ->whereNull('completed_at')
+            ->withExists('survey')
             ->orderByDesc('arrived_at')
             ->limit(20)
             ->get(['id', 'name', 'purpose', 'arrived_at', 'completed_at']);
@@ -143,6 +372,8 @@ class GuestVisitController extends Controller
                     'purpose' => $v->purpose,
                     'arrived_at' => optional($v->arrived_at)->format('d M Y H:i') ?? (string) $v->arrived_at,
                     'status' => 'Sedang berkunjung',
+                    'survey_filled' => (bool) ($v->survey_exists ?? false),
+                    'survey_url' => route('guest.survey.show', $v),
                 ];
             })->values(),
         ]);
