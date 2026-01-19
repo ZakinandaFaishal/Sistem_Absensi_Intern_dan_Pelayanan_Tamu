@@ -90,7 +90,7 @@
 
     {{-- CONTENT WRAPPER --}}
     <div class="pt-5">
-        <div class="max-w-7xl space-y-6">
+        <div class="w-full space-y-6">
 
             {{-- Settings: Aturan Presensi --}}
             <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -226,92 +226,6 @@
 
                 {{-- FILTER BAR --}}
                 <div class="px-6 pt-5">
-                    <form method="GET" action="{{ route('admin.attendance.index') }}"
-                          class="grid grid-cols-1 sm:grid-cols-12 gap-3">
-
-                        <div class="sm:col-span-4">
-                            <label class="block text-xs font-semibold text-slate-600">Cari</label>
-                            <input type="text" name="q" value="{{ $q }}"
-                                placeholder="Nama / email…"
-                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
-                                       focus:outline-none focus:ring-2 focus:ring-slate-200">
-                        </div>
-
-                        <div class="sm:col-span-3">
-                            <label class="block text-xs font-semibold text-slate-600">Lokasi</label>
-                            <input type="text" name="location" value="{{ $location }}"
-                                placeholder="Nama lokasi…"
-                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
-                                       focus:outline-none focus:ring-2 focus:ring-slate-200">
-                        </div>
-
-                        <div class="sm:col-span-2">
-                            <label class="block text-xs font-semibold text-slate-600">Range</label>
-                            <select name="range"
-                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
-                                       focus:outline-none focus:ring-2 focus:ring-slate-200">
-                                <option value="" @selected($range === '')>Custom</option>
-                                <option value="today" @selected($range === 'today')>Hari ini</option>
-                                <option value="week" @selected($range === 'week')>7 hari</option>
-                                <option value="month" @selected($range === 'month')>30 hari</option>
-                            </select>
-                        </div>
-
-                        <div class="sm:col-span-3 grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600">Dari</label>
-                                <input type="date" name="from" value="{{ $from }}"
-                                    class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
-                                           focus:outline-none focus:ring-2 focus:ring-slate-200">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600">Sampai</label>
-                                <input type="date" name="to" value="{{ $to }}"
-                                    class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
-                                           focus:outline-none focus:ring-2 focus:ring-slate-200">
-                            </div>
-                        </div>
-
-                        <div class="sm:col-span-12 flex flex-wrap items-center justify-between gap-2 pt-1">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <label class="inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
-                                    Status:
-                                </label>
-                                <select name="status"
-                                    class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
-                                           focus:outline-none focus:ring-2 focus:ring-slate-200">
-                                    <option value="" @selected($status === '')>Semua</option>
-                                    <option value="checked_in" @selected($status === 'checked_in')>Sudah check-in (belum checkout)</option>
-                                    <option value="checked_out" @selected($status === 'checked_out')>Sudah checkout</option>
-                                </select>
-
-                                <span class="text-xs text-slate-500">
-                                    Sort: <span class="font-semibold text-slate-700">{{ $sort }}</span> ({{ $dir }})
-                                    @if($activeFilter)
-                                        <span class="mx-2 opacity-40">|</span> Filter aktif
-                                    @endif
-                                </span>
-                            </div>
-
-                            <div class="flex items-center gap-2">
-                                {{-- keep sort state --}}
-                                <input type="hidden" name="sort" value="{{ $sort }}">
-                                <input type="hidden" name="dir" value="{{ $dir }}">
-
-                                <button type="submit"
-                                    class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white
-                                           hover:bg-slate-800 transition">
-                                    Terapkan
-                                </button>
-
-                                <a href="{{ route('admin.attendance.index') }}"
-                                    class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700
-                                           hover:bg-slate-50 transition">
-                                    Reset
-                                </a>
-                            </div>
-                        </div>
-                    </form>
 
                     {{-- SORT CHIPS --}}
                     <div class="mt-3 flex flex-wrap items-center gap-2">
