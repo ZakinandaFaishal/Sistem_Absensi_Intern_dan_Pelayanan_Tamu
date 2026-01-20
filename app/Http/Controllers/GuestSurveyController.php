@@ -12,19 +12,18 @@ class GuestSurveyController extends Controller
 {
     public function show(GuestVisit $visit)
     {
-        if ($visit->survey()->exists()) {
-            return view('guest.survey_thanks');
+        if ($visit->service_type !== 'layanan') {
+            abort(403, 'Survey hanya tersedia untuk kunjungan jenis layanan.');
         }
 
-        return view('guest.survey', [
-            'visit' => $visit,
-        ]);
+        return view('guest.survey', compact('visit'));
     }
+
 
     public function store(Request $request, GuestVisit $visit)
     {
-        if ($visit->survey()->exists()) {
-            return view('guest.survey_thanks');
+        if ($visit->service_type !== 'layanan') {
+            abort(403, 'Survey hanya tersedia untuk kunjungan jenis layanan.');
         }
 
         $validated = $request->validate([
