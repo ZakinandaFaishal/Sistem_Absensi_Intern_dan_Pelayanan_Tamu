@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
+use App\Models\Location;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\AppSettings;
@@ -11,6 +13,7 @@ use Dompdf\Options;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -62,6 +65,7 @@ class UserController extends Controller
         $usersQuery = User::query()
             ->withCount([
                 'attendances as attended_days' => function ($query) {
+                    $query->where('is_fake_gps', false);
                     $query->select(DB::raw('count(distinct `date`)'));
                 },
             ]);
@@ -70,10 +74,10 @@ class UserController extends Controller
         if ($q !== '') {
             $usersQuery->where(function ($w) use ($q) {
                 $w->where('name', 'like', "%{$q}%")
-                ->orWhere('email', 'like', "%{$q}%")
-                ->orWhere('username', 'like', "%{$q}%")
-                ->orWhere('nik', 'like', "%{$q}%")
-                ->orWhere('phone', 'like', "%{$q}%");
+                    ->orWhere('email', 'like', "%{$q}%")
+                    ->orWhere('username', 'like', "%{$q}%")
+                    ->orWhere('nik', 'like', "%{$q}%")
+                    ->orWhere('phone', 'like', "%{$q}%");
             });
         }
 
@@ -99,6 +103,10 @@ class UserController extends Controller
         $users = $usersQuery
             ->paginate(25)
             ->withQueryString();
+
+        $locations = Location::query()->orderBy('name')->get();
+
+        $registrationSecurityEnabled = AppSettings::getString(AppSettings::REGISTRATION_ADMIN_CODE_HASH, '') !== '';
 
         // ===== Scoring settings =====
         $scoring = [
@@ -172,6 +180,155 @@ class UserController extends Controller
             'users' => $users,
             'editUser' => $editUser,
             'scoring' => $scoring,
+            'locations' => $locations,
+            'registrationSecurityEnabled' => $registrationSecurityEnabled,
+        ]);
+    }
+
+    public function updateRegistrationSecurity(Request $request)
+    {
+        $validated = $request->validate([
+            'registration_code' => ['required', 'string', 'min:6', 'max:100', 'confirmed'],
+        ]);
+
+        Setting::setValue(AppSettings::REGISTRATION_ADMIN_CODE_HASH, Hash::make((string) $validated['registration_code']));
+
+        return back()->with('status', 'Kode registrasi berhasil diperbarui.');
+    }
+
+    public function disableRegistrationSecurity(Request $request)
+    {
+        Setting::setValue(AppSettings::REGISTRATION_ADMIN_CODE_HASH, '');
+
+        return back()->with('status', 'Registrasi berhasil dinonaktifkan.');
+    }
+
+    public function completeInternship(Request $request, User $user)
+    {
+        if (($user->role ?? 'intern') !== 'intern') {
+            return back()->withErrors(['action' => 'Hanya user role intern yang bisa diselesaikan magangnya.']);
+        }
+
+        $validated = $request->validate([
+            'aspect_1' => ['required', 'integer', 'min:0', 'max:100'],
+            'aspect_2' => ['required', 'integer', 'min:0', 'max:100'],
+            'aspect_3' => ['required', 'integer', 'min:0', 'max:100'],
+            'aspect_4' => ['required', 'integer', 'min:0', 'max:100'],
+            'aspect_5' => ['required', 'integer', 'min:0', 'max:100'],
+            'signatory_name' => ['nullable', 'string', 'max:255'],
+            'signatory_title' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if (empty($user->internship_start_date) || empty($user->internship_end_date)) {
+            return back()->withErrors([
+                'action' => 'Tanggal magang belum lengkap. Isi tanggal mulai & selesai magang dulu.',
+            ]);
+        }
+
+        $start = Carbon::parse($user->internship_start_date)->startOfDay();
+        $end = Carbon::parse($user->internship_end_date)->startOfDay();
+        if ($end->lessThan($start)) {
+            return back()->withErrors([
+                'action' => 'Tanggal selesai magang tidak boleh sebelum tanggal mulai.',
+            ]);
+        }
+
+        $expectedDays = 0;
+        $cursor = $start->copy();
+        while ($cursor->lessThanOrEqualTo($end)) {
+            if ($cursor->isWeekday()) {
+                $expectedDays++;
+            }
+            $cursor->addDay();
+        }
+
+        $attendedDays = (int) Attendance::query()
+            ->where('user_id', $user->id)
+            ->where('is_fake_gps', false)
+            ->select(DB::raw('count(distinct `date`) as c'))
+            ->value('c');
+
+        $baseScore = (int) round(((int) $validated['aspect_1']
+            + (int) $validated['aspect_2']
+            + (int) $validated['aspect_3']
+            + (int) $validated['aspect_4']
+            + (int) $validated['aspect_5']) / 5);
+
+        $ratio = ($expectedDays > 0) ? min(1.0, $attendedDays / $expectedDays) : 1.0;
+        $finalScore = (int) round($baseScore * $ratio);
+        $finalScore = max(0, min(100, $finalScore));
+
+        $evaluation = [
+            'aspects' => [
+                (int) $validated['aspect_1'],
+                (int) $validated['aspect_2'],
+                (int) $validated['aspect_3'],
+                (int) $validated['aspect_4'],
+                (int) $validated['aspect_5'],
+            ],
+            'base_score' => $baseScore,
+            'attended_days' => $attendedDays,
+            'expected_days' => $expectedDays,
+            'ratio' => $ratio,
+            'final_score' => $finalScore,
+        ];
+
+        $note = "Evaluasi akhir. Base={$baseScore}; Kehadiran={$attendedDays}/{$expectedDays}; Final={$finalScore}.";
+
+        $user->forceFill([
+            'intern_status' => 'tamat',
+            'score_override' => $finalScore,
+            'score_override_note' => $note,
+            'final_evaluation' => $evaluation,
+            'final_evaluation_at' => now(),
+            'certificate_signatory_name' => ($validated['signatory_name'] ?? null) ?: ($user->certificate_signatory_name ?? null),
+            'certificate_signatory_title' => ($validated['signatory_title'] ?? null) ?: ($user->certificate_signatory_title ?? null),
+        ])->save();
+
+        return back()->with('status', 'Magang berhasil diselesaikan dan nilai akhir tersimpan.');
+    }
+
+    public function certificatePdf(Request $request, User $user)
+    {
+        if (($user->role ?? 'intern') !== 'intern') {
+            abort(404);
+        }
+        if (($user->intern_status ?? 'aktif') !== 'tamat') {
+            return back()->withErrors(['action' => 'Sertifikat hanya tersedia jika status intern sudah TAMAT.']);
+        }
+
+        $user->loadMissing(['internshipLocation']);
+
+        $signatoryName = (string) ($user->certificate_signatory_name
+            ?? AppSettings::getString(AppSettings::CERTIFICATE_DEFAULT_SIGNATORY_NAME, 'Kepala Dinas'));
+        $signatoryTitle = (string) ($user->certificate_signatory_title
+            ?? AppSettings::getString(AppSettings::CERTIFICATE_DEFAULT_SIGNATORY_TITLE, 'Kepala Dinas'));
+
+        $issuedAt = now();
+        $certificateNo = 'MAGANG-' . $user->id . '/' . $issuedAt->format('Y');
+
+        $html = view('admin.users.certificate_pdf', [
+            'user' => $user,
+            'issuedAt' => $issuedAt,
+            'certificateNo' => $certificateNo,
+            'signatoryName' => $signatoryName,
+            'signatoryTitle' => $signatoryTitle,
+        ])->render();
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', false);
+        $options->set('defaultFont', 'DejaVu Sans');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = 'sertifikat-magang-' . Str::slug((string) $user->name) . '-' . $issuedAt->format('Ymd') . '.pdf';
+
+        return response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
@@ -185,6 +342,7 @@ class UserController extends Controller
         $users = User::query()
             ->withCount([
                 'attendances as attended_days' => function ($query) {
+                    $query->where('is_fake_gps', false);
                     $query->select(DB::raw('count(distinct `date`)'));
                 },
             ])
@@ -273,6 +431,7 @@ class UserController extends Controller
         $users = User::query()
             ->withCount([
                 'attendances as attended_days' => function ($query) {
+                    $query->where('is_fake_gps', false);
                     $query->select(DB::raw('count(distinct `date`)'));
                 },
             ])
@@ -421,6 +580,7 @@ class UserController extends Controller
             'intern_status' => ['nullable', 'string', Rule::in(['aktif', 'tamat'])],
             'internship_start_date' => ['nullable', 'date'],
             'internship_end_date' => ['nullable', 'date', 'after_or_equal:internship_start_date'],
+            'internship_location_id' => ['nullable', 'integer', 'exists:locations,id'],
             'score_override' => ['nullable', 'integer', 'min:0', 'max:100'],
             'score_override_note' => ['nullable', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
@@ -441,6 +601,7 @@ class UserController extends Controller
             'intern_status' => $internStatus,
             'internship_start_date' => ($validated['role'] === 'intern') ? ($validated['internship_start_date'] ?? null) : null,
             'internship_end_date' => ($validated['role'] === 'intern') ? ($validated['internship_end_date'] ?? null) : null,
+            'internship_location_id' => ($validated['role'] === 'intern') ? ($validated['internship_location_id'] ?? null) : null,
             'score_override' => ($validated['role'] === 'intern') ? ($validated['score_override'] ?? null) : null,
             'score_override_note' => ($validated['role'] === 'intern') ? ($validated['score_override_note'] ?? null) : null,
             'password' => $validated['password'],
@@ -462,6 +623,7 @@ class UserController extends Controller
             'intern_status' => ['nullable', 'string', Rule::in(['aktif', 'tamat'])],
             'internship_start_date' => ['nullable', 'date'],
             'internship_end_date' => ['nullable', 'date', 'after_or_equal:internship_start_date'],
+            'internship_location_id' => ['nullable', 'integer', 'exists:locations,id'],
             'score_override' => ['nullable', 'integer', 'min:0', 'max:100'],
             'score_override_note' => ['nullable', 'string', 'max:255'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
@@ -493,12 +655,14 @@ class UserController extends Controller
             $payload['intern_status'] = $validated['intern_status'] ?? ($user->intern_status ?? 'aktif');
             $payload['internship_start_date'] = $validated['internship_start_date'] ?? null;
             $payload['internship_end_date'] = $validated['internship_end_date'] ?? null;
+            $payload['internship_location_id'] = $validated['internship_location_id'] ?? null;
             $payload['score_override'] = $validated['score_override'] ?? null;
             $payload['score_override_note'] = $validated['score_override_note'] ?? null;
         } else {
             $payload['intern_status'] = 'aktif';
             $payload['internship_start_date'] = null;
             $payload['internship_end_date'] = null;
+            $payload['internship_location_id'] = null;
             $payload['score_override'] = null;
             $payload['score_override_note'] = null;
         }

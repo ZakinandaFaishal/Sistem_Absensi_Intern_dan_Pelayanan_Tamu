@@ -141,11 +141,19 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         // ======================================================
         Route::get('/presensi', [AdminAttendanceController::class, 'index'])->name('attendance.index');
         Route::post('/presensi/settings', [AdminAttendanceController::class, 'updateSettings'])->name('attendance.settings');
+        Route::post('/presensi/locations', [AdminAttendanceController::class, 'storeLocation'])->name('attendance.locations.store');
+        Route::patch('/presensi/locations/{location}', [AdminAttendanceController::class, 'updateLocation'])->name('attendance.locations.update');
+        Route::delete('/presensi/locations/{location}', [AdminAttendanceController::class, 'destroyLocation'])->name('attendance.locations.destroy');
+        Route::post('/presensi/{attendance}/fake-gps', [AdminAttendanceController::class, 'toggleFakeGps'])->name('attendance.fake-gps');
         Route::get('/survey', [AdminSurveyController::class, 'index'])->name('survey.index');
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
 
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
+        Route::post('/users/registration-security', [AdminUserController::class, 'updateRegistrationSecurity'])->name('users.registration-security');
+        Route::delete('/users/registration-security', [AdminUserController::class, 'disableRegistrationSecurity'])->name('users.registration-security.disable');
         Route::post('/users/scoring-settings', [AdminUserController::class, 'updateScoringSettings'])->name('users.scoring.settings');
+        Route::post('/users/{user}/complete-internship', [AdminUserController::class, 'completeInternship'])->name('users.complete-internship');
+        Route::get('/users/{user}/certificate.pdf', [AdminUserController::class, 'certificatePdf'])->name('users.certificate.pdf');
         Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.role');

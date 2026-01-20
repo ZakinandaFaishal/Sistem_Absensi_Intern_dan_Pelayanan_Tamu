@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\Location;
 use App\Models\Setting;
 use App\Support\AppSettings;
 use Dompdf\Dompdf;
@@ -71,6 +72,8 @@ class AttendanceController extends Controller
             'checkout_end' => AppSettings::getString(AppSettings::CHECKOUT_END, '16:30'),
         ];
 
+        $locations = Location::query()->orderBy('name')->get();
+
         return view('admin.attendance.index', [
             'attendances' => $attendances,
             'filters' => [
@@ -81,7 +84,84 @@ class AttendanceController extends Controller
                 'dir' => $dir,
             ],
             'settings' => $settings,
+            'locations' => $locations,
         ]);
+    }
+
+    public function storeLocation(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'code' => ['nullable', 'string', 'max:50', Rule::unique('locations', 'code')],
+            'lat' => ['required', 'numeric', 'between:-90,90'],
+            'lng' => ['required', 'numeric', 'between:-180,180'],
+            'address' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        Location::query()->create([
+            'name' => $validated['name'],
+            'code' => ($validated['code'] ?? null) ?: null,
+            'lat' => (float) $validated['lat'],
+            'lng' => (float) $validated['lng'],
+            'address' => ($validated['address'] ?? null) ?: null,
+        ]);
+
+        return back()->with('status', 'Lokasi berhasil ditambahkan.');
+    }
+
+    public function updateLocation(Request $request, Location $location)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'code' => ['nullable', 'string', 'max:50', Rule::unique('locations', 'code')->ignore($location->id)],
+            'lat' => ['required', 'numeric', 'between:-90,90'],
+            'lng' => ['required', 'numeric', 'between:-180,180'],
+            'address' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $location->forceFill([
+            'name' => $validated['name'],
+            'code' => ($validated['code'] ?? null) ?: null,
+            'lat' => (float) $validated['lat'],
+            'lng' => (float) $validated['lng'],
+            'address' => ($validated['address'] ?? null) ?: null,
+        ])->save();
+
+        return back()->with('status', 'Lokasi berhasil diperbarui.');
+    }
+
+    public function destroyLocation(Request $request, Location $location)
+    {
+        $location->delete();
+
+        return back()->with('status', 'Lokasi berhasil dihapus.');
+    }
+
+    public function toggleFakeGps(Request $request, Attendance $attendance)
+    {
+        $validated = $request->validate([
+            'note' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if ($attendance->is_fake_gps) {
+            $attendance->forceFill([
+                'is_fake_gps' => false,
+                'fake_gps_flagged_by' => null,
+                'fake_gps_flagged_at' => null,
+                'fake_gps_note' => null,
+            ])->save();
+
+            return back()->with('status', 'Flag Fake GPS dihapus.');
+        }
+
+        $attendance->forceFill([
+            'is_fake_gps' => true,
+            'fake_gps_flagged_by' => $request->user()?->id,
+            'fake_gps_flagged_at' => now(),
+            'fake_gps_note' => ($validated['note'] ?? null) ?: null,
+        ])->save();
+
+        return back()->with('status', 'Presensi ditandai sebagai Fake GPS.');
     }
 
     public function updateSettings(Request $request)

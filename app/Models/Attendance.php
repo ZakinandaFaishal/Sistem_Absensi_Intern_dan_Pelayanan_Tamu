@@ -13,6 +13,10 @@ class Attendance extends Model
         'lat',
         'lng',
         'accuracy_m',
+        'is_fake_gps',
+        'fake_gps_flagged_by',
+        'fake_gps_flagged_at',
+        'fake_gps_note',
         'date',
         'check_in_at',
         'check_out_at',
@@ -27,6 +31,8 @@ class Attendance extends Model
         'lat' => 'decimal:7',
         'lng' => 'decimal:7',
         'accuracy_m' => 'integer',
+        'is_fake_gps' => 'boolean',
+        'fake_gps_flagged_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

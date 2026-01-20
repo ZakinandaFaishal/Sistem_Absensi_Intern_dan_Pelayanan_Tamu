@@ -5,33 +5,35 @@
 
 @section('content')
 
-@php
-    // ===== FILTER & SORT STATE =====
-    $q        = request('q', '');
-    $location = request('location', '');
-    $range    = request('range', ''); // '', 'today', 'week', 'month'
-    $from     = request('from', '');
-    $to       = request('to', '');
-    $status   = request('status', ''); // '', 'checked_in', 'checked_out'
-    $sort     = request('sort', 'date');
-    $dir      = request('dir', 'desc');
+    @php
+        // ===== FILTER & SORT STATE =====
+        $q = request('q', '');
+        $location = request('location', '');
+        $range = request('range', ''); // '', 'today', 'week', 'month'
+        $from = request('from', '');
+        $to = request('to', '');
+        $status = request('status', ''); // '', 'checked_in', 'checked_out'
+        $sort = request('sort', 'date');
+        $dir = request('dir', 'desc');
 
-    $mergeQuery = function(array $extra = []) {
-        return url()->current() . '?' . http_build_query(array_merge(request()->query(), $extra));
-    };
+        $mergeQuery = function (array $extra = []) {
+            return url()->current() . '?' . http_build_query(array_merge(request()->query(), $extra));
+        };
 
-    $sortUrl = function(string $col) use ($sort, $dir, $mergeQuery) {
-        $nextDir = ($sort === $col && $dir === 'asc') ? 'desc' : 'asc';
-        return $mergeQuery(['sort' => $col, 'dir' => $nextDir, 'page' => 1]);
-    };
+        $sortUrl = function (string $col) use ($sort, $dir, $mergeQuery) {
+            $nextDir = $sort === $col && $dir === 'asc' ? 'desc' : 'asc';
+            return $mergeQuery(['sort' => $col, 'dir' => $nextDir, 'page' => 1]);
+        };
 
-    $sortIcon = function(string $col) use ($sort, $dir) {
-        if ($sort !== $col) return '↕';
-        return $dir === 'asc' ? '↑' : '↓';
-    };
+        $sortIcon = function (string $col) use ($sort, $dir) {
+            if ($sort !== $col) {
+                return '↕';
+            }
+            return $dir === 'asc' ? '↑' : '↓';
+        };
 
-    $activeFilter = ($q || $location !== '' || $range !== '' || $from || $to || $status !== '');
-@endphp
+        $activeFilter = $q || $location !== '' || $range !== '' || $from || $to || $status !== '';
+    @endphp
 
     {{-- HEADER PAGE --}}
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -55,16 +57,14 @@
                     class="hidden absolute right-0 mt-2 w-56 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-50">
                     <button type="button"
                         class="export-attendance-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
-                        data-url="{{ route('admin.attendance.export.excel', request()->query()) }}"
-                        data-label="Excel">
+                        data-url="{{ route('admin.attendance.export.excel', request()->query()) }}" data-label="Excel">
                         <span>Export Excel (Presensi)</span>
                         <span class="text-xs text-slate-400">.xlsx</span>
                     </button>
 
                     <button type="button"
                         class="export-attendance-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
-                        data-url="{{ route('admin.attendance.export.pdf', request()->query()) }}"
-                        data-label="PDF">
+                        data-url="{{ route('admin.attendance.export.pdf', request()->query()) }}" data-label="PDF">
                         <span>Export PDF (Presensi)</span>
                         <span class="text-xs text-slate-400">.pdf</span>
                     </button>
@@ -205,9 +205,140 @@
                 </form>
             </div>
 
+            {{-- Settings: Lokasi / Dinas --}}
+            <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-slate-200">
+                    <p class="text-sm font-semibold text-slate-900">Lokasi / Dinas</p>
+                    <p class="mt-0.5 text-xs text-slate-500">Kelola titik koordinat untuk penugasan peserta magang.</p>
+                </div>
+
+                <div class="p-6 space-y-5">
+                    @if (session('status'))
+                        <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('admin.attendance.locations.store') }}"
+                        class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                        @csrf
+                        <div class="md:col-span-3">
+                            <label class="text-xs font-semibold text-slate-700">Nama</label>
+                            <input name="name" value="{{ old('name') }}"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                placeholder="Contoh: Diskominfo" required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="text-xs font-semibold text-slate-700">Kode (opsional)</label>
+                            <input name="code" value="{{ old('code') }}"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                placeholder="KOMINFO">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="text-xs font-semibold text-slate-700">Latitude</label>
+                            <input name="lat" value="{{ old('lat') }}"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                placeholder="-7.59..." required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="text-xs font-semibold text-slate-700">Longitude</label>
+                            <input name="lng" value="{{ old('lng') }}"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                placeholder="110.21..." required>
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="text-xs font-semibold text-slate-700">Alamat (opsional)</label>
+                            <input name="address" value="{{ old('address') }}"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                placeholder="Alamat singkat">
+                        </div>
+                        <div class="md:col-span-12 flex justify-end">
+                            <button type="submit"
+                                class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
+                                Tambah Lokasi
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-slate-600 border-b border-slate-200">
+                                    <th class="py-3 pr-4 font-semibold whitespace-nowrap">Nama</th>
+                                    <th class="py-3 pr-4 font-semibold whitespace-nowrap">Kode</th>
+                                    <th class="py-3 pr-4 font-semibold whitespace-nowrap">Lat</th>
+                                    <th class="py-3 pr-4 font-semibold whitespace-nowrap">Lng</th>
+                                    <th class="py-3 pr-4 font-semibold whitespace-nowrap">Alamat</th>
+                                    <th class="py-3 pr-0 font-semibold whitespace-nowrap text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                @forelse(($locations ?? []) as $loc)
+                                    <tr class="hover:bg-slate-50/70">
+                                        <td class="py-3 pr-4">
+                                            <input form="locForm{{ $loc->id }}" name="name"
+                                                value="{{ $loc->name }}"
+                                                class="w-56 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                                        </td>
+                                        <td class="py-3 pr-4">
+                                            <input form="locForm{{ $loc->id }}" name="code"
+                                                value="{{ $loc->code }}"
+                                                class="w-32 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                                        </td>
+                                        <td class="py-3 pr-4">
+                                            <input form="locForm{{ $loc->id }}" name="lat"
+                                                value="{{ $loc->lat }}"
+                                                class="w-40 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                                        </td>
+                                        <td class="py-3 pr-4">
+                                            <input form="locForm{{ $loc->id }}" name="lng"
+                                                value="{{ $loc->lng }}"
+                                                class="w-40 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                                        </td>
+                                        <td class="py-3 pr-4">
+                                            <input form="locForm{{ $loc->id }}" name="address"
+                                                value="{{ $loc->address }}"
+                                                class="w-72 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                                        </td>
+                                        <td class="py-3 pr-0 text-right whitespace-nowrap">
+                                            <form id="locForm{{ $loc->id }}" method="POST"
+                                                action="{{ route('admin.attendance.locations.update', $loc) }}"
+                                                class="inline-block">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit"
+                                                    class="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition">
+                                                    Simpan
+                                                </button>
+                                            </form>
+
+                                            <form method="POST"
+                                                action="{{ route('admin.attendance.locations.destroy', $loc) }}"
+                                                class="inline-block" onsubmit="return confirm('Hapus lokasi ini?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="rounded-xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-700 transition">
+                                                    Hapus
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="py-8 text-center text-slate-500">Belum ada lokasi.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             {{-- Card --}}
             <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
+                <div
+                    class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
                     <div class="flex items-center gap-2">
                         <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
                             <x-icon name="map-pin" class="h-5 w-5 text-slate-700" />
@@ -256,7 +387,7 @@
                             <label class="text-xs font-semibold text-slate-700">Cari Nama</label>
                             <input name="q" value="{{ $filters['q'] ?? '' }}"
                                 class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
-                                placeholder="contoh: Budi" />
+                                placeholder="contoh: Andi" />
                         </div>
 
                         <div class="md:col-span-3">
@@ -313,6 +444,7 @@
                                     <th class="py-3 pr-4 font-semibold whitespace-nowrap">Koordinat</th>
                                     <th class="py-3 pr-4 font-semibold whitespace-nowrap">Check-in</th>
                                     <th class="py-3 pr-4 font-semibold whitespace-nowrap">Check-out</th>
+                                    <th class="py-3 pr-4 font-semibold whitespace-nowrap">Fake GPS</th>
                                     <th class="py-3 pr-0 font-semibold">Catatan</th>
                                 </tr>
                             </thead>
@@ -357,15 +489,30 @@
                                         </td>
 
                                         <td class="py-3 pr-4 whitespace-nowrap">
-                                            <span class="inline-flex rounded-lg bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                            <span
+                                                class="inline-flex rounded-lg bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                                                 {{ $attendance->check_in_at?->format('H:i:s') ?? '-' }}
                                             </span>
                                         </td>
 
                                         <td class="py-3 pr-4 whitespace-nowrap">
-                                            <span class="inline-flex rounded-lg bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
+                                            <span
+                                                class="inline-flex rounded-lg bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
                                                 {{ $attendance->check_out_at?->format('H:i:s') ?? '-' }}
                                             </span>
+                                        </td>
+
+                                        <td class="py-3 pr-4 whitespace-nowrap">
+                                            <form method="POST"
+                                                action="{{ route('admin.attendance.fake-gps', $attendance) }}"
+                                                onsubmit="return confirm('{{ $attendance->is_fake_gps ? 'Hapus flag Fake GPS?' : 'Tandai sebagai Fake GPS?' }}');">
+                                                @csrf
+                                                <button type="submit"
+                                                    class="inline-flex items-center rounded-lg px-3 py-1 text-xs font-semibold transition
+                                                    {{ $attendance->is_fake_gps ? 'bg-rose-100 text-rose-800 hover:bg-rose-200' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
+                                                    {{ $attendance->is_fake_gps ? 'FLAGGED' : 'Tandai' }}
+                                                </button>
+                                            </form>
                                         </td>
 
                                         <td class="py-3 pr-0 text-slate-700">
@@ -376,7 +523,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="py-10 text-center text-slate-500">
+                                        <td colspan="8" class="py-10 text-center text-slate-500">
                                             Belum ada data presensi.
                                         </td>
                                     </tr>
@@ -398,7 +545,7 @@
 
     {{-- EXPORT ATTENDANCE SCRIPT (UI only, route nanti) --}}
     <script>
-        (function () {
+        (function() {
             const btn = document.getElementById('btnExportAttendance');
             const menu = document.getElementById('menuExportAttendance');
             const chevron = document.getElementById('exportAttendanceChevron');
@@ -409,6 +556,7 @@
                 menu.classList.remove('hidden');
                 if (chevron) chevron.style.transform = 'rotate(180deg)';
             }
+
             function closeMenu() {
                 if (!menu) return;
                 menu.classList.add('hidden');
