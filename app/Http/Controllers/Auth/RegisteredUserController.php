@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Location;
 use App\Models\User;
+use App\Support\AppSettings;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +22,13 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        $locations = Location::query()
+            ->orderBy('name')
+            ->get();
+
+        return view('auth.register', [
+            'locations' => $locations,
+        ]);
     }
 
     /**
@@ -30,6 +38,8 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $codeHash = AppSettings::getString(AppSettings::REGISTRATION_ADMIN_CODE_HASH, '');
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'nik' => ['required', 'digits:16', 'unique:users,nik'],
@@ -38,6 +48,21 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'internship_start_date' => ['required', 'date'],
             'internship_end_date' => ['required', 'date', 'after_or_equal:internship_start_date'],
+            'internship_location_id' => ['required', 'integer', 'exists:locations,id'],
+            'registration_code' => [
+                'required',
+                'string',
+                'max:100',
+                function (string $attribute, mixed $value, \Closure $fail) use ($codeHash) {
+                    if ($codeHash === '') {
+                        $fail('Registrasi belum dibuka. Hubungi admin untuk mendapatkan kode registrasi.');
+                        return;
+                    }
+                    if (!Hash::check((string) $value, $codeHash)) {
+                        $fail('Kode registrasi salah. Hubungi admin untuk kode yang benar.');
+                    }
+                },
+            ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -49,6 +74,7 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'internship_start_date' => $request->internship_start_date,
             'internship_end_date' => $request->internship_end_date,
+            'internship_location_id' => (int) $request->internship_location_id,
             'password' => Hash::make($request->password),
         ]);
 

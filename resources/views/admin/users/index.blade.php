@@ -5,31 +5,33 @@
 
 @section('content')
 
-@php
-    // ====== FILTER & SORT STATE (dari query string) ======
-    $q       = request('q', '');
-    $role    = request('role', '');
-    $active  = request('active', ''); // '', '1', '0'
-    $sort    = request('sort', 'created_at');
-    $dir     = request('dir', 'desc');
+    @php
+        // ====== FILTER & SORT STATE (dari query string) ======
+        $q = request('q', '');
+        $role = request('role', '');
+        $active = request('active', ''); // '', '1', '0'
+        $sort = request('sort', 'created_at');
+        $dir = request('dir', 'desc');
 
-    // helper bikin URL dengan query merge
-    $mergeQuery = function(array $extra = []) {
-        return url()->current() . '?' . http_build_query(array_merge(request()->query(), $extra));
-    };
+        // helper bikin URL dengan query merge
+        $mergeQuery = function (array $extra = []) {
+            return url()->current() . '?' . http_build_query(array_merge(request()->query(), $extra));
+        };
 
-    // helper toggle sorting untuk column tertentu
-    $sortUrl = function(string $col) use ($sort, $dir, $mergeQuery) {
-        $nextDir = ($sort === $col && $dir === 'asc') ? 'desc' : 'asc';
-        return $mergeQuery(['sort' => $col, 'dir' => $nextDir, 'page' => 1]);
-    };
+        // helper toggle sorting untuk column tertentu
+        $sortUrl = function (string $col) use ($sort, $dir, $mergeQuery) {
+            $nextDir = $sort === $col && $dir === 'asc' ? 'desc' : 'asc';
+            return $mergeQuery(['sort' => $col, 'dir' => $nextDir, 'page' => 1]);
+        };
 
-    // helper icon sort (simple)
-    $sortIcon = function(string $col) use ($sort, $dir) {
-        if ($sort !== $col) return '↕';
-        return $dir === 'asc' ? '↑' : '↓';
-    };
-@endphp
+        // helper icon sort (simple)
+        $sortIcon = function (string $col) use ($sort, $dir) {
+            if ($sort !== $col) {
+                return '↕';
+            }
+            return $dir === 'asc' ? '↑' : '↓';
+        };
+    @endphp
 
     {{-- HEADER PAGE --}}
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -53,16 +55,14 @@
                     class="hidden absolute right-0 mt-2 w-56 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-50">
                     <button type="button"
                         class="export-users-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
-                        data-url="{{ route('admin.users.export.excel', request()->query()) }}"
-                        data-label="Excel">
+                        data-url="{{ route('admin.users.export.excel', request()->query()) }}" data-label="Excel">
                         <span>Export Excel (Users)</span>
                         <span class="text-xs text-slate-400">.xlsx</span>
                     </button>
 
                     <button type="button"
                         class="export-users-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
-                        data-url="{{ route('admin.users.export.pdf', request()->query()) }}"
-                        data-label="PDF">
+                        data-url="{{ route('admin.users.export.pdf', request()->query()) }}" data-label="PDF">
                         <span>Export PDF (Users)</span>
                         <span class="text-xs text-slate-400">.pdf</span>
                     </button>
@@ -99,9 +99,69 @@
             </div>
         @endif
 
+        {{-- REGISTRATION SECURITY CARD --}}
+        <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-200">
+                <p class="text-sm font-semibold text-slate-900">Keamanan Registrasi</p>
+                <p class="mt-0.5 text-xs text-slate-500">Batasi registrasi dengan kode yang dibagikan admin.</p>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="text-sm text-slate-700">
+                        Status:
+                        @if (!empty($registrationSecurityEnabled ?? false))
+                            <span
+                                class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">Aktif</span>
+                        @else
+                            <span
+                                class="inline-flex items-center rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-800">Nonaktif</span>
+                        @endif
+                    </div>
+
+                    <form method="POST" action="{{ route('admin.users.registration-security.disable') }}"
+                        onsubmit="return confirm('Nonaktifkan registrasi? User tidak bisa register sebelum kode diaktifkan lagi.');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                            Nonaktifkan Registrasi
+                        </button>
+                    </form>
+                </div>
+
+                <form method="POST" action="{{ route('admin.users.registration-security') }}"
+                    class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    @csrf
+                    <div class="md:col-span-5">
+                        <label class="block text-sm font-semibold text-slate-700">Kode Registrasi Baru</label>
+                        <input name="registration_code" type="password" autocomplete="new-password"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                            placeholder="Minimal 6 karakter" required>
+                        @error('registration_code')
+                            <p class="mt-1 text-xs text-rose-700">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="md:col-span-5">
+                        <label class="block text-sm font-semibold text-slate-700">Konfirmasi Kode</label>
+                        <input name="registration_code_confirmation" type="password" autocomplete="new-password"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                            placeholder="Ulangi kode" required>
+                    </div>
+                    <div class="md:col-span-2 flex items-end">
+                        <button type="submit"
+                            class="w-full inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
         {{-- FORM CARD --}}
         <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
+            <div
+                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
                 <div class="flex items-center gap-2">
                     <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
                         <x-icon name="users" class="h-5 w-5 text-slate-700" />
@@ -117,7 +177,8 @@
                 </div>
 
                 @if (isset($editUser) && $editUser)
-                    <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                    <span
+                        class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
                         Mode Edit
                     </span>
                 @endif
@@ -161,8 +222,7 @@
                         <div class="mt-2 flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
                             <input type="hidden" name="active" value="0">
                             <input id="active" type="checkbox" name="active" value="1"
-                                class="rounded border-slate-300"
-                                @checked(old('active', (($editUser->active ?? true) ? '1' : '0')) === '1')>
+                                class="rounded border-slate-300" @checked(old('active', $editUser->active ?? true ? '1' : '0') === '1')>
                             <label for="active" class="text-sm text-slate-700">Aktif</label>
                         </div>
                     </div>
@@ -222,6 +282,21 @@
                             value="{{ old('internship_end_date', $editUser->internship_end_date ?? '') }}"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
                                   focus:outline-none focus:ring-2 focus:ring-slate-200">
+                    </div>
+
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-semibold text-slate-700">Lokasi / Dinas Magang</label>
+                        <select name="internship_location_id"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                   focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            <option value="">—</option>
+                            @foreach ($locations ?? [] as $loc)
+                                <option value="{{ $loc->id }}" @selected((string) old('internship_location_id', $editUser->internship_location_id ?? '') === (string) $loc->id)>
+                                    {{ $loc->name }}{{ $loc->code ? ' (' . $loc->code . ')' : '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-slate-500">Diabaikan jika role = admin.</p>
                     </div>
 
                     <div class="md:col-span-4">
@@ -328,7 +403,8 @@
         {{-- TABLE CARD --}}
         <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
 
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
+            <div
+                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
                 <div>
                     <h3 class="text-base font-extrabold text-slate-900">Daftar Users</h3>
                     <p class="text-sm text-slate-500">Kelola role, status aktif, dan aksi akun.</p>
@@ -341,7 +417,7 @@
             {{-- FILTER BAR --}}
             <div class="px-6 pt-5">
                 <form method="GET" action="{{ route('admin.users.index') }}"
-                      class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                    class="grid grid-cols-1 sm:grid-cols-12 gap-3">
 
                     <div class="sm:col-span-5">
                         <label class="block text-xs font-semibold text-slate-600">Cari</label>
@@ -395,7 +471,7 @@
                 {{-- INFO FILTER --}}
                 <div class="mt-3 text-xs text-slate-500">
                     Sort: <span class="font-semibold text-slate-700">{{ $sort }}</span> ({{ $dir }})
-                    @if($q || $role || $active !== '')
+                    @if ($q || $role || $active !== '')
                         <span class="mx-2 opacity-40">|</span>
                         Filter aktif
                     @endif
@@ -428,7 +504,8 @@
                                         <div class="text-xs text-slate-500">{{ $user->email }}</div>
                                     </td>
 
-                                    <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->username ?? '—' }}</td>
+                                    <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->username ?? '—' }}
+                                    </td>
                                     <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->nik ?? '—' }}</td>
                                     <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->phone ?? '—' }}</td>
                                     <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->email }}</td>
@@ -444,7 +521,7 @@
                                                     class="appearance-none h-8 rounded-lg border border-slate-200 bg-white
                                                            pl-3 pr-7 text-xs focus:outline-none focus:ring-2 focus:ring-slate-200">
                                                     <option value="intern" @selected(($user->role ?? 'intern') === 'intern')>intern</option>
-                                                    <option value="admin"  @selected(($user->role ?? null) === 'admin')>admin</option>
+                                                    <option value="admin" @selected(($user->role ?? null) === 'admin')>admin</option>
                                                 </select>
                                             </div>
 
@@ -487,7 +564,8 @@
                                             @method('PATCH')
                                             <input type="hidden" name="active" value="0">
 
-                                            <label class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                                            <label
+                                                class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
                                                 <input type="checkbox" name="active" value="1"
                                                     class="rounded border-slate-300" @checked(($user->active ?? true) === true)>
                                                 <span class="text-sm text-slate-700">Aktif</span>
@@ -502,11 +580,28 @@
 
                                     <td class="py-3 pr-0 whitespace-nowrap text-right">
                                         @if (auth()->id() === $user->id)
-                                            <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                                            <span
+                                                class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                                                 Akun sendiri
                                             </span>
                                         @else
                                             <div class="inline-flex items-center gap-2">
+                                                @if (($user->role ?? 'intern') === 'intern' && ($user->intern_status ?? 'aktif') === 'aktif')
+                                                    <button type="button"
+                                                        class="btnCompleteInternship rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition"
+                                                        data-url="{{ route('admin.users.complete-internship', $user) }}"
+                                                        data-name="{{ $user->name }}">
+                                                        Selesai Magang
+                                                    </button>
+                                                @endif
+
+                                                @if (($user->role ?? 'intern') === 'intern' && ($user->intern_status ?? 'aktif') === 'tamat')
+                                                    <a href="{{ route('admin.users.certificate.pdf', $user) }}"
+                                                        class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                                                        Sertifikat
+                                                    </a>
+                                                @endif
+
                                                 <a href="{{ $mergeQuery(['edit' => $user->id]) }}"
                                                     class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
                                                     Edit
@@ -545,9 +640,116 @@
 
     </div>
 
+    {{-- MODAL: COMPLETE INTERNSHIP --}}
+    <div id="completeInternshipModal" class="hidden fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-slate-900/60" data-close="1"></div>
+
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="w-full max-w-xl rounded-2xl bg-white shadow-xl overflow-hidden">
+                <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-900">Selesai Magang</p>
+                        <p id="completeInternshipSubtitle" class="mt-0.5 text-xs text-slate-500">Input penilaian akhir.
+                        </p>
+                    </div>
+                    <button type="button"
+                        class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        data-close="1">Tutup</button>
+                </div>
+
+                <form id="completeInternshipForm" method="POST" action="#" class="p-6 space-y-4">
+                    @csrf
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700">Aspek 1</label>
+                            <input name="aspect_1" type="number" min="0" max="100" required
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                placeholder="0-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700">Aspek 2</label>
+                            <input name="aspect_2" type="number" min="0" max="100" required
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                placeholder="0-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700">Aspek 3</label>
+                            <input name="aspect_3" type="number" min="0" max="100" required
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                placeholder="0-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700">Aspek 4</label>
+                            <input name="aspect_4" type="number" min="0" max="100" required
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                placeholder="0-100">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-semibold text-slate-700">Aspek 5</label>
+                            <input name="aspect_5" type="number" min="0" max="100" required
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                placeholder="0-100">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700">Nama Penandatangan (opsional)</label>
+                            <input name="signatory_name" type="text"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                placeholder="Kepala Dinas">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700">Jabatan Penandatangan
+                                (opsional)</label>
+                            <input name="signatory_title" type="text"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                placeholder="Kepala Dinas Kominfo">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2">
+                        <button type="button"
+                            class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                            data-close="1">Batal</button>
+                        <button type="submit"
+                            class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">Simpan
+                            & Tamatkan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     {{-- EXPORT USERS SCRIPT --}}
     <script>
-        (function () {
+        (function() {
+            const modal = document.getElementById('completeInternshipModal');
+            const form = document.getElementById('completeInternshipForm');
+            const subtitle = document.getElementById('completeInternshipSubtitle');
+
+            function openModal(url, name) {
+                if (!modal || !form) return;
+                form.setAttribute('action', url);
+                if (subtitle) subtitle.textContent = 'Input penilaian akhir untuk: ' + (name || '');
+                modal.classList.remove('hidden');
+            }
+
+            function closeModal() {
+                if (!modal) return;
+                modal.classList.add('hidden');
+            }
+
+            document.querySelectorAll('.btnCompleteInternship').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    openModal(btn.getAttribute('data-url'), btn.getAttribute('data-name'));
+                });
+            });
+            modal?.querySelectorAll('[data-close="1"]').forEach((el) => {
+                el.addEventListener('click', closeModal);
+            });
+
             const btn = document.getElementById('btnExportUsers');
             const menu = document.getElementById('menuExportUsers');
             const chevron = document.getElementById('exportUsersChevron');
@@ -558,6 +760,7 @@
                 menu.classList.remove('hidden');
                 if (chevron) chevron.style.transform = 'rotate(180deg)';
             }
+
             function closeMenu() {
                 if (!menu) return;
                 menu.classList.add('hidden');
