@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\Location;
 use App\Support\AppSettings;
 use App\Support\Geo;
 use App\Support\KioskToken;
@@ -74,8 +75,31 @@ class AttendanceScanController extends Controller
         }
 
         // Geofence + accuracy threshold.
-        $officeLat = AppSettings::getFloat(AppSettings::OFFICE_LAT, 0.0);
-        $officeLng = AppSettings::getFloat(AppSettings::OFFICE_LNG, 0.0);
+        $targetName = 'kantor';
+        $targetLat = AppSettings::getFloat(AppSettings::OFFICE_LAT, 0.0);
+        $targetLng = AppSettings::getFloat(AppSettings::OFFICE_LNG, 0.0);
+
+        $targetLocationId = null;
+        if (($user?->role ?? null) === 'intern' && $user?->internship_location_id) {
+            $internLocation = Location::query()->find($user->internship_location_id);
+            if ($internLocation === null) {
+                return back()->withErrors([
+                    'lat' => 'Lokasi magang Anda tidak ditemukan. Hubungi admin untuk memperbaiki penugasan lokasi.',
+                ]);
+            }
+
+            if ($internLocation->lat === null || $internLocation->lng === null) {
+                return back()->withErrors([
+                    'lat' => 'Koordinat lokasi magang belum diatur admin. Hubungi admin untuk melengkapi titik lokasi.',
+                ]);
+            }
+
+            $targetName = (string) ($internLocation->name ?? 'lokasi magang');
+            $targetLat = (float) $internLocation->lat;
+            $targetLng = (float) $internLocation->lng;
+            $targetLocationId = (int) $internLocation->id;
+        }
+
         // Strict rule: presensi hanya boleh dalam radius 50 meter dari titik kantor.
         // Even if settings are changed, we cap radius to 50m server-side.
         $radiusM = min(AppSettings::getInt(AppSettings::RADIUS_M, 50), 50);
@@ -93,13 +117,19 @@ class AttendanceScanController extends Controller
             ]);
         }
 
-        // If office coords are set, enforce distance.
-        if ($officeLat !== 0.0 || $officeLng !== 0.0) {
+        if ($targetLat === 0.0 && $targetLng === 0.0) {
+            return back()->withErrors([
+                'lat' => 'Titik lokasi presensi belum dikonfigurasi. Hubungi admin untuk mengatur koordinat lokasi.',
+            ]);
+        }
+
+        // Enforce distance.
+        if ($targetLat !== 0.0 || $targetLng !== 0.0) {
             $distanceM = Geo::distanceMeters(
                 (float) $validated['lat'],
                 (float) $validated['lng'],
-                (float) $officeLat,
-                (float) $officeLng
+                (float) $targetLat,
+                (float) $targetLng
             );
 
             if ($distanceM > $radiusM) {
@@ -107,7 +137,7 @@ class AttendanceScanController extends Controller
                     ? number_format($distanceM / 1000, 2, ',', '.') . ' km'
                     : number_format($distanceM, 0, ',', '.') . ' m';
                 return back()->withErrors([
-                    'lat' => "Anda berada di luar area presensi (jarak ~{$prettyDistance} dari kantor). Presensi hanya bisa dalam radius {$radiusM} m dari kantor.",
+                    'lat' => "Anda berada di luar area presensi (jarak ~{$prettyDistance} dari {$targetName}). Presensi hanya bisa dalam radius {$radiusM} m dari {$targetName}.",
                 ]);
             }
         }
@@ -139,7 +169,7 @@ class AttendanceScanController extends Controller
 
             $attendance->fill([
                 'check_in_at' => $now,
-                'location_id' => null,
+                'location_id' => $targetLocationId,
                 'lat' => $validated['lat'],
                 'lng' => $validated['lng'],
                 'accuracy_m' => $validated['accuracy_m'] ?? null,
@@ -157,7 +187,7 @@ class AttendanceScanController extends Controller
 
             $attendance->fill([
                 'check_out_at' => $now,
-                'location_id' => null,
+                'location_id' => $targetLocationId,
                 'lat' => $validated['lat'],
                 'lng' => $validated['lng'],
                 'accuracy_m' => $validated['accuracy_m'] ?? null,

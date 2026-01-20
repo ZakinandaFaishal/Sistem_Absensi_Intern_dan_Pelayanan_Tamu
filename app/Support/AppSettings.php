@@ -19,6 +19,11 @@ final class AppSettings
     public const SCORE_POINTS_PER_ATTENDANCE = 'scoring.points_per_attendance';
     public const SCORE_MAX = 'scoring.max_score';
 
+    public const REGISTRATION_ADMIN_CODE_HASH = 'registration.admin_code_hash';
+
+    public const CERTIFICATE_DEFAULT_SIGNATORY_NAME = 'certificate.default_signatory_name';
+    public const CERTIFICATE_DEFAULT_SIGNATORY_TITLE = 'certificate.default_signatory_title';
+
     public static function getString(string $key, string $default = ''): string
     {
         $value = Setting::getValue($key);

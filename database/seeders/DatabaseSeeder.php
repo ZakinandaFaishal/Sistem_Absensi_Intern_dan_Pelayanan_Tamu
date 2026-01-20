@@ -34,15 +34,23 @@ class DatabaseSeeder extends Seeder
             ])->save();
         }
 
-        Location::query()->firstOrCreate(
-            ['code' => 'KOMINFO'],
-            ['name' => 'Kominfo', 'code' => 'KOMINFO']
-        );
-
         // Default rules (can be edited in Admin UI).
         // Office coordinates: Diskominfo Kab. Magelang (from provided Google Maps link).
         Setting::setValue(AppSettings::OFFICE_LAT, Setting::getValue(AppSettings::OFFICE_LAT) ?? '-7.5920462');
         Setting::setValue(AppSettings::OFFICE_LNG, Setting::getValue(AppSettings::OFFICE_LNG) ?? '110.2185363');
+
+        $officeLat = Setting::getValue(AppSettings::OFFICE_LAT);
+        $officeLng = Setting::getValue(AppSettings::OFFICE_LNG);
+
+        Location::query()->updateOrCreate(
+            ['code' => 'KOMINFO'],
+            [
+                'name' => 'Diskominfo Kab. Magelang',
+                'code' => 'KOMINFO',
+                'lat' => $officeLat !== null && $officeLat !== '' ? (float) $officeLat : null,
+                'lng' => $officeLng !== null && $officeLng !== '' ? (float) $officeLng : null,
+            ]
+        );
 
         Setting::setValue(AppSettings::RADIUS_M, Setting::getValue(AppSettings::RADIUS_M) ?? '50');
         Setting::setValue(AppSettings::MAX_ACCURACY_M, Setting::getValue(AppSettings::MAX_ACCURACY_M) ?? '50');
@@ -54,5 +62,14 @@ class DatabaseSeeder extends Seeder
 
         Setting::setValue(AppSettings::SCORE_POINTS_PER_ATTENDANCE, Setting::getValue(AppSettings::SCORE_POINTS_PER_ATTENDANCE) ?? '4');
         Setting::setValue(AppSettings::SCORE_MAX, Setting::getValue(AppSettings::SCORE_MAX) ?? '100');
+
+        Setting::setValue(
+            AppSettings::CERTIFICATE_DEFAULT_SIGNATORY_NAME,
+            Setting::getValue(AppSettings::CERTIFICATE_DEFAULT_SIGNATORY_NAME) ?? 'Kepala Dinas'
+        );
+        Setting::setValue(
+            AppSettings::CERTIFICATE_DEFAULT_SIGNATORY_TITLE,
+            Setting::getValue(AppSettings::CERTIFICATE_DEFAULT_SIGNATORY_TITLE) ?? 'Kepala Dinas Komunikasi dan Informatika'
+        );
     }
 }

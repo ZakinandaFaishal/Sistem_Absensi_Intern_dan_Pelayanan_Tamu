@@ -32,7 +32,7 @@
                                 <x-icon name="user" class="h-5 w-5" />
                             </span>
                             <x-text-input id="name" name="name" type="text" required autofocus
-                                value="{{ old('name') }}" placeholder="Contoh: Budi Santoso"
+                                value="{{ old('name') }}" placeholder="Contoh: Andi Pratama"
                                 class="block w-full pl-10 rounded-xl
                                        border-white/20 bg-white/10 text-white
                                        placeholder:text-white/45
@@ -94,7 +94,7 @@
                                 <x-icon name="user" class="h-5 w-5" />
                             </span>
                             <x-text-input id="username" name="username" type="text" required
-                                value="{{ old('username') }}" placeholder="contoh: budi.santoso"
+                                value="{{ old('username') }}" placeholder="contoh: andi.pratama"
                                 class="block w-full pl-10 rounded-xl
                                        border-white/20 bg-white/10 text-white
                                        placeholder:text-white/45
@@ -199,6 +199,66 @@
                             </div>
                             <x-input-error class="mt-2 text-red-200" :messages="$errors->get('internship_end_date')" />
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {{-- Section: Lokasi Magang --}}
+            <section class="rounded-2xl border border-white/15 bg-white/10 backdrop-blur shadow-xl">
+                <div class="border-b border-white/10 px-5 py-4">
+                    <p class="text-sm font-semibold text-white">Lokasi Magang</p>
+                    <p class="mt-0.5 text-xs text-white/65">Pilih dinas/lokasi untuk penentuan area presensi.</p>
+                </div>
+
+                <div class="px-5 py-5 space-y-5">
+                    <div>
+                        <x-input-label for="internship_location_id" value="Dinas / Lokasi *" class="text-white/85" />
+                        <div class="mt-1 relative">
+                            <span
+                                class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                                <x-icon name="map-pin" class="h-5 w-5" />
+                            </span>
+
+                            <select id="internship_location_id" name="internship_location_id" required
+                                class="block w-full pl-10 rounded-xl border-white/20 bg-white/10 text-white
+                                       focus:border-white/35 focus:ring-white/25">
+                                <option value="" class="text-slate-900" @selected(old('internship_location_id') === null || old('internship_location_id') === '')>
+                                    -- Pilih Lokasi --
+                                </option>
+                                @foreach ($locations ?? [] as $loc)
+                                    <option value="{{ $loc->id }}" class="text-slate-900"
+                                        @selected((string) old('internship_location_id') === (string) $loc->id)>
+                                        {{ $loc->name }}{{ $loc->code ? ' (' . $loc->code . ')' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <x-input-error class="mt-2 text-red-200" :messages="$errors->get('internship_location_id')" />
+                    </div>
+                </div>
+            </section>
+
+            {{-- Section: Kode Registrasi --}}
+            <section class="rounded-2xl border border-white/15 bg-white/10 backdrop-blur shadow-xl">
+                <div class="border-b border-white/10 px-5 py-4">
+                    <p class="text-sm font-semibold text-white">Kode Registrasi</p>
+                    <p class="mt-0.5 text-xs text-white/65">Diberikan oleh admin untuk membatasi registrasi.</p>
+                </div>
+
+                <div class="px-5 py-5 space-y-5">
+                    <div>
+                        <x-input-label for="registration_code" value="Kode *" class="text-white/85" />
+                        <div class="mt-1 relative">
+                            <span
+                                class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                                <x-icon name="lock-closed" class="h-5 w-5" />
+                            </span>
+                            <x-text-input id="registration_code" name="registration_code" type="password" required
+                                value="{{ old('registration_code') }}" placeholder="Masukkan kode dari admin"
+                                class="block w-full pl-10 rounded-xl border-white/20 bg-white/10 text-white
+                                       placeholder:text-white/45 focus:border-white/35 focus:ring-white/25" />
+                        </div>
+                        <x-input-error class="mt-2 text-red-200" :messages="$errors->get('registration_code')" />
                     </div>
                 </div>
             </section>
