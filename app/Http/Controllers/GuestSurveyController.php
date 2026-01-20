@@ -12,18 +12,33 @@ class GuestSurveyController extends Controller
 {
     public function show(GuestVisit $visit)
     {
+        // Proteksi: hanya layanan
         if ($visit->service_type !== 'layanan') {
             abort(403, 'Survey hanya tersedia untuk kunjungan jenis layanan.');
+        }
+
+        // Cegah isi survey dua kali
+        if ($visit->survey()->exists()) {
+            return redirect()
+                ->route('guest.thanks', $visit)
+                ->with('status', 'Survey sudah diisi. Terima kasih.');
         }
 
         return view('guest.survey', compact('visit'));
     }
 
-
     public function store(Request $request, GuestVisit $visit)
     {
+        // Proteksi: hanya layanan
         if ($visit->service_type !== 'layanan') {
             abort(403, 'Survey hanya tersedia untuk kunjungan jenis layanan.');
+        }
+
+        // Cegah double submit
+        if ($visit->survey()->exists()) {
+            return redirect()
+                ->route('guest.thanks', $visit)
+                ->with('status', 'Survey sudah diisi.');
         }
 
         $validated = $request->validate([
@@ -39,21 +54,22 @@ class GuestSurveyController extends Controller
             'comment' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $scores = [
-            (int) $validated['q1'],
-            (int) $validated['q2'],
-            (int) $validated['q3'],
-            (int) $validated['q4'],
-            (int) $validated['q5'],
-            (int) $validated['q6'],
-            (int) $validated['q7'],
-            (int) $validated['q8'],
-            (int) $validated['q9'],
-        ];
-        $avg = array_sum($scores) / max(1, count($scores));
-        $rating = (int) max(1, min(4, (int) round($avg)));
+        $scores = collect([
+            $validated['q1'],
+            $validated['q2'],
+            $validated['q3'],
+            $validated['q4'],
+            $validated['q5'],
+            $validated['q6'],
+            $validated['q7'],
+            $validated['q8'],
+            $validated['q9'],
+        ])->map(fn ($v) => (int) $v);
 
-        GuestSurvey::query()->create([
+        $rating = (int) round($scores->avg());
+        $rating = max(1, min(4, $rating));
+
+        GuestSurvey::create([
             'visit_id' => $visit->id,
             'rating' => $rating,
             'q1' => (int) $validated['q1'],
@@ -67,6 +83,11 @@ class GuestSurveyController extends Controller
             'q9' => (int) $validated['q9'],
             'comment' => $validated['comment'] ?? null,
             'submitted_at' => CarbonImmutable::now(),
+        ]);
+
+        //  otomatis tandai kunjungan selesai
+        $visit->update([
+            'completed_at' => CarbonImmutable::now(),
         ]);
 
         return view('guest.survey_thanks');
