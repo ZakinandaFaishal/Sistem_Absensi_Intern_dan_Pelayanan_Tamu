@@ -23,11 +23,15 @@ class GuestVisit extends Model
         'arrived_at',
         'completed_at',
         'handled_by',
+        'visit_type',
+        'group_count',
+        'group_names',
     ];
 
     protected $casts = [
         'arrived_at' => 'datetime',
         'completed_at' => 'datetime',
+        'group_names' => 'array',
     ];
 
     public function survey(): HasOne

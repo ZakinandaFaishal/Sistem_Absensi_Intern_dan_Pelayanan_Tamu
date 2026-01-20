@@ -27,7 +27,7 @@ class GuestVisitController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'gender' => ['required', Rule::in(['L', 'P'])],
-            'email' => ['required', 'email', 'max:150'],
+            'email' => ['nullable', 'email', 'max:150'],
             'education' => ['nullable', 'string', 'max:30'],
             'institution' => ['nullable', 'string', 'max:120'],
             'phone' => ['nullable', 'string', 'max:30'],
@@ -35,6 +35,10 @@ class GuestVisitController extends Controller
             'jabatan' => ['nullable', 'string', 'max:120'],
             'service_type' => ['required', 'string', Rule::in(['layanan', 'koordinasi', 'berkas', 'lainnya'])],
             'purpose_detail' => ['required', 'string', 'max:500'],
+            'visit_type' => ['required', Rule::in(['single','group'])],
+            'group_count' => ['nullable','integer','min:2','max:50','required_if:visit_type,group'],
+            'group_names' => ['nullable','array','required_if:visit_type,group'],
+            'group_names.*' => ['nullable','string','max:100','required_if:visit_type,group'],
         ]);
 
         $purpose = '[' . $validated['service_type'] . '] ' . trim($validated['purpose_detail']);
@@ -65,6 +69,9 @@ class GuestVisitController extends Controller
             'purpose_detail' => $validated['purpose_detail'],
             'purpose' => $purpose,
             'arrived_at' => CarbonImmutable::now(),
+            'visit_type' => $validated['visit_type'],
+            'group_count' => $validated['visit_type'] === 'group' ? $validated['group_count'] : null,
+            'group_names' => $validated['visit_type'] === 'group' ? array_values($validated['group_names'] ?? []) : null,
         ]);
 
         return view('guest.thanks', [

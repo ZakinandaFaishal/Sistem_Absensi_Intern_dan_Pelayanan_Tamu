@@ -1,5 +1,13 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('guest.store') }}" class="space-y-6">
+    <form
+        method="POST"
+        action="{{ route('guest.store') }}"
+        class="space-y-6"
+        x-data="{
+            visitType: '{{ old('visit_type', 'single') }}',
+            groupCount: Number('{{ old('group_count', 2) }}') || 2,
+        }"
+    >
         @csrf
 
         @if ($errors->any())
@@ -35,21 +43,128 @@
             </div>
 
             <div class="px-5 py-5 space-y-5">
-                {{-- NAMA --}}
+
+                {{-- TIPE KUNJUNGAN --}}
+                <div>
+                    <x-input-label value="Datang *" class="text-white/85" />
+                    <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label
+                            class="flex items-center justify-between gap-3 rounded-xl border border-white/20 bg-white/10 px-4 py-3
+                                   hover:bg-white/15 transition">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="visit_type" value="single"
+                                    class="h-4 w-4 border-white/30 bg-white/10 text-white focus:ring-white/40"
+                                    x-model="visitType"
+                                    {{ old('visit_type', 'single') === 'single' ? 'checked' : '' }}>
+                                <span class="text-sm font-semibold text-white/85">Sendiri</span>
+                            </div>
+                            <span class="text-xs text-white/55">1 orang</span>
+                        </label>
+
+                        <label
+                            class="flex items-center justify-between gap-3 rounded-xl border border-white/20 bg-white/10 px-4 py-3
+                                   hover:bg-white/15 transition">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="visit_type" value="group"
+                                    class="h-4 w-4 border-white/30 bg-white/10 text-white focus:ring-white/40"
+                                    x-model="visitType"
+                                    {{ old('visit_type') === 'group' ? 'checked' : '' }}>
+                                <span class="text-sm font-semibold text-white/85">Berkelompok</span>
+                            </div>
+                            <span class="text-xs text-white/55">> 1 orang</span>
+                        </label>
+                    </div>
+
+                    <x-input-error class="mt-2 text-red-200" :messages="$errors->get('visit_type')" />
+                </div>
+
+                {{-- NAMA (ketua/yang mengisi form) --}}
                 <div>
                     <x-input-label for="name" value="Nama *" class="text-white/85" />
                     <div class="mt-1 relative">
                         <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
                             <x-icon name="user" class="h-5 w-5" />
                         </span>
-                        <x-text-input id="name" name="name" type="text" required autofocus
-                            value="{{ old('name') }}" placeholder="Contoh: Andi Pratama"
+                        <x-text-input
+                            id="name"
+                            name="name"
+                            type="text"
+                            required
+                            autofocus
+                            value="{{ old('name') }}"
+                            placeholder="Silahkan masukkan nama"
                             class="block w-full pl-10 rounded-xl
                                    border-white/20 bg-white/10 text-white placeholder:text-white/45
                                    focus:border-white/35 focus:ring-white/25" />
                     </div>
                     <x-input-error class="mt-2 text-red-200" :messages="$errors->get('name')" />
+                    <p x-show="visitType === 'group'" x-transition.opacity style="display:none;"
+                    class="mt-1 text-xs text-white/60">
+                        Nama ini sebagai perwakilan/ketua rombongan.
+                    </p>
+
                 </div>
+
+                {{-- JUMLAH + NAMA ANGGOTA (muncul kalau group) --}}
+                <div x-show="visitType === 'group'" x-transition.opacity class="space-y-4" style="display:none;">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="sm:col-span-1">
+                            <x-input-label for="group_count" value="Jumlah orang *" class="text-white/85" />
+                            <div class="mt-1 relative">
+                                <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">👥</span>
+                                <input
+                                    id="group_count"
+                                    name="group_count"
+                                    type="number"
+                                    min="2"
+                                    max="50"
+                                    x-model.number="groupCount"
+                                    :required="visitType === 'group'"
+                                    :disabled="visitType !== 'group'"
+                                    class="block w-full pl-10 rounded-xl border-white/20 bg-white/10 text-white placeholder:text-white/45
+                                            focus:border-white/35 focus:ring-white/25"
+                                    placeholder="2"
+                                />
+                            </div>
+                            <p class="mt-1 text-xs text-white/60">Minimal 2 orang.</p>
+                            <x-input-error class="mt-2 text-red-200" :messages="$errors->get('group_count')" />
+                        </div>
+
+                        <div class="sm:col-span-2 rounded-2xl border border-white/15 bg-white/5 p-4">
+                            <p class="text-sm font-semibold text-white">Nama Anggota</p>
+                            <p class="mt-0.5 text-xs text-white/65">Isi nama semua anggota sesuai jumlah orang.</p>
+                            <div class="mt-3 space-y-3">
+                                <template x-for="i in groupCount" :key="i">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-white/70" x-text="'Anggota ' + i + ' *'"></label>
+                                        <input
+                                            type="text"
+                                            :name="'group_names[' + (i-1) + ']'"
+                                            class="mt-1 block w-full rounded-xl border-white/20 bg-white/10 text-white placeholder:text-white/45
+                                                    focus:border-white/35 focus:ring-white/25"
+                                            :placeholder="'Nama anggota ' + i"
+                                            :required="visitType === 'group'"
+                                            :disabled="visitType !== 'group'"
+                                            x-bind:value="(@json(old('group_names', []))[i-1] ?? '')"
+                                        />
+
+                                    </div>
+                                </template>
+                            </div>
+
+                            <x-input-error class="mt-3 text-red-200" :messages="$errors->get('group_names')" />
+                            {{-- kalau error per index: group_names.0 dst --}}
+                            @if($errors->has('group_names.*'))
+                                <div class="mt-2 text-xs text-red-200 space-y-1">
+                                    @foreach ($errors->get('group_names.*') as $msgs)
+                                        <div>• {{ $msgs[0] }}</div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
 
                 {{-- GENDER --}}
                 <div>
@@ -86,15 +201,19 @@
 
                 {{-- EMAIL + PENDIDIKAN --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {{-- EMAIL --}}
+                    {{-- EMAIL (OPSIONAL) --}}
                     <div>
-                        <x-input-label for="email" value="Email *" class="text-white/85" />
+                        <x-input-label for="email" value="Email (Opsional)" class="text-white/85" />
                         <div class="mt-1 relative">
                             <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
                                 ✉️
                             </span>
-                            <x-text-input id="email" name="email" type="email" required
-                                value="{{ old('email') }}" placeholder="contoh@email.com"
+                            <x-text-input
+                                id="email"
+                                name="email"
+                                type="email"
+                                value="{{ old('email') }}"
+                                placeholder="contoh@email.com"
                                 class="block w-full pl-10 rounded-xl
                                        border-white/20 bg-white/10 text-white placeholder:text-white/45
                                        focus:border-white/35 focus:ring-white/25" />
@@ -116,13 +235,41 @@
                                 <option value="" class="text-gray-900" @selected(old('education') === null || old('education') === '')>
                                     -- Pilih Pendidikan --
                                 </option>
-                                <option value="SD" class="text-gray-900" @selected(old('education') === 'SD')>SD</option>
-                                <option value="SMP" class="text-gray-900" @selected(old('education') === 'SMP')>SMP</option>
-                                <option value="SMA" class="text-gray-900" @selected(old('education') === 'SMA')>SMA / SMK
+                                <!-- <option value="TIDAK_TAMAT" class="text-gray-900" @selected(old('education') === 'TIDAK_TAMAT')>
+                                    Tidak tamat sekolah
+                                </option> -->
+                                <option value="SD" class="text-gray-900" @selected(old('education') === 'SD')>
+                                    SD / Sederajat
                                 </option>
-                                <option value="S1" class="text-gray-900" @selected(old('education') === 'S1')>S1</option>
-                                <option value="S2" class="text-gray-900" @selected(old('education') === 'S2')>S2</option>
-                                <option value="S3" class="text-gray-900" @selected(old('education') === 'S3')>S3</option>
+                                <option value="SMP" class="text-gray-900" @selected(old('education') === 'SMP')>
+                                    SMP / Sederajat
+                                </option>
+                                <option value="SMA" class="text-gray-900" @selected(old('education') === 'SMA')>
+                                    SMA / SMK / Sederajat
+                                </option>
+
+                                <option value="D1" class="text-gray-900" @selected(old('education') === 'D1')>
+                                    Diploma 1 (D1)
+                                </option>
+                                <option value="D2" class="text-gray-900" @selected(old('education') === 'D2')>
+                                    Diploma 2 (D2)
+                                </option>
+                                <option value="D3" class="text-gray-900" @selected(old('education') === 'D3')>
+                                    Diploma 3 (D3)
+                                </option>
+                                <option value="D4" class="text-gray-900" @selected(old('education') === 'D4')>
+                                    Diploma 4 (D4)
+                                </option>
+
+                                <option value="S1" class="text-gray-900" @selected(old('education') === 'S1')>
+                                    Sarjana (S1)
+                                </option>
+                                <option value="S2" class="text-gray-900" @selected(old('education') === 'S2')>
+                                    Magister (S2)
+                                </option>
+                                <option value="S3" class="text-gray-900" @selected(old('education') === 'S3')>
+                                    Doktor (S3)
+                                </option>
                             </select>
                         </div>
                         <x-input-error class="mt-2 text-red-200" :messages="$errors->get('education')" />
