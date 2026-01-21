@@ -369,18 +369,37 @@ class GuestVisitController extends Controller
             ->withExists('survey')
             ->orderByDesc('arrived_at')
             ->limit(20)
-            ->get(['id', 'name', 'purpose', 'arrived_at', 'completed_at']);
+            ->get([
+                'id',
+                'name',
+                'purpose',
+                'arrived_at',
+                'service_type',
+            ]);
 
         return response()->json([
             'data' => $visits->map(function ($v) {
+                $isLayanan = $v->service_type === 'layanan';
+
                 return [
                     'id' => $v->id,
                     'name' => $v->name,
                     'purpose' => $v->purpose,
-                    'arrived_at' => optional($v->arrived_at)->format('d M Y H:i') ?? (string) $v->arrived_at,
+                    'arrived_at' => optional($v->arrived_at)->format('d M Y H:i'),
                     'status' => 'Sedang berkunjung',
-                    'survey_filled' => (bool) ($v->survey_exists ?? false),
-                    'survey_url' => route('guest.survey.show', $v),
+
+                    // ====== PENTING UNTUK FRONTEND ======
+                    'service_type'   => $v->service_type,
+                    'survey_allowed' => $isLayanan,
+
+                    // survey hanya relevan jika layanan
+                    'survey_filled'  => $isLayanan
+                        ? (bool) ($v->survey_exists ?? false)
+                        : true,
+
+                    'survey_url' => $isLayanan
+                        ? route('guest.survey.show', $v)
+                        : null,
                 ];
             })->values(),
         ]);
