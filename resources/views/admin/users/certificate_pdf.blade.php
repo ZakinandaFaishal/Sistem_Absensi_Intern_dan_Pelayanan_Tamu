@@ -3,162 +3,294 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sertifikat Magang</title>
+
     <style>
         @page {
-            margin: 36px 42px;
+            size: A4 landscape;
+            margin: 18mm;
         }
 
         body {
+            margin: 0;
+            padding: 0;
             font-family: DejaVu Sans, sans-serif;
-            color: #0f172a;
+            color: #111827;
+            background: #ffffff;
         }
 
-        .border {
-            border: 2px solid #0f172a;
-            padding: 22px;
+        /* ===== FRAME ===== */
+        .outer {
+            border: 4px solid #111827;
+            padding: 12mm;
+            box-sizing: border-box;
         }
 
-        .topline {
-            border-top: 1px solid #cbd5e1;
-            margin: 18px 0;
+        .inner {
+            position: relative;
+            border: 3px solid #b78b2a;
+            /* emas */
+            padding: 10mm 12mm;
+            box-sizing: border-box;
+            min-height: 160mm;
+            /* supaya stabil */
         }
 
+        /* ===== DECOR (corner emas sederhana) ===== */
+        .corner {
+            position: absolute;
+            width: 26mm;
+            height: 26mm;
+            border: 2px solid #b78b2a;
+            pointer-events: none;
+        }
+
+        .corner.tl {
+            top: 6mm;
+            left: 6mm;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .corner.tr {
+            top: 6mm;
+            right: 6mm;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .corner.bl {
+            bottom: 6mm;
+            left: 6mm;
+            border-right: none;
+            border-top: none;
+        }
+
+        .corner.br {
+            bottom: 6mm;
+            right: 6mm;
+            border-left: none;
+            border-top: none;
+        }
+
+        /* ===== TOP RIGHT RIBBON ===== */
+        .ribbon1 {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-top: 34mm solid rgba(183, 139, 42, .95);
+            border-left: 34mm solid transparent;
+        }
+
+        .ribbon2 {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-top: 24mm solid rgba(17, 24, 39, .85);
+            border-left: 24mm solid transparent;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            text-align: center;
+            margin-top: 2mm;
+        }
+
+        .logo {
+            margin: 0 auto 4mm;
+            width: 18mm;
+            height: 18mm;
+        }
+
+        .h1 {
+            font-family: DejaVu Sans, sans-serif;
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: .5px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .h2 {
+            font-weight: 600;
+            font-size: 13px;
+            margin: 3px 0 0;
+            text-transform: uppercase;
+        }
+
+        /* ===== TITLE ===== */
         .title {
             text-align: center;
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 1px;
+            margin-top: 10mm;
         }
 
-        .subtitle {
-            text-align: center;
-            font-size: 14px;
-            color: #334155;
-            margin-top: 4px;
+        .title .main {
+            font-family: DejaVu Sans, sans-serif;
+            font-weight: 900;
+            font-size: 34px;
+            letter-spacing: 2px;
+            color: #b78b2a;
+            margin: 0;
+            text-transform: uppercase;
         }
 
-        .no {
-            text-align: center;
+        .title .no {
+            margin-top: 2mm;
             font-size: 12px;
-            color: #475569;
-            margin-top: 10px;
+            font-weight: 700;
         }
 
+        /* ===== CONTENT ===== */
         .content {
-            margin-top: 18px;
+            text-align: center;
+            margin-top: 10mm;
+            padding: 0 10mm;
+        }
+
+        .give {
             font-size: 14px;
-            line-height: 1.6;
+            margin: 0;
         }
 
         .name {
-            text-align: center;
-            font-size: 24px;
-            font-weight: 800;
-            margin: 16px 0 6px;
+            margin: 6mm 0 2mm;
+            font-family: DejaVu Sans, sans-serif;
+            font-weight: 900;
+            font-size: 34px;
+            color: #111827;
         }
 
-        .muted {
-            color: #475569;
+        .name-line {
+            width: 120mm;
+            border-top: 2px solid #111827;
+            margin: 0 auto 3mm;
         }
 
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
+        .sub {
+            font-size: 13px;
+            margin: 0;
+            font-weight: 600;
         }
 
-        .table td {
-            padding: 6px 0;
-            vertical-align: top;
+        .desc {
+            margin-top: 5mm;
+            font-size: 13px;
+            line-height: 1.6;
         }
 
-        .label {
-            width: 180px;
-            color: #334155;
-        }
-
+        /* ===== SIGNATURE BLOCK ===== */
         .sign {
-            margin-top: 26px;
-            width: 100%;
+            position: absolute;
+            right: 14mm;
+            bottom: 16mm;
+            width: 90mm;
+            text-align: center;
+            font-size: 11px;
         }
 
-        .sign td {
-            vertical-align: top;
-        }
-
-        .sign-box {
-            text-align: right;
-        }
-
-        .sign-name {
-            margin-top: 60px;
-            font-weight: 700;
-            text-decoration: underline;
-        }
-
-        .footer {
-            margin-top: 18px;
+        .sign .role {
+            font-weight: 800;
+            text-transform: uppercase;
             font-size: 10px;
-            color: #64748b;
+            line-height: 1.3;
+        }
+
+        .ttd-space {
+            height: 22mm;
+        }
+
+        .sign .sign-name {
+            margin-top: 2mm;
+            font-weight: 900;
+            text-decoration: underline;
+            font-size: 12px;
+        }
+
+        .sign .meta {
+            margin-top: 2px;
+            color: #374151;
+            font-size: 10px;
         }
     </style>
 </head>
 
 <body>
-    <div class="border">
-        <div class="title">SERTIFIKAT MAGANG</div>
-        <div class="subtitle">Sistem Absensi Intern dan Pelayanan Tamu</div>
-        <div class="no">Nomor: {{ $certificateNo }}</div>
+    <div class="outer">
+        <div class="inner">
+            <!-- decorations -->
+            <div class="corner tl"></div>
+            <div class="corner tr"></div>
+            <div class="corner bl"></div>
+            <div class="corner br"></div>
+            <div class="ribbon1"></div>
+            <div class="ribbon2"></div>
 
-        <div class="topline"></div>
+            <!-- header -->
+            <div class="header">
+                {{-- Logo: ganti path sesuai file kamu --}}
+                {{-- Jika mau pakai gambar: pastikan file ada di public/img/logo_kab_mgl.png --}}
+                <img class="logo" src="{{ public_path('img/logo_kab_mgl.png') }}" alt="Logo">
+                <p class="h1">PEMERINTAH KABUPATEN MAGELANG</p>
+                <p class="h2">DINAS KOMUNIKASI DAN INFORMATIKA</p>
+            </div>
 
-        <div class="content">
-            Dengan ini menerangkan bahwa:
-            <div class="name">{{ $user->name }}</div>
+            <!-- title -->
+            <div class="title">
+                <p class="main">SERTIFIKAT</p>
+                <div class="no">NOMOR : {{ $certificateNo }}</div>
+            </div>
 
-            <table class="table">
-                <tr>
-                    <td class="label">NIK</td>
-                    <td>: {{ $user->nik ?? '-' }}</td>
-                </tr>
-                <tr>
-                    <td class="label">Lokasi / Dinas</td>
-                    <td>: {{ $user->internshipLocation?->name ?? '-' }}</td>
-                </tr>
-                <tr>
-                    <td class="label">Periode Magang</td>
-                    <td>:
-                        @if ($user->internship_start_date && $user->internship_end_date)
-                            {{ optional($user->internship_start_date)->format('d M Y') }} s/d
-                            {{ optional($user->internship_end_date)->format('d M Y') }}
-                        @else
-                            -
-                        @endif
-                    </td>
-                </tr>
-            </table>
+            <!-- content -->
+            <div class="content">
+                <p class="give">Diberikan kepada :</p>
 
-            <p class="muted" style="margin-top: 14px;">
-                Sertifikat ini diberikan sebagai bukti telah menyelesaikan kegiatan magang sesuai ketentuan yang
-                berlaku.
-            </p>
-        </div>
+                <div class="name">{{ $user->name }}</div>
+                <div class="name-line"></div>
 
-        <table class="sign">
-            <tr>
-                <td></td>
-                <td class="sign-box">
-                    <div>{{ $issuedAt->format('d M Y') }}</div>
-                    <div class="muted" style="margin-top: 4px;">{{ $signatoryTitle }}</div>
-                    <div class="sign-name">{{ $signatoryName }}</div>
-                </td>
-            </tr>
-        </table>
+                <p class="sub">
+                    {{ $user->institution ?? 'Mahasiswa / Peserta Magang' }}
+                </p>
 
-        <div class="footer">
-            Dokumen ini dihasilkan otomatis oleh sistem.
+                <div class="desc">
+                    Telah menyelesaikan Magang di Dinas Komunikasi dan Informatika Kabupaten Magelang
+                    @if ($user->internship_start_date && $user->internship_end_date)
+                        selama
+                        <strong>
+                            {{ \Carbon\Carbon::parse($user->internship_start_date)->diffInDays(\Carbon\Carbon::parse($user->internship_end_date)) + 1 }}
+                            hari
+                        </strong>
+                        dari tanggal
+                        <strong>{{ optional($user->internship_start_date)->format('d F Y') }}</strong>
+                        s/d
+                        <strong>{{ optional($user->internship_end_date)->format('d F Y') }}</strong>
+                    @else
+                        sesuai periode yang berlaku.
+                    @endif
+                </div>
+            </div>
+
+            <!-- signature -->
+            <div class="sign">
+                <div class="role">
+                    KEPALA DINAS KOMUNIKASI DAN INFORMATIKA<br>
+                    KABUPATEN MAGELANG
+                </div>
+
+                <div class="ttd-space"></div>
+
+                <div class="sign-name">
+                    {{ $signatoryName }}
+                </div>
+                <div class="meta">
+                    {{ $signatoryRank ?? 'Pembina Tingkat I' }}<br>
+                    NIP. {{ $signatoryNip ?? '-' }}
+                </div>
+            </div>
+
         </div>
     </div>
 </body>

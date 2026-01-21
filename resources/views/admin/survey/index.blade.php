@@ -155,7 +155,7 @@
     <div class="pt-5 space-y-6">
 
         {{-- RINGKASAN IKM (PermenPANRB No. 14 Tahun 2017) --}}
-        <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <section id="ikm-ringkasan" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div
                 class="px-6 py-5 border-b border-slate-200 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -274,7 +274,7 @@
             </div>
         </section>
 
-        <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <section id="daftar-survey" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
 
             <div
                 class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
