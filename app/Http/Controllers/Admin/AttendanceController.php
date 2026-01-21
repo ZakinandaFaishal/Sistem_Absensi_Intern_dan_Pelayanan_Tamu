@@ -181,7 +181,7 @@ class AttendanceController extends Controller
         $validated = $request->validate([
             'office_lat' => ['nullable', 'numeric', 'between:-90,90'],
             'office_lng' => ['nullable', 'numeric', 'between:-180,180'],
-            // Strict: radius maksimum 50m.
+            // Strict(maksimal radius).
             'radius_m' => ['required', 'integer', 'min:1', 'max:50'],
             'max_accuracy_m' => ['required', 'integer', 'min:1', 'max:5000'],
             'checkin_start' => ['required', 'date_format:H:i'],
