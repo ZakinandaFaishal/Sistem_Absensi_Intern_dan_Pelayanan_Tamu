@@ -362,16 +362,14 @@
                         class="hidden absolute right-0 mt-2 w-52 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-50">
                         <button type="button"
                             class="export-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
-                            data-url="{{ route('admin.export.excel') }}"
-                            data-label="Excel">
+                            data-url="{{ route('admin.export.excel') }}" data-label="Excel">
                             <span>Export Excel</span>
                             <span class="text-xs text-slate-400">.xlsx</span>
                         </button>
 
                         <button type="button"
                             class="export-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
-                            data-url="{{ route('admin.export.pdf') }}"
-                            data-label="PDF">
+                            data-url="{{ route('admin.export.pdf') }}" data-label="PDF">
                             <span>Export PDF</span>
                             <span class="text-xs text-slate-400">.pdf</span>
                         </button>
@@ -455,7 +453,7 @@
 
     {{-- EXPORT UI SCRIPT (dropdown + loading + trigger download via iframe) --}}
     <script>
-        (function () {
+        (function() {
             const menuBtn = document.getElementById('btnExportMenu');
             const menu = document.getElementById('exportMenu');
             const chevron = document.getElementById('exportChevron');

@@ -26,13 +26,6 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        // ===== Edit mode =====
-        $editUserId = $request->query('edit');
-        $editUser = null;
-        if ($editUserId !== null && $editUserId !== '') {
-            $editUser = User::query()->find($editUserId);
-        }
-
         // ===== Filters (sesuai blade) =====
         $q      = trim((string) $request->query('q', ''));
         $role   = (string) $request->query('role', '');
@@ -104,10 +97,6 @@ class UserController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        $locations = Location::query()->orderBy('name')->get();
-
-        $registrationSecurityEnabled = AppSettings::getString(AppSettings::REGISTRATION_ADMIN_CODE_HASH, '') !== '';
-
         // ===== Scoring settings =====
         $scoring = [
             'points_per_attendance' => AppSettings::getInt(AppSettings::SCORE_POINTS_PER_ATTENDANCE, 4),
@@ -176,12 +165,50 @@ class UserController extends Controller
             return $user;
         });
 
-        return view('admin.users.index', [
+        return view('admin.users.list', [
             'users' => $users,
-            'editUser' => $editUser,
             'scoring' => $scoring,
-            'locations' => $locations,
+        ]);
+    }
+
+    public function security(Request $request)
+    {
+        $registrationSecurityEnabled = AppSettings::getString(AppSettings::REGISTRATION_ADMIN_CODE_HASH, '') !== '';
+
+        return view('admin.users.security', [
             'registrationSecurityEnabled' => $registrationSecurityEnabled,
+        ]);
+    }
+
+    public function scoring(Request $request)
+    {
+        $scoring = [
+            'points_per_attendance' => AppSettings::getInt(AppSettings::SCORE_POINTS_PER_ATTENDANCE, 4),
+            'max_score' => AppSettings::getInt(AppSettings::SCORE_MAX, 100),
+        ];
+
+        return view('admin.users.scoring', [
+            'scoring' => $scoring,
+        ]);
+    }
+
+    public function create(Request $request)
+    {
+        $locations = Location::query()->orderBy('name')->get();
+
+        return view('admin.users.form', [
+            'editUser' => null,
+            'locations' => $locations,
+        ]);
+    }
+
+    public function edit(Request $request, User $user)
+    {
+        $locations = Location::query()->orderBy('name')->get();
+
+        return view('admin.users.form', [
+            'editUser' => $user,
+            'locations' => $locations,
         ]);
     }
 

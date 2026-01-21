@@ -66,37 +66,194 @@
                         <p class="px-1 text-[11px] uppercase tracking-wider text-white/40">Menu</p>
 
                         <div class="mt-2 space-y-2">
-                            <a href="{{ route('admin.attendance.index') }}"
-                                class="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition
-                            {{ request()->routeIs('admin.attendance.*') ? 'bg-white/10 border border-white/10' : 'text-white/80 hover:bg-white/10 hover:text-white border border-transparent' }}">
-                                <span class="flex items-center gap-3"><x-icon name="map-pin" class="h-5 w-5" />
-                                    Presensi</span>
-                                <span class="text-[11px] text-white/45">Log</span>
-                            </a>
 
-                            <a href="{{ route('admin.guest.index') }}"
-                                class="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition
-                            {{ request()->routeIs('admin.guest.*') ? 'bg-white/10 border border-white/10' : 'text-white/80 hover:bg-white/10 hover:text-white border border-transparent' }}">
-                                <span class="flex items-center gap-3"><x-icon name="clipboard-document"
-                                        class="h-5 w-5" /> Buku Tamu</span>
-                                <span class="text-[11px] text-white/45">Log</span>
-                            </a>
+                            {{-- PRESENSI --}}
+                            <div x-data="{ open: {{ request()->routeIs('admin.attendance.*') ? 'true' : 'false' }} }"
+                                class="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+                                <button type="button" @click="open = !open"
+                                    class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold transition
+                                    {{ request()->routeIs('admin.attendance.*') ? 'bg-white/10 text-white' : 'text-white/85 hover:bg-white/10 hover:text-white' }}">
+                                    <span class="flex items-center gap-3">
+                                        <x-icon name="map-pin" class="h-5 w-5" /> Presensi
+                                    </span>
+                                    <span class="inline-flex items-center gap-2 text-[11px] text-white/55">
+                                        <span>Menu</span>
+                                        <span class="transition"
+                                            :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">▾</span>
+                                    </span>
+                                </button>
 
-                            <a href="{{ route('admin.survey.index') }}"
-                                class="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition
-                            {{ request()->routeIs('admin.survey.*') ? 'bg-white/10 border border-white/10' : 'text-white/80 hover:bg-white/10 hover:text-white border border-transparent' }}">
-                                <span class="flex items-center gap-3"><x-icon name="star" class="h-5 w-5" />
-                                    Survey</span>
-                                <span class="text-[11px] text-white/45">Hasil</span>
-                            </a>
+                                <div x-show="open" x-transition.opacity class="px-2 pb-2" style="display:none;">
+                                    <a href="{{ route('admin.attendance.index') }}"
+                                        class="mt-1 flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition
+                                        {{ request()->routeIs('admin.attendance.index') ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white' }}">
+                                        <span>Daftar Presensi</span>
+                                        <span class="text-white/45">/admin/presensi</span>
+                                    </a>
 
-                            <a href="{{ route('admin.users.index') }}"
-                                class="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition
-                            {{ request()->routeIs('admin.users.*') ? 'bg-white/10 border border-white/10' : 'text-white/80 hover:bg-white/10 hover:text-white border border-transparent' }}">
-                                <span class="flex items-center gap-3"><x-icon name="users" class="h-5 w-5" />
-                                    Users</span>
-                                <span class="text-[11px] text-white/45">Manage</span>
-                            </a>
+                                    <div class="mt-2 grid grid-cols-1 gap-2">
+                                        <a href="{{ route('admin.attendance.rules') }}"
+                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                            Aturan Presensi
+                                        </a>
+                                        <a href="{{ route('admin.attendance.locations') }}"
+                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                            Lokasi / Dinas
+                                        </a>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-2 mt-2">
+                                        <a href="{{ route('admin.attendance.export.excel', request()->query()) }}"
+                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                            Export Excel
+                                        </a>
+                                        <a href="{{ route('admin.attendance.export.pdf', request()->query()) }}"
+                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                            Export PDF
+                                        </a>
+                                    </div>
+
+                                    <a href="{{ route('attendance.scan.show') }}"
+                                        class="mt-2 flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition text-white/75 hover:bg-white/10 hover:text-white">
+                                        <span>Scan Presensi</span>
+                                        <span class="text-white/45">HP admin</span>
+                                    </a>
+                                </div>
+                            </div>
+
+                            {{-- BUKU TAMU --}}
+                            <div x-data="{ open: {{ request()->routeIs('admin.guest.*') ? 'true' : 'false' }} }"
+                                class="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+                                <button type="button" @click="open = !open"
+                                    class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold transition
+                                    {{ request()->routeIs('admin.guest.*') ? 'bg-white/10 text-white' : 'text-white/85 hover:bg-white/10 hover:text-white' }}">
+                                    <span class="flex items-center gap-3">
+                                        <x-icon name="clipboard-document" class="h-5 w-5" /> Buku Tamu
+                                    </span>
+                                    <span class="inline-flex items-center gap-2 text-[11px] text-white/55">
+                                        <span>Menu</span>
+                                        <span class="transition"
+                                            :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">▾</span>
+                                    </span>
+                                </button>
+
+                                <div x-show="open" x-transition.opacity class="px-2 pb-2" style="display:none;">
+                                    <a href="{{ route('admin.guest.index') }}"
+                                        class="mt-1 flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition
+                                        {{ request()->routeIs('admin.guest.index') ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white' }}">
+                                        <span>Log Buku Tamu</span>
+                                        <span class="text-white/45">/admin/tamu</span>
+                                    </a>
+
+                                    <div class="grid grid-cols-2 gap-2 mt-2">
+                                        <a href="{{ route('admin.guest.export.excel', request()->query()) }}"
+                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                            Export Excel
+                                        </a>
+                                        <a href="{{ route('admin.guest.export.pdf', request()->query()) }}"
+                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                            Export PDF
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- SURVEY --}}
+                            <div x-data="{ open: {{ request()->routeIs('admin.survey.*') ? 'true' : 'false' }} }"
+                                class="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+                                <button type="button" @click="open = !open"
+                                    class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold transition
+                                    {{ request()->routeIs('admin.survey.*') ? 'bg-white/10 text-white' : 'text-white/85 hover:bg-white/10 hover:text-white' }}">
+                                    <span class="flex items-center gap-3">
+                                        <x-icon name="star" class="h-5 w-5" /> Survey
+                                    </span>
+                                    <span class="inline-flex items-center gap-2 text-[11px] text-white/55">
+                                        <span>Menu</span>
+                                        <span class="transition"
+                                            :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">▾</span>
+                                    </span>
+                                </button>
+
+                                <div x-show="open" x-transition.opacity class="px-2 pb-2" style="display:none;">
+                                    <a href="{{ route('admin.survey.index') }}"
+                                        class="mt-1 flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition
+                                        {{ request()->routeIs('admin.survey.index') ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white' }}">
+                                        <span>Daftar Survey</span>
+                                        <span class="text-white/45">/admin/survey</span>
+                                    </a>
+
+                                    <div class="mt-2 grid grid-cols-1 gap-2">
+                                        <a href="{{ route('admin.survey.ikm') }}"
+                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                            Ringkasan IKM
+                                        </a>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-2 mt-2">
+                                        <a href="{{ route('admin.survey.export.excel', request()->query()) }}"
+                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                            Export Excel
+                                        </a>
+                                        <a href="{{ route('admin.survey.export.pdf', request()->query()) }}"
+                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                            Export PDF
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- USERS --}}
+                            <div x-data="{ open: {{ request()->routeIs('admin.users.*') ? 'true' : 'false' }} }"
+                                class="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+                                <button type="button" @click="open = !open"
+                                    class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold transition
+                                    {{ request()->routeIs('admin.users.*') ? 'bg-white/10 text-white' : 'text-white/85 hover:bg-white/10 hover:text-white' }}">
+                                    <span class="flex items-center gap-3">
+                                        <x-icon name="users" class="h-5 w-5" /> Users
+                                    </span>
+                                    <span class="inline-flex items-center gap-2 text-[11px] text-white/55">
+                                        <span>Menu</span>
+                                        <span class="transition"
+                                            :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">▾</span>
+                                    </span>
+                                </button>
+
+                                <div x-show="open" x-transition.opacity class="px-2 pb-2" style="display:none;">
+                                    <a href="{{ route('admin.users.index') }}"
+                                        class="mt-1 flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition
+                                        {{ request()->routeIs('admin.users.index') ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white' }}">
+                                        <span>Manajemen Users</span>
+                                        <span class="text-white/45">/admin/users</span>
+                                    </a>
+
+                                    <div class="mt-2 grid grid-cols-1 gap-2">
+                                        <a href="{{ route('admin.users.security') }}"
+                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                            Keamanan Registrasi
+                                        </a>
+                                        <a href="{{ route('admin.users.create') }}"
+                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                            Tambah User
+                                        </a>
+                                        <a href="{{ route('admin.users.scoring') }}"
+                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                            Aturan Penilaian
+                                        </a>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-2 mt-2">
+                                        <a href="{{ route('admin.users.export.excel', request()->query()) }}"
+                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                            Export Excel
+                                        </a>
+                                        <a href="{{ route('admin.users.export.pdf', request()->query()) }}"
+                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                            Export PDF
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </nav>
@@ -171,7 +328,7 @@
             </header>
 
             {{-- CONTENT --}}
-            <main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+            <main id="adminMainScroll" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
                 @yield('content')
             </main>
 
@@ -179,5 +336,58 @@
     </div>
 
 </body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const main = document.getElementById('adminMainScroll');
+        if (!main) return;
+
+        const scrollToHash = (hash) => {
+            if (!hash || hash === '#') return;
+            const id = hash.startsWith('#') ? hash.slice(1) : hash;
+            if (!id) return;
+
+            const target = document.getElementById(id);
+            if (!target) return;
+
+            const mainRect = main.getBoundingClientRect();
+            const targetRect = target.getBoundingClientRect();
+            const top = targetRect.top - mainRect.top + main.scrollTop - 12;
+            main.scrollTo({
+                top: Math.max(0, top),
+                behavior: 'smooth'
+            });
+        };
+
+        // If page loads with a hash, scroll within the main container.
+        if (window.location.hash) {
+            setTimeout(() => scrollToHash(window.location.hash), 0);
+        }
+
+        // Intercept same-page hash links (works for sidebar submenu).
+        document.body.addEventListener('click', (e) => {
+            const link = e.target?.closest?.('a[href]');
+            if (!link) return;
+
+            const href = link.getAttribute('href') || '';
+            if (!href.includes('#')) return;
+
+            const url = new URL(link.href, window.location.href);
+
+            // If navigating to another path, let the browser load that page.
+            if (url.pathname !== window.location.pathname) return;
+
+            if (!url.hash) return;
+            e.preventDefault();
+
+            history.pushState(null, '', url.hash);
+            scrollToHash(url.hash);
+        });
+
+        window.addEventListener('hashchange', () => {
+            scrollToHash(window.location.hash);
+        });
+    });
+</script>
 
 </html>

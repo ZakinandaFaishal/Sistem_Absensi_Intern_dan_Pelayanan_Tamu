@@ -61,6 +61,20 @@ class AttendanceController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        return view('admin.attendance.list', [
+            'attendances' => $attendances,
+            'filters' => [
+                'q' => $q,
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
+                'sort' => $sort,
+                'dir' => $dir,
+            ],
+        ]);
+    }
+
+    public function rules(Request $request)
+    {
         $settings = [
             'office_lat' => AppSettings::getString(AppSettings::OFFICE_LAT, ''),
             'office_lng' => AppSettings::getString(AppSettings::OFFICE_LNG, ''),
@@ -72,18 +86,16 @@ class AttendanceController extends Controller
             'checkout_end' => AppSettings::getString(AppSettings::CHECKOUT_END, '16:30'),
         ];
 
+        return view('admin.attendance.rules', [
+            'settings' => $settings,
+        ]);
+    }
+
+    public function locations(Request $request)
+    {
         $locations = Location::query()->orderBy('name')->get();
 
-        return view('admin.attendance.index', [
-            'attendances' => $attendances,
-            'filters' => [
-                'q' => $q,
-                'date_from' => $dateFrom,
-                'date_to' => $dateTo,
-                'sort' => $sort,
-                'dir' => $dir,
-            ],
-            'settings' => $settings,
+        return view('admin.attendance.locations', [
             'locations' => $locations,
         ]);
     }
