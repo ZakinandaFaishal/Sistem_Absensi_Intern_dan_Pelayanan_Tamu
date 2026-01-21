@@ -93,7 +93,7 @@
         <div class="w-full space-y-6">
 
             {{-- Settings: Aturan Presensi --}}
-            <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div id="aturan-presensi" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div class="px-6 py-5 border-b border-slate-200">
                     <p class="text-sm font-semibold text-slate-900">Aturan Presensi</p>
                     <p class="mt-0.5 text-xs text-slate-500">Geofence radius + pembatasan jam check-in/check-out.</p>
@@ -206,7 +206,7 @@
             </div>
 
             {{-- Settings: Lokasi / Dinas --}}
-            <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div id="lokasi-dinas" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div class="px-6 py-5 border-b border-slate-200">
                     <p class="text-sm font-semibold text-slate-900">Lokasi / Dinas</p>
                     <p class="mt-0.5 text-xs text-slate-500">Kelola titik koordinat untuk penugasan peserta magang.</p>
@@ -336,7 +336,7 @@
             </div>
 
             {{-- Card --}}
-            <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div id="daftar-presensi" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div
                     class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
                     <div class="flex items-center gap-2">

@@ -89,7 +89,7 @@
         @endif
 
         {{-- CARD --}}
-        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div id="daftar-kunjungan" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div
                 class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
                 <div class="flex items-center gap-2">

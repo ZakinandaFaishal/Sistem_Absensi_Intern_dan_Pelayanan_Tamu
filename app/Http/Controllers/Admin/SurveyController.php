@@ -140,8 +140,107 @@ class SurveyController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.survey.index', [
+        return view('admin.survey.list', [
             'surveys' => $surveys,
+        ]);
+    }
+
+    public function ikm(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $avgMin = (string) $request->query('avg_min', '');
+        $from = (string) $request->query('from', '');
+        $to = (string) $request->query('to', '');
+
+        $avgExpr = '((guest_surveys.q1 + guest_surveys.q2 + guest_surveys.q3 + guest_surveys.q4 + guest_surveys.q5 + guest_surveys.q6 + guest_surveys.q7 + guest_surveys.q8 + guest_surveys.q9) / 9.0)';
+
+        $applyFilters = function ($builder) use ($q, $avgMin, $from, $to, $avgExpr) {
+            if ($q !== '') {
+                $builder->where(function ($qb) use ($q) {
+                    $qb
+                        ->where('comment', 'like', "%{$q}%")
+                        ->orWhereHas('visit', function ($v) use ($q) {
+                            $v
+                                ->where('name', 'like', "%{$q}%")
+                                ->orWhere('purpose', 'like', "%{$q}%")
+                                ->orWhere('email', 'like', "%{$q}%");
+                        });
+                });
+            }
+
+            if ($from !== '') {
+                $builder->whereDate('submitted_at', '>=', $from);
+            }
+            if ($to !== '') {
+                $builder->whereDate('submitted_at', '<=', $to);
+            }
+
+            if ($avgMin !== '') {
+                $min = (float) $avgMin;
+                $builder
+                    ->whereNotNull('q1')
+                    ->whereNotNull('q2')
+                    ->whereNotNull('q3')
+                    ->whereNotNull('q4')
+                    ->whereNotNull('q5')
+                    ->whereNotNull('q6')
+                    ->whereNotNull('q7')
+                    ->whereNotNull('q8')
+                    ->whereNotNull('q9')
+                    ->whereRaw("{$avgExpr} >= ?", [$min]);
+            }
+        };
+
+        $summaryQuery = GuestSurvey::query()->with('visit');
+        $applyFilters($summaryQuery);
+        $summaryQuery
+            ->whereNotNull('q1')
+            ->whereNotNull('q2')
+            ->whereNotNull('q3')
+            ->whereNotNull('q4')
+            ->whereNotNull('q5')
+            ->whereNotNull('q6')
+            ->whereNotNull('q7')
+            ->whereNotNull('q8')
+            ->whereNotNull('q9');
+
+        $agg = (clone $summaryQuery)
+            ->selectRaw('COUNT(*) as n')
+            ->selectRaw('AVG(q1) as avg_q1')
+            ->selectRaw('AVG(q2) as avg_q2')
+            ->selectRaw('AVG(q3) as avg_q3')
+            ->selectRaw('AVG(q4) as avg_q4')
+            ->selectRaw('AVG(q5) as avg_q5')
+            ->selectRaw('AVG(q6) as avg_q6')
+            ->selectRaw('AVG(q7) as avg_q7')
+            ->selectRaw('AVG(q8) as avg_q8')
+            ->selectRaw('AVG(q9) as avg_q9')
+            ->first();
+
+        $avgByKey = [
+            'q1' => $agg?->avg_q1 !== null ? (float) $agg->avg_q1 : null,
+            'q2' => $agg?->avg_q2 !== null ? (float) $agg->avg_q2 : null,
+            'q3' => $agg?->avg_q3 !== null ? (float) $agg->avg_q3 : null,
+            'q4' => $agg?->avg_q4 !== null ? (float) $agg->avg_q4 : null,
+            'q5' => $agg?->avg_q5 !== null ? (float) $agg->avg_q5 : null,
+            'q6' => $agg?->avg_q6 !== null ? (float) $agg->avg_q6 : null,
+            'q7' => $agg?->avg_q7 !== null ? (float) $agg->avg_q7 : null,
+            'q8' => $agg?->avg_q8 !== null ? (float) $agg->avg_q8 : null,
+            'q9' => $agg?->avg_q9 !== null ? (float) $agg->avg_q9 : null,
+        ];
+
+        $overall = Ikm::fromAverages($avgByKey);
+
+        $ikmSummary = [
+            'n' => (int) ($agg?->n ?? 0),
+            'avg_by_key' => $avgByKey,
+            'overall_nrr' => (float) $overall['nrr'],
+            'overall_ikm' => (float) $overall['ikm'],
+            'mutu' => (string) $overall['mutu'],
+            'kinerja' => (string) $overall['kinerja'],
+        ];
+
+        return view('admin.survey.ikm', [
             'ikmSummary' => $ikmSummary,
         ]);
     }

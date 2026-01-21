@@ -140,13 +140,21 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         // ROUTE UTAMA ADMIN
         // ======================================================
         Route::get('/presensi', [AdminAttendanceController::class, 'index'])->name('attendance.index');
+        Route::get('/presensi/aturan', [AdminAttendanceController::class, 'rules'])->name('attendance.rules');
+        Route::get('/presensi/lokasi', [AdminAttendanceController::class, 'locations'])->name('attendance.locations');
         Route::post('/presensi/settings', [AdminAttendanceController::class, 'updateSettings'])->name('attendance.settings');
         Route::post('/presensi/locations', [AdminAttendanceController::class, 'storeLocation'])->name('attendance.locations.store');
         Route::patch('/presensi/locations/{location}', [AdminAttendanceController::class, 'updateLocation'])->name('attendance.locations.update');
         Route::delete('/presensi/locations/{location}', [AdminAttendanceController::class, 'destroyLocation'])->name('attendance.locations.destroy');
         Route::post('/presensi/{attendance}/fake-gps', [AdminAttendanceController::class, 'toggleFakeGps'])->name('attendance.fake-gps');
         Route::get('/survey', [AdminSurveyController::class, 'index'])->name('survey.index');
+        Route::get('/survey/ikm', [AdminSurveyController::class, 'ikm'])->name('survey.ikm');
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+
+        Route::get('/users/keamanan-registrasi', [AdminUserController::class, 'security'])->name('users.security');
+        Route::get('/users/aturan-penilaian', [AdminUserController::class, 'scoring'])->name('users.scoring');
+        Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
+        Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
 
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
         Route::post('/users/registration-security', [AdminUserController::class, 'updateRegistrationSecurity'])->name('users.registration-security');
