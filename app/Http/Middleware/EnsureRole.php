@@ -27,7 +27,14 @@ class EnsureRole
             abort(403);
         }
 
-        if (!in_array(($user->role ?? null), $roles, true)) {
+        $userRole = $user->role ?? null;
+
+        // Backward-compat: 'admin' was renamed to 'super_admin'.
+        if ($userRole === 'admin') {
+            $userRole = 'super_admin';
+        }
+
+        if (!in_array($userRole, $roles, true)) {
             abort(403);
         }
 

@@ -3,9 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\Location;
+use App\Models\Dinas;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\AppSettings;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -20,18 +22,38 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        $admin = User::query()->where('email', 'test@example.com')->first();
-        if (!$admin) {
-            $admin = User::factory()->create([
+        $superAdmin = User::query()->where('email', 'test@example.com')->first();
+        if (!$superAdmin) {
+            $superAdmin = User::factory()->create([
                 'name' => 'Test User',
                 'email' => 'test@example.com',
-                'role' => 'admin',
+                'role' => 'super_admin',
             ]);
         } else {
-            $admin->forceFill([
-                'role' => 'admin',
+            $superAdmin->forceFill([
+                'role' => 'super_admin',
                 'active' => true,
             ])->save();
+        }
+
+        // Pastikan hanya ada 1 super admin.
+        // Semua user lain yang masih ber-role super_admin akan diturunkan rolenya.
+        User::query()
+            ->where('role', 'super_admin')
+            ->where('id', '!=', $superAdmin->id)
+            ->get()
+            ->each(function (User $u) {
+                // admin_dinas wajib punya dinas_id, jadi fallback ke intern bila kosong.
+                $newRole = !empty($u->dinas_id) ? 'admin_dinas' : 'intern';
+                $u->forceFill(['role' => $newRole])->save();
+            });
+
+        $defaultDinas = null;
+        if (Schema::hasTable('dinas')) {
+            $defaultDinas = Dinas::query()->updateOrCreate(
+                ['code' => 'KOMINFO'],
+                ['name' => 'Diskominfo Kab. Magelang', 'code' => 'KOMINFO']
+            );
         }
 
         // Default rules (can be edited in Admin UI).
@@ -47,6 +69,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Diskominfo Kab. Magelang',
                 'code' => 'KOMINFO',
+                'dinas_id' => (Schema::hasColumn('locations', 'dinas_id') && $defaultDinas) ? $defaultDinas->id : null,
                 'lat' => $officeLat !== null && $officeLat !== '' ? (float) $officeLat : null,
                 'lng' => $officeLng !== null && $officeLng !== '' ? (float) $officeLng : null,
             ]
@@ -59,9 +82,6 @@ class DatabaseSeeder extends Seeder
         Setting::setValue(AppSettings::CHECKIN_END, Setting::getValue(AppSettings::CHECKIN_END) ?? '12:00');
         Setting::setValue(AppSettings::CHECKOUT_START, Setting::getValue(AppSettings::CHECKOUT_START) ?? '13:00');
         Setting::setValue(AppSettings::CHECKOUT_END, Setting::getValue(AppSettings::CHECKOUT_END) ?? '16:30');
-
-        Setting::setValue(AppSettings::SCORE_POINTS_PER_ATTENDANCE, Setting::getValue(AppSettings::SCORE_POINTS_PER_ATTENDANCE) ?? '4');
-        Setting::setValue(AppSettings::SCORE_MAX, Setting::getValue(AppSettings::SCORE_MAX) ?? '100');
 
         Setting::setValue(
             AppSettings::CERTIFICATE_DEFAULT_SIGNATORY_NAME,

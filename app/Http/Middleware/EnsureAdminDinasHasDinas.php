@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class EnsureAdmin
+class EnsureAdminDinasHasDinas
 {
     /**
      * @param  Closure(Request): Response  $next
@@ -15,12 +15,11 @@ class EnsureAdmin
     {
         $user = $request->user();
 
-        $role = $user->role ?? null;
-        if ($role === 'admin') {
-            $role = 'super_admin';
+        if (!$user) {
+            abort(403);
         }
 
-        if (!$user || $role !== 'super_admin') {
+        if (($user->role ?? null) === 'admin_dinas' && empty($user->dinas_id)) {
             abort(403);
         }
 

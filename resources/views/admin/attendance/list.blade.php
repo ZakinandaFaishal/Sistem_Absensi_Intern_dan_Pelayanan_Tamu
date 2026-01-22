@@ -130,8 +130,9 @@
 
                 <div class="p-6">
                     {{-- Filter + Sorting --}}
-                    <form method="GET" action="{{ route('admin.attendance.index') }}"
+                    <form id="attendanceFilterForm" method="GET" action="{{ route('admin.attendance.index') }}"
                         class="mb-5 grid grid-cols-1 md:grid-cols-12 gap-3">
+                        <input type="hidden" name="page" value="1">
                         <div class="md:col-span-4">
                             <label class="text-xs font-semibold text-slate-700">Cari Nama</label>
                             <input name="q" value="{{ $filters['q'] ?? '' }}"
@@ -171,13 +172,54 @@
                             </div>
                         </div>
 
-                        <div class="md:col-span-12 flex items-center justify-end gap-2">
-                            <a href="{{ route('admin.attendance.index') }}"
-                                class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">Reset</a>
-                            <button type="submit"
-                                class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">Terapkan</button>
+                        <div class="md:col-span-12 flex items-center justify-end">
+                            <div class="text-xs text-slate-500">Filter diterapkan otomatis.</div>
                         </div>
                     </form>
+
+                    <script>
+                        (function() {
+                            const form = document.getElementById('attendanceFilterForm');
+                            if (!form) return;
+
+                            const qInput = form.querySelector('input[name="q"]');
+                            const dateFrom = form.querySelector('input[name="date_from"]');
+                            const dateTo = form.querySelector('input[name="date_to"]');
+                            const sortSelect = form.querySelector('select[name="sort"]');
+                            const dirSelect = form.querySelector('select[name="dir"]');
+
+                            let timer = null;
+                            let isComposing = false;
+
+                            const submit = () => {
+                                const pageInput = form.querySelector('input[name="page"]');
+                                if (pageInput) pageInput.value = '1';
+                                form.submit();
+                            };
+
+                            const debounceSubmit = () => {
+                                if (isComposing) return;
+                                if (timer) window.clearTimeout(timer);
+                                timer = window.setTimeout(submit, 900);
+                            };
+
+                            if (qInput) {
+                                qInput.addEventListener('compositionstart', () => {
+                                    isComposing = true;
+                                });
+                                qInput.addEventListener('compositionend', () => {
+                                    isComposing = false;
+                                    debounceSubmit();
+                                });
+                                qInput.addEventListener('input', debounceSubmit);
+                            }
+
+                            [dateFrom, dateTo, sortSelect, dirSelect].forEach((el) => {
+                                if (!el) return;
+                                el.addEventListener('change', submit);
+                            });
+                        })();
+                    </script>
 
                     @if (session('status'))
                         <div
@@ -196,8 +238,6 @@
                                     <th class="py-3 pr-4 font-semibold">Check-in</th>
                                     <th class="py-3 pr-4 font-semibold">Check-out</th>
                                     <th class="py-3 pr-4 font-semibold">Akurasi</th>
-                                    <th class="py-3 pr-4 font-semibold">Fake GPS</th>
-                                    <th class="py-3 pr-0 font-semibold text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
@@ -217,30 +257,10 @@
                                         <td class="py-3 pr-4 whitespace-nowrap text-slate-700">
                                             {{ $a->accuracy_m !== null ? number_format((float) $a->accuracy_m, 0, ',', '.') . ' m' : '-' }}
                                         </td>
-                                        <td class="py-3 pr-4 whitespace-nowrap">
-                                            @if ($a->is_fake_gps)
-                                                <span
-                                                    class="inline-flex items-center rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-800">Ya</span>
-                                            @else
-                                                <span
-                                                    class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">Tidak</span>
-                                            @endif
-                                        </td>
-                                        <td class="py-3 pr-0 whitespace-nowrap text-right">
-                                            <form method="POST" action="{{ route('admin.attendance.fake-gps', $a) }}"
-                                                class="inline-block"
-                                                onsubmit="return confirm('Ubah flag Fake GPS untuk presensi ini?');">
-                                                @csrf
-                                                <button type="submit"
-                                                    class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-                                                    Toggle Fake GPS
-                                                </button>
-                                            </form>
-                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="py-10 text-center text-slate-600">Belum ada data
+                                        <td colspan="6" class="py-10 text-center text-slate-600">Belum ada data
                                             presensi.</td>
                                     </tr>
                                 @endforelse

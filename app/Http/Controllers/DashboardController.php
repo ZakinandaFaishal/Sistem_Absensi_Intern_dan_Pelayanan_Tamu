@@ -10,8 +10,17 @@ class DashboardController
     {
         $user = $request->user();
 
-        if (($user->role ?? null) === 'admin') {
-            return view('dashboard');
+        $role = $user->role ?? null;
+        if ($role === 'admin') {
+            $role = 'super_admin';
+        }
+
+        if ($role === 'super_admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if ($role === 'admin_dinas') {
+            return redirect()->route('admin.attendance.manage');
         }
 
         return redirect()->route('intern.userProfile');
