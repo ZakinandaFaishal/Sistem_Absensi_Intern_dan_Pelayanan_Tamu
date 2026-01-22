@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\AttendanceRule;
+use App\Models\Dinas;
 use App\Models\Location;
 use App\Models\Setting;
 use App\Support\AppSettings;
@@ -19,8 +21,46 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class AttendanceController extends Controller
 {
+    private function resolveDinasContext(Request $request, bool $fromPost = false): array
+    {
+        $user = $request->user();
+        $isSuperAdmin = in_array(($user?->role ?? null), ['super_admin'], true);
+        $isAdminDinas = in_array(($user?->role ?? null), ['admin_dinas'], true);
+
+        if ($isAdminDinas) {
+            $dinasId = (int) ($user?->dinas_id ?? 0);
+            $dinas = $dinasId > 0 ? Dinas::query()->find($dinasId) : null;
+            return [
+                'dinasId' => $dinasId,
+                'dinas' => $dinas,
+                'dinasOptions' => collect(),
+                'isSuperAdmin' => false,
+            ];
+        }
+
+        if ($isSuperAdmin) {
+            $dinasOptions = Dinas::query()->orderBy('name')->get();
+            $raw = $fromPost ? $request->input('dinas_id') : $request->query('dinas_id');
+            $dinasId = $raw !== null && $raw !== '' ? (int) $raw : 0;
+            $dinas = $dinasId > 0 ? $dinasOptions->firstWhere('id', $dinasId) : null;
+
+            return [
+                'dinasId' => $dinasId,
+                'dinas' => $dinas,
+                'dinasOptions' => $dinasOptions,
+                'isSuperAdmin' => true,
+            ];
+        }
+
+        abort(403);
+    }
+
     public function index(Request $request)
     {
+        if (($request->user()?->role ?? null) !== 'super_admin') {
+            abort(403);
+        }
+
         $q = (string) $request->query('q', '');
         $dateFrom = (string) $request->query('date_from', '');
         $dateTo = (string) $request->query('date_to', '');
@@ -73,36 +113,124 @@ class AttendanceController extends Controller
         ]);
     }
 
+    public function manage(Request $request)
+    {
+        $ctx = $this->resolveDinasContext($request);
+
+        if (($ctx['isSuperAdmin'] ?? false) && (int) ($ctx['dinasId'] ?? 0) <= 0) {
+            $firstDinasId = Dinas::query()->orderBy('name')->value('id');
+            if ($firstDinasId) {
+                return redirect()->route('admin.attendance.manage', ['dinas_id' => $firstDinasId]);
+            }
+        }
+
+        $dinasId = (int) ($ctx['dinasId'] ?? 0);
+        $rule = $dinasId > 0
+            ? AttendanceRule::query()->firstOrCreate(['dinas_id' => $dinasId])
+            : null;
+
+        $settings = [
+            'office_lat' => $rule?->office_lat !== null ? (string) $rule->office_lat : AppSettings::getString(AppSettings::OFFICE_LAT, ''),
+            'office_lng' => $rule?->office_lng !== null ? (string) $rule->office_lng : AppSettings::getString(AppSettings::OFFICE_LNG, ''),
+            'radius_m' => $rule?->radius_m ?? AppSettings::getInt(AppSettings::RADIUS_M, 50),
+            'max_accuracy_m' => $rule?->max_accuracy_m ?? AppSettings::getInt(AppSettings::MAX_ACCURACY_M, 50),
+            'checkin_start' => $rule?->checkin_start ?? AppSettings::getString(AppSettings::CHECKIN_START, '08:00'),
+            'checkin_end' => $rule?->checkin_end ?? AppSettings::getString(AppSettings::CHECKIN_END, '12:00'),
+            'checkout_start' => $rule?->checkout_start ?? AppSettings::getString(AppSettings::CHECKOUT_START, '13:00'),
+            'checkout_end' => $rule?->checkout_end ?? AppSettings::getString(AppSettings::CHECKOUT_END, '16:30'),
+        ];
+
+        $locations = collect();
+        if (($ctx['isSuperAdmin'] ?? false) && $dinasId > 0) {
+            $locations = Location::query()
+                ->with('dinas')
+                ->where('dinas_id', $dinasId)
+                ->orderBy('name')
+                ->get();
+        }
+
+        return view('admin.attendance.manage', [
+            'settings' => $settings,
+            'locations' => $locations,
+            'dinasOptions' => $ctx['dinasOptions'] ?? collect(),
+            'activeDinas' => $ctx['dinas'] ?? null,
+            'activeDinasId' => (int) ($ctx['dinasId'] ?? 0),
+            'isSuperAdmin' => (bool) ($ctx['isSuperAdmin'] ?? false),
+            'noDinas' => (bool) (($ctx['isSuperAdmin'] ?? false) && (($ctx['dinasOptions'] ?? collect())->count() === 0)),
+        ]);
+    }
+
     public function rules(Request $request)
     {
+        $ctx = $this->resolveDinasContext($request);
+
+        if (($ctx['isSuperAdmin'] ?? false) && (int) ($ctx['dinasId'] ?? 0) <= 0) {
+            $firstDinasId = Dinas::query()->orderBy('name')->value('id');
+            if ($firstDinasId) {
+                return redirect()->route('admin.attendance.rules', ['dinas_id' => $firstDinasId]);
+            }
+        }
+
+        $dinasId = (int) ($ctx['dinasId'] ?? 0);
+        $rule = $dinasId > 0
+            ? AttendanceRule::query()->firstOrCreate(['dinas_id' => $dinasId])
+            : null;
+
         $settings = [
-            'office_lat' => AppSettings::getString(AppSettings::OFFICE_LAT, ''),
-            'office_lng' => AppSettings::getString(AppSettings::OFFICE_LNG, ''),
-            'radius_m' => AppSettings::getInt(AppSettings::RADIUS_M, 50),
-            'max_accuracy_m' => AppSettings::getInt(AppSettings::MAX_ACCURACY_M, 50),
-            'checkin_start' => AppSettings::getString(AppSettings::CHECKIN_START, '08:00'),
-            'checkin_end' => AppSettings::getString(AppSettings::CHECKIN_END, '12:00'),
-            'checkout_start' => AppSettings::getString(AppSettings::CHECKOUT_START, '13:00'),
-            'checkout_end' => AppSettings::getString(AppSettings::CHECKOUT_END, '16:30'),
+            'office_lat' => $rule?->office_lat !== null ? (string) $rule->office_lat : AppSettings::getString(AppSettings::OFFICE_LAT, ''),
+            'office_lng' => $rule?->office_lng !== null ? (string) $rule->office_lng : AppSettings::getString(AppSettings::OFFICE_LNG, ''),
+            'radius_m' => $rule?->radius_m ?? AppSettings::getInt(AppSettings::RADIUS_M, 50),
+            'max_accuracy_m' => $rule?->max_accuracy_m ?? AppSettings::getInt(AppSettings::MAX_ACCURACY_M, 50),
+            'checkin_start' => $rule?->checkin_start ?? AppSettings::getString(AppSettings::CHECKIN_START, '08:00'),
+            'checkin_end' => $rule?->checkin_end ?? AppSettings::getString(AppSettings::CHECKIN_END, '12:00'),
+            'checkout_start' => $rule?->checkout_start ?? AppSettings::getString(AppSettings::CHECKOUT_START, '13:00'),
+            'checkout_end' => $rule?->checkout_end ?? AppSettings::getString(AppSettings::CHECKOUT_END, '16:30'),
         ];
 
         return view('admin.attendance.rules', [
             'settings' => $settings,
+            'dinasOptions' => $ctx['dinasOptions'] ?? collect(),
+            'activeDinas' => $ctx['dinas'] ?? null,
+            'activeDinasId' => (int) ($ctx['dinasId'] ?? 0),
+            'isSuperAdmin' => (bool) ($ctx['isSuperAdmin'] ?? false),
         ]);
     }
 
     public function locations(Request $request)
     {
-        $locations = Location::query()->orderBy('name')->get();
+        $ctx = $this->resolveDinasContext($request);
+
+        $locationsQuery = Location::query()->with('dinas')->orderBy('name');
+        $dinasId = (int) ($ctx['dinasId'] ?? 0);
+
+        if (!($ctx['isSuperAdmin'] ?? false)) {
+            $locationsQuery->where('dinas_id', $dinasId);
+        } elseif ($dinasId > 0) {
+            $locationsQuery->where('dinas_id', $dinasId);
+        }
+
+        $locations = $locationsQuery->get();
 
         return view('admin.attendance.locations', [
             'locations' => $locations,
+            'dinasOptions' => $ctx['dinasOptions'] ?? collect(),
+            'activeDinas' => $ctx['dinas'] ?? null,
+            'activeDinasId' => (int) ($ctx['dinasId'] ?? 0),
+            'isSuperAdmin' => (bool) ($ctx['isSuperAdmin'] ?? false),
         ]);
     }
 
     public function storeLocation(Request $request)
     {
+        $ctx = $this->resolveDinasContext($request, true);
+        $dinasId = (int) ($ctx['dinasId'] ?? 0);
+
+        if (($ctx['isSuperAdmin'] ?? false) && $dinasId <= 0) {
+            return back()->withErrors(['dinas_id' => 'Pilih dinas terlebih dahulu.']);
+        }
+
         $validated = $request->validate([
+            'dinas_id' => ['nullable', 'integer', 'exists:dinas,id'],
             'name' => ['required', 'string', 'max:255'],
             'code' => ['nullable', 'string', 'max:50', Rule::unique('locations', 'code')],
             'lat' => ['required', 'numeric', 'between:-90,90'],
@@ -111,6 +239,7 @@ class AttendanceController extends Controller
         ]);
 
         Location::query()->create([
+            'dinas_id' => $dinasId,
             'name' => $validated['name'],
             'code' => ($validated['code'] ?? null) ?: null,
             'lat' => (float) $validated['lat'],
@@ -118,11 +247,24 @@ class AttendanceController extends Controller
             'address' => ($validated['address'] ?? null) ?: null,
         ]);
 
+        if (($request->user()?->role ?? null) === 'admin_dinas') {
+            logger()->info('admin_dinas created location', [
+                'actor_id' => $request->user()?->id,
+                'dinas_id' => $dinasId,
+                'location_name' => $validated['name'],
+            ]);
+        }
+
         return back()->with('status', 'Lokasi berhasil ditambahkan.');
     }
 
     public function updateLocation(Request $request, Location $location)
     {
+        $user = $request->user();
+        if (($user?->role ?? null) === 'admin_dinas' && (int) ($user?->dinas_id ?? 0) !== (int) ($location->dinas_id ?? 0)) {
+            abort(404);
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'code' => ['nullable', 'string', 'max:50', Rule::unique('locations', 'code')->ignore($location->id)],
@@ -139,11 +281,32 @@ class AttendanceController extends Controller
             'address' => ($validated['address'] ?? null) ?: null,
         ])->save();
 
+        if (($user?->role ?? null) === 'admin_dinas') {
+            logger()->info('admin_dinas updated location', [
+                'actor_id' => $user?->id,
+                'dinas_id' => (int) ($user?->dinas_id ?? 0),
+                'location_id' => $location->id,
+            ]);
+        }
+
         return back()->with('status', 'Lokasi berhasil diperbarui.');
     }
 
     public function destroyLocation(Request $request, Location $location)
     {
+        $user = $request->user();
+        if (($user?->role ?? null) === 'admin_dinas' && (int) ($user?->dinas_id ?? 0) !== (int) ($location->dinas_id ?? 0)) {
+            abort(404);
+        }
+
+        if (($user?->role ?? null) === 'admin_dinas') {
+            logger()->info('admin_dinas deleted location', [
+                'actor_id' => $user?->id,
+                'dinas_id' => (int) ($user?->dinas_id ?? 0),
+                'location_id' => $location->id,
+            ]);
+        }
+
         $location->delete();
 
         return back()->with('status', 'Lokasi berhasil dihapus.');
@@ -151,6 +314,10 @@ class AttendanceController extends Controller
 
     public function toggleFakeGps(Request $request, Attendance $attendance)
     {
+        if (($request->user()?->role ?? null) !== 'super_admin') {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'note' => ['nullable', 'string', 'max:255'],
         ]);
@@ -178,7 +345,15 @@ class AttendanceController extends Controller
 
     public function updateSettings(Request $request)
     {
+        $ctx = $this->resolveDinasContext($request, true);
+        $dinasId = (int) ($ctx['dinasId'] ?? 0);
+
+        if (($ctx['isSuperAdmin'] ?? false) && $dinasId <= 0) {
+            return back()->withErrors(['dinas_id' => 'Pilih dinas terlebih dahulu.']);
+        }
+
         $validated = $request->validate([
+            'dinas_id' => ['nullable', 'integer', 'exists:dinas,id'],
             'office_lat' => ['nullable', 'numeric', 'between:-90,90'],
             'office_lng' => ['nullable', 'numeric', 'between:-180,180'],
             // Strict(maksimal radius).
@@ -190,20 +365,36 @@ class AttendanceController extends Controller
             'checkout_end' => ['required', 'date_format:H:i'],
         ]);
 
-        Setting::setValue(AppSettings::OFFICE_LAT, $validated['office_lat'] !== null ? (string) $validated['office_lat'] : '');
-        Setting::setValue(AppSettings::OFFICE_LNG, $validated['office_lng'] !== null ? (string) $validated['office_lng'] : '');
-        Setting::setValue(AppSettings::RADIUS_M, (string) $validated['radius_m']);
-        Setting::setValue(AppSettings::MAX_ACCURACY_M, (string) $validated['max_accuracy_m']);
-        Setting::setValue(AppSettings::CHECKIN_START, (string) $validated['checkin_start']);
-        Setting::setValue(AppSettings::CHECKIN_END, (string) $validated['checkin_end']);
-        Setting::setValue(AppSettings::CHECKOUT_START, (string) $validated['checkout_start']);
-        Setting::setValue(AppSettings::CHECKOUT_END, (string) $validated['checkout_end']);
+        AttendanceRule::query()->updateOrCreate(
+            ['dinas_id' => $dinasId],
+            [
+                'office_lat' => $validated['office_lat'] !== null ? (string) $validated['office_lat'] : null,
+                'office_lng' => $validated['office_lng'] !== null ? (string) $validated['office_lng'] : null,
+                'radius_m' => (int) $validated['radius_m'],
+                'max_accuracy_m' => (int) $validated['max_accuracy_m'],
+                'checkin_start' => (string) $validated['checkin_start'],
+                'checkin_end' => (string) $validated['checkin_end'],
+                'checkout_start' => (string) $validated['checkout_start'],
+                'checkout_end' => (string) $validated['checkout_end'],
+            ]
+        );
+
+        if (($request->user()?->role ?? null) === 'admin_dinas') {
+            logger()->info('admin_dinas updated attendance rules', [
+                'actor_id' => $request->user()?->id,
+                'dinas_id' => $dinasId,
+            ]);
+        }
 
         return back()->with('status', 'Aturan presensi berhasil diperbarui.');
     }
 
     public function exportPdf(Request $request)
     {
+        if (($request->user()?->role ?? null) !== 'super_admin') {
+            abort(403);
+        }
+
         $q = (string) $request->query('q', '');
         $dateFrom = (string) $request->query('date_from', '');
         $dateTo = (string) $request->query('date_to', '');
@@ -278,6 +469,10 @@ class AttendanceController extends Controller
 
     public function exportExcel(Request $request)
     {
+        if (($request->user()?->role ?? null) !== 'super_admin') {
+            abort(403);
+        }
+
         $q = (string) $request->query('q', '');
         $dateFrom = (string) $request->query('date_from', '');
         $dateTo = (string) $request->query('date_to', '');

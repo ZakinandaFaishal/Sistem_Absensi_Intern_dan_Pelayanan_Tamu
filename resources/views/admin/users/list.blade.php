@@ -9,7 +9,6 @@
         // ====== FILTER & SORT STATE (dari query string) ======
         $q = request('q', '');
         $role = request('role', '');
-        $active = request('active', ''); // '', '1', '0'
         $sort = request('sort', 'created_at');
         $dir = request('dir', 'desc');
 
@@ -34,7 +33,7 @@
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h2 class="text-xl font-extrabold tracking-tight text-slate-900">User Management</h2>
-            <p class="mt-1 text-sm text-slate-600">Kelola akun peserta magang & admin.</p>
+            <p class="mt-1 text-sm text-slate-600">Kelola akun peserta magang, admin dinas, & super admin.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -105,7 +104,7 @@
                 class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
                 <div>
                     <h3 class="text-base font-extrabold text-slate-900">Daftar Users</h3>
-                    <p class="text-sm text-slate-500">Kelola role, status aktif, dan aksi akun.</p>
+                    <p class="text-sm text-slate-500">Kelola role, status, dan aksi akun.</p>
                 </div>
                 <div class="text-xs text-slate-500">
                     Total halaman: <span class="font-semibold text-slate-700">{{ $users->lastPage() }}</span>
@@ -115,49 +114,32 @@
 
             {{-- FILTER BAR --}}
             <div class="px-6 pt-5">
-                <form method="GET" action="{{ route('admin.users.index') }}"
+                <form id="usersFilterForm" method="GET" action="{{ route('admin.users.index') }}"
                     class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+
+                    <input type="hidden" name="page" value="1">
 
                     <div class="sm:col-span-5">
                         <label class="block text-xs font-semibold text-slate-600">Cari</label>
-                        <input type="text" name="q" value="{{ $q }}"
+                        <input id="usersQInput" type="text" name="q" value="{{ $q }}"
                             placeholder="Nama / email / username / NIK / telepon…"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
                     </div>
 
                     <div class="sm:col-span-3">
                         <label class="block text-xs font-semibold text-slate-600">Role</label>
-                        <select name="role"
+                        <select id="usersRoleSelect" name="role"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
                             <option value="" @selected($role === '')>Semua</option>
                             <option value="intern" @selected($role === 'intern')>intern</option>
-                            <option value="admin" @selected($role === 'admin')>admin</option>
+                            <option value="admin_dinas" @selected($role === 'admin_dinas')>admin_dinas</option>
                         </select>
                     </div>
 
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-semibold text-slate-600">Status</label>
-                        <select name="active"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
-                            <option value="" @selected($active === '')>Semua</option>
-                            <option value="1" @selected($active === '1')>Aktif</option>
-                            <option value="0" @selected($active === '0')>Nonaktif</option>
-                        </select>
-                    </div>
-
-                    <div class="sm:col-span-2 flex items-end gap-2">
+                    <div class="sm:col-span-4 flex items-end">
                         <input type="hidden" name="sort" value="{{ $sort }}">
                         <input type="hidden" name="dir" value="{{ $dir }}">
-
-                        <button type="submit"
-                            class="w-full inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
-                            Terapkan
-                        </button>
-
-                        <a href="{{ route('admin.users.index') }}"
-                            class="w-full inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-                            Reset
-                        </a>
+                        <div class="w-full text-xs text-slate-500">Filter diterapkan otomatis.</div>
                     </div>
                 </form>
 
@@ -177,6 +159,41 @@
                 </div>
             </div>
 
+            <script>
+                (function() {
+                    const form = document.getElementById('usersFilterForm');
+                    const qInput = document.getElementById('usersQInput');
+                    const roleSelect = document.getElementById('usersRoleSelect');
+                    if (!form || !qInput || !roleSelect) return;
+
+                    let timer = null;
+                    let isComposing = false;
+                    const submit = () => {
+                        // Reset ke halaman 1 saat filter berubah
+                        const pageInput = form.querySelector('input[name="page"]');
+                        if (pageInput) pageInput.value = '1';
+                        form.submit();
+                    };
+
+                    const debounceSubmit = () => {
+                        if (isComposing) return;
+                        if (timer) window.clearTimeout(timer);
+                        // Jeda agak lama supaya user nyaman saat mengetik
+                        timer = window.setTimeout(submit, 900);
+                    };
+
+                    qInput.addEventListener('compositionstart', () => {
+                        isComposing = true;
+                    });
+                    qInput.addEventListener('compositionend', () => {
+                        isComposing = false;
+                        debounceSubmit();
+                    });
+                    qInput.addEventListener('input', debounceSubmit);
+                    roleSelect.addEventListener('change', submit);
+                })();
+            </script>
+
             <div class="p-6">
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
@@ -190,7 +207,6 @@
                                 <th class="py-3 pr-4 font-semibold">Role</th>
                                 <th class="py-3 pr-4 font-semibold">Status</th>
                                 <th class="py-3 pr-4 font-semibold">Nilai</th>
-                                <th class="py-3 pr-4 font-semibold">Aktif</th>
                                 <th class="py-3 pr-0 font-semibold text-right">Aksi</th>
                             </tr>
                         </thead>
@@ -210,24 +226,45 @@
                                     <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->email }}</td>
 
                                     <td class="py-3 pr-4 whitespace-nowrap align-middle">
-                                        <form method="POST" action="{{ route('admin.users.role', $user) }}"
-                                            class="flex items-center gap-2">
-                                            @csrf
-                                            @method('PATCH')
+                                        @if (($user->role ?? 'intern') === 'super_admin')
+                                            <span
+                                                class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                                                super_admin
+                                            </span>
+                                        @else
+                                            <form method="POST" action="{{ route('admin.users.role', $user) }}"
+                                                class="flex items-center gap-2">
+                                                @csrf
+                                                @method('PATCH')
 
-                                            <div class="relative">
-                                                <select name="role"
-                                                    class="appearance-none h-8 rounded-lg border border-slate-200 bg-white pl-3 pr-7 text-xs focus:outline-none focus:ring-2 focus:ring-slate-200">
-                                                    <option value="intern" @selected(($user->role ?? 'intern') === 'intern')>intern</option>
-                                                    <option value="admin" @selected(($user->role ?? null) === 'admin')>admin</option>
-                                                </select>
-                                            </div>
+                                                <div class="relative">
+                                                    <select name="role"
+                                                        class="appearance-none h-8 rounded-lg border border-slate-200 bg-white pl-3 pr-7 text-xs focus:outline-none focus:ring-2 focus:ring-slate-200">
+                                                        <option value="intern" @selected(($user->role ?? 'intern') === 'intern')>intern</option>
+                                                        <option value="admin_dinas" @selected(($user->role ?? null) === 'admin_dinas')>
+                                                            admin_dinas</option>
+                                                    </select>
+                                                </div>
 
-                                            <button type="submit"
-                                                class="h-8 rounded-lg bg-slate-900 px-3 text-xs font-semibold text-white hover:bg-slate-800 transition">
-                                                Simpan
-                                            </button>
-                                        </form>
+                                                <div class="relative">
+                                                    <select name="dinas_id"
+                                                        class="appearance-none h-8 rounded-lg border border-slate-200 bg-white pl-3 pr-7 text-xs focus:outline-none focus:ring-2 focus:ring-slate-200">
+                                                        <option value="">— dinas —</option>
+                                                        @foreach ($dinasOptions ?? [] as $d)
+                                                            <option value="{{ $d->id }}"
+                                                                @selected((string) ($user->dinas_id ?? '') === (string) $d->id)>
+                                                                {{ $d->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                <button type="submit"
+                                                    class="h-8 rounded-lg bg-slate-900 px-3 text-xs font-semibold text-white hover:bg-slate-800 transition">
+                                                    Simpan
+                                                </button>
+                                            </form>
+                                        @endif
                                     </td>
 
                                     <td class="py-3 pr-4 whitespace-nowrap">
@@ -253,27 +290,6 @@
                                                 </div>
                                             @endif
                                         @endif
-                                    </td>
-
-                                    <td class="py-3 pr-4 whitespace-nowrap">
-                                        <form method="POST" action="{{ route('admin.users.active', $user) }}"
-                                            class="flex items-center gap-2">
-                                            @csrf
-                                            @method('PATCH')
-                                            <input type="hidden" name="active" value="0">
-
-                                            <label
-                                                class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                                                <input type="checkbox" name="active" value="1"
-                                                    class="rounded border-slate-300" @checked(($user->active ?? true) === true)>
-                                                <span class="text-sm text-slate-700">Aktif</span>
-                                            </label>
-
-                                            <button type="submit"
-                                                class="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 transition">
-                                                Simpan
-                                            </button>
-                                        </form>
                                     </td>
 
                                     <td class="py-3 pr-0 whitespace-nowrap text-right">
@@ -319,7 +335,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="10" class="py-10 text-center text-slate-600">Belum ada user.</td>
+                                    <td colspan="9" class="py-10 text-center text-slate-600">Belum ada user.</td>
                                 </tr>
                             @endforelse
                         </tbody>

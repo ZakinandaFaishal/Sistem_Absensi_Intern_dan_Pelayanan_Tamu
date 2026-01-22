@@ -17,7 +17,7 @@ class KioskController extends Controller
     {
         $user = Auth::user();
 
-        if (($user->role ?? null) !== 'admin') {
+        if (!in_array(($user->role ?? null), ['super_admin', 'admin_dinas'], true)) {
             return redirect()->route('dashboard');
         }
 

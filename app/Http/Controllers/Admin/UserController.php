@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\Dinas;
 use App\Models\Location;
 use App\Models\Setting;
 use App\Models\User;
@@ -29,7 +30,6 @@ class UserController extends Controller
         // ===== Filters (sesuai blade) =====
         $q      = trim((string) $request->query('q', ''));
         $role   = (string) $request->query('role', '');
-        $active = (string) $request->query('active', ''); // '', '1', '0'
 
         // ===== Sorting (sesuai blade) =====
         $sort = (string) $request->query('sort', 'created_at');
@@ -44,7 +44,6 @@ class UserController extends Controller
             'nik',
             'phone',
             'role',
-            'active',
             'intern_status',
             'internship_start_date',
             'internship_end_date',
@@ -75,13 +74,8 @@ class UserController extends Controller
         }
 
         // ===== Apply role filter =====
-        if ($role !== '' && in_array($role, ['intern', 'admin'], true)) {
+        if ($role !== '' && in_array($role, ['intern', 'admin_dinas'], true)) {
             $usersQuery->where('role', $role);
-        }
-
-        // ===== Apply active filter =====
-        if ($active === '1' || $active === '0') {
-            $usersQuery->where('active', (int) $active);
         }
 
         // ===== Apply sorting =====
@@ -97,14 +91,8 @@ class UserController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        // ===== Scoring settings =====
-        $scoring = [
-            'points_per_attendance' => AppSettings::getInt(AppSettings::SCORE_POINTS_PER_ATTENDANCE, 4),
-            'max_score' => AppSettings::getInt(AppSettings::SCORE_MAX, 100),
-        ];
-
-        // ===== Compute score (tetap sama) =====
-        $users->getCollection()->transform(function (User $user) use ($scoring) {
+        // ===== Compute score (otomatis berdasarkan hari magang saat registrasi) =====
+        $users->getCollection()->transform(function (User $user) {
             if (($user->role ?? 'intern') !== 'intern') {
                 $user->computed_score = null;
                 $user->computed_score_is_override = false;
@@ -114,35 +102,19 @@ class UserController extends Controller
                 return $user;
             }
 
-            $maxScore = (int) ($scoring['max_score'] ?? 100);
-            $points = (int) ($scoring['points_per_attendance'] ?? 4);
             $attendedDays = (int) ($user->attended_days ?? 0);
 
-            $expectedDays = null;
-            if (!empty($user->internship_start_date) && !empty($user->internship_end_date)) {
-                $start = Carbon::parse($user->internship_start_date)->startOfDay();
-                $end = Carbon::parse($user->internship_end_date)->startOfDay();
-
-                if ($end->greaterThanOrEqualTo($start)) {
-                    $expectedDays = 0;
-                    $cursor = $start->copy();
-                    while ($cursor->lessThanOrEqualTo($end)) {
-                        if ($cursor->isWeekday()) {
-                            $expectedDays++;
-                        }
-                        $cursor->addDay();
-                    }
-
-                    if ($expectedDays > 500) {
-                        $expectedDays = null;
-                    }
-                }
-            }
+            $expectedDays = $this->computeExpectedWeekdays(
+                $user->internship_start_date ? (string) $user->internship_start_date : null,
+                $user->internship_end_date ? (string) $user->internship_end_date : null,
+            );
 
             if ($expectedDays !== null && $expectedDays > 0) {
-                $autoScore = min($maxScore, min($attendedDays, $expectedDays) * $points);
+                $ratio = min(1.0, $attendedDays / $expectedDays);
+                $autoScore = (int) round($ratio * 100);
             } else {
-                $autoScore = min($maxScore, $attendedDays * $points);
+                // fallback (kalau tanggal magang belum diisi)
+                $autoScore = min(100, $attendedDays * 4);
             }
 
             $finalScore = ($user->score_override !== null) ? (int) $user->score_override : $autoScore;
@@ -165,9 +137,11 @@ class UserController extends Controller
             return $user;
         });
 
+        $dinasOptions = Dinas::query()->orderBy('name')->get();
+
         return view('admin.users.list', [
             'users' => $users,
-            'scoring' => $scoring,
+            'dinasOptions' => $dinasOptions,
         ]);
     }
 
@@ -180,35 +154,27 @@ class UserController extends Controller
         ]);
     }
 
-    public function scoring(Request $request)
-    {
-        $scoring = [
-            'points_per_attendance' => AppSettings::getInt(AppSettings::SCORE_POINTS_PER_ATTENDANCE, 4),
-            'max_score' => AppSettings::getInt(AppSettings::SCORE_MAX, 100),
-        ];
-
-        return view('admin.users.scoring', [
-            'scoring' => $scoring,
-        ]);
-    }
-
     public function create(Request $request)
     {
         $locations = Location::query()->orderBy('name')->get();
+        $dinasOptions = Dinas::query()->orderBy('name')->get();
 
         return view('admin.users.form', [
             'editUser' => null,
             'locations' => $locations,
+            'dinasOptions' => $dinasOptions,
         ]);
     }
 
     public function edit(Request $request, User $user)
     {
         $locations = Location::query()->orderBy('name')->get();
+        $dinasOptions = Dinas::query()->orderBy('name')->get();
 
         return view('admin.users.form', [
             'editUser' => $user,
             'locations' => $locations,
+            'dinasOptions' => $dinasOptions,
         ]);
     }
 
@@ -361,11 +327,6 @@ class UserController extends Controller
 
     public function exportPdf(Request $request)
     {
-        $scoring = [
-            'points_per_attendance' => AppSettings::getInt(AppSettings::SCORE_POINTS_PER_ATTENDANCE, 4),
-            'max_score' => AppSettings::getInt(AppSettings::SCORE_MAX, 100),
-        ];
-
         $users = User::query()
             ->withCount([
                 'attendances as attended_days' => function ($query) {
@@ -376,7 +337,7 @@ class UserController extends Controller
             ->orderBy('name')
             ->get();
 
-        $users->transform(function (User $user) use ($scoring) {
+        $users->transform(function (User $user) {
             if (($user->role ?? 'intern') !== 'intern') {
                 $user->computed_score = null;
                 $user->computed_score_is_override = false;
@@ -384,36 +345,18 @@ class UserController extends Controller
                 $user->computed_score_expected_days = null;
                 return $user;
             }
-
-            $maxScore = (int) ($scoring['max_score'] ?? 100);
-            $points = (int) ($scoring['points_per_attendance'] ?? 4);
             $attendedDays = (int) ($user->attended_days ?? 0);
 
-            $expectedDays = null;
-            if (!empty($user->internship_start_date) && !empty($user->internship_end_date)) {
-                $start = Carbon::parse($user->internship_start_date)->startOfDay();
-                $end = Carbon::parse($user->internship_end_date)->startOfDay();
-
-                if ($end->greaterThanOrEqualTo($start)) {
-                    $expectedDays = 0;
-                    $cursor = $start->copy();
-                    while ($cursor->lessThanOrEqualTo($end)) {
-                        if ($cursor->isWeekday()) {
-                            $expectedDays++;
-                        }
-                        $cursor->addDay();
-                    }
-
-                    if ($expectedDays > 500) {
-                        $expectedDays = null;
-                    }
-                }
-            }
+            $expectedDays = $this->computeExpectedWeekdays(
+                $user->internship_start_date ? (string) $user->internship_start_date : null,
+                $user->internship_end_date ? (string) $user->internship_end_date : null,
+            );
 
             if ($expectedDays !== null && $expectedDays > 0) {
-                $autoScore = min($maxScore, min($attendedDays, $expectedDays) * $points);
+                $ratio = min(1.0, $attendedDays / $expectedDays);
+                $autoScore = (int) round($ratio * 100);
             } else {
-                $autoScore = min($maxScore, $attendedDays * $points);
+                $autoScore = min(100, $attendedDays * 4);
             }
             $finalScore = ($user->score_override !== null) ? (int) $user->score_override : $autoScore;
 
@@ -428,7 +371,6 @@ class UserController extends Controller
         $html = view('admin.users.export_pdf', [
             'generatedAt' => $generatedAt,
             'users' => $users,
-            'scoring' => $scoring,
         ])->render();
 
         $options = new Options();
@@ -450,11 +392,6 @@ class UserController extends Controller
 
     public function exportExcel(Request $request)
     {
-        $scoring = [
-            'points_per_attendance' => AppSettings::getInt(AppSettings::SCORE_POINTS_PER_ATTENDANCE, 4),
-            'max_score' => AppSettings::getInt(AppSettings::SCORE_MAX, 100),
-        ];
-
         $users = User::query()
             ->withCount([
                 'attendances as attended_days' => function ($query) {
@@ -465,7 +402,7 @@ class UserController extends Controller
             ->orderBy('name')
             ->get();
 
-        $users->transform(function (User $user) use ($scoring) {
+        $users->transform(function (User $user) {
             if (($user->role ?? 'intern') !== 'intern') {
                 $user->computed_score = null;
                 $user->computed_score_is_override = false;
@@ -473,36 +410,18 @@ class UserController extends Controller
                 $user->computed_score_expected_days = null;
                 return $user;
             }
-
-            $maxScore = (int) ($scoring['max_score'] ?? 100);
-            $points = (int) ($scoring['points_per_attendance'] ?? 4);
             $attendedDays = (int) ($user->attended_days ?? 0);
 
-            $expectedDays = null;
-            if (!empty($user->internship_start_date) && !empty($user->internship_end_date)) {
-                $start = Carbon::parse($user->internship_start_date)->startOfDay();
-                $end = Carbon::parse($user->internship_end_date)->startOfDay();
-
-                if ($end->greaterThanOrEqualTo($start)) {
-                    $expectedDays = 0;
-                    $cursor = $start->copy();
-                    while ($cursor->lessThanOrEqualTo($end)) {
-                        if ($cursor->isWeekday()) {
-                            $expectedDays++;
-                        }
-                        $cursor->addDay();
-                    }
-
-                    if ($expectedDays > 500) {
-                        $expectedDays = null;
-                    }
-                }
-            }
+            $expectedDays = $this->computeExpectedWeekdays(
+                $user->internship_start_date ? (string) $user->internship_start_date : null,
+                $user->internship_end_date ? (string) $user->internship_end_date : null,
+            );
 
             if ($expectedDays !== null && $expectedDays > 0) {
-                $autoScore = min($maxScore, min($attendedDays, $expectedDays) * $points);
+                $ratio = min(1.0, $attendedDays / $expectedDays);
+                $autoScore = (int) round($ratio * 100);
             } else {
-                $autoScore = min($maxScore, $attendedDays * $points);
+                $autoScore = min(100, $attendedDays * 4);
             }
             $finalScore = ($user->score_override !== null) ? (int) $user->score_override : $autoScore;
 
@@ -602,8 +521,9 @@ class UserController extends Controller
             'phone' => ['required', 'string', 'max:30'],
             'username' => ['required', 'string', 'lowercase', 'alpha_dash', 'max:50', Rule::unique('users', 'username')],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users', 'email')],
-            'role' => ['required', 'string', Rule::in(['admin', 'intern'])],
-            'active' => ['required', 'boolean'],
+            'role' => ['required', 'string', Rule::in(['admin_dinas', 'intern'])],
+            'dinas_id' => ['nullable', 'integer', 'exists:dinas,id', 'required_if:role,admin_dinas'],
+            'active' => ['nullable', 'boolean'],
             'intern_status' => ['nullable', 'string', Rule::in(['aktif', 'tamat'])],
             'internship_start_date' => ['nullable', 'date'],
             'internship_end_date' => ['nullable', 'date', 'after_or_equal:internship_start_date'],
@@ -624,7 +544,8 @@ class UserController extends Controller
             'username' => Str::lower($validated['username']),
             'email' => $validated['email'],
             'role' => $validated['role'],
-            'active' => (bool) $validated['active'],
+            'dinas_id' => ($validated['role'] === 'admin_dinas') ? (int) $validated['dinas_id'] : null,
+            'active' => (bool) ($validated['active'] ?? true),
             'intern_status' => $internStatus,
             'internship_start_date' => ($validated['role'] === 'intern') ? ($validated['internship_start_date'] ?? null) : null,
             'internship_end_date' => ($validated['role'] === 'intern') ? ($validated['internship_end_date'] ?? null) : null,
@@ -639,14 +560,17 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        $isEditingSuperAdmin = (($user->role ?? 'intern') === 'super_admin');
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'nik' => ['required', 'digits:16', Rule::unique('users', 'nik')->ignore($user->id)],
             'phone' => ['required', 'string', 'max:30'],
             'username' => ['required', 'string', 'lowercase', 'alpha_dash', 'max:50', Rule::unique('users', 'username')->ignore($user->id)],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'role' => ['required', 'string', Rule::in(['admin', 'intern'])],
-            'active' => ['required', 'boolean'],
+            'role' => ['required', 'string', Rule::in($isEditingSuperAdmin ? ['super_admin'] : ['admin_dinas', 'intern'])],
+            'dinas_id' => ['nullable', 'integer', 'exists:dinas,id', 'required_if:role,admin_dinas'],
+            'active' => ['nullable', 'boolean'],
             'intern_status' => ['nullable', 'string', Rule::in(['aktif', 'tamat'])],
             'internship_start_date' => ['nullable', 'date'],
             'internship_end_date' => ['nullable', 'date', 'after_or_equal:internship_start_date'],
@@ -662,7 +586,7 @@ class UserController extends Controller
             ]);
         }
 
-        if (($request->user()?->id === $user->id) && ((bool) ($validated['active'] ?? true) === false)) {
+        if (($request->user()?->id === $user->id) && array_key_exists('active', $validated) && ((bool) ($validated['active'] ?? true) === false)) {
             return back()->withErrors([
                 'active' => 'Tidak bisa menonaktifkan akun sendiri.',
             ]);
@@ -675,8 +599,12 @@ class UserController extends Controller
             'username' => Str::lower($validated['username']),
             'email' => $validated['email'],
             'role' => $validated['role'],
-            'active' => (bool) $validated['active'],
+            'dinas_id' => ($validated['role'] === 'admin_dinas') ? (int) ($validated['dinas_id'] ?? 0) : null,
         ];
+
+        if (array_key_exists('active', $validated)) {
+            $payload['active'] = (bool) $validated['active'];
+        }
 
         if (($validated['role'] ?? 'intern') === 'intern') {
             $payload['intern_status'] = $validated['intern_status'] ?? ($user->intern_status ?? 'aktif');
@@ -724,46 +652,49 @@ class UserController extends Controller
             ]);
         }
 
+        if (($user->role ?? 'intern') === 'super_admin') {
+            return back()->withErrors([
+                'role' => 'Role super_admin dikunci dan tidak bisa diubah dari halaman ini.',
+            ]);
+        }
+
         $validated = $request->validate([
-            'role' => ['required', 'string', Rule::in(['admin', 'intern'])],
+            'role' => ['required', 'string', Rule::in(['admin_dinas', 'intern'])],
+            'dinas_id' => ['nullable', 'integer', 'exists:dinas,id', 'required_if:role,admin_dinas'],
         ]);
 
         $user->forceFill([
             'role' => $validated['role'],
+            'dinas_id' => ($validated['role'] === 'admin_dinas') ? (int) ($validated['dinas_id'] ?? 0) : null,
         ])->save();
 
         return back()->with('status', 'Role user berhasil diperbarui.');
     }
 
-    public function updateActive(Request $request, User $user)
+    private function computeExpectedWeekdays(?string $startDate, ?string $endDate): ?int
     {
-        if ($request->user()?->id === $user->id) {
-            return back()->withErrors([
-                'active' => 'Tidak bisa menonaktifkan akun sendiri.',
-            ]);
+        if (empty($startDate) || empty($endDate)) {
+            return null;
         }
 
-        $validated = $request->validate([
-            'active' => ['required', 'boolean'],
-        ]);
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->startOfDay();
+        if ($end->lessThan($start)) {
+            return null;
+        }
 
-        $user->forceFill([
-            'active' => (bool) $validated['active'],
-        ])->save();
+        $expectedDays = 0;
+        $cursor = $start->copy();
+        while ($cursor->lessThanOrEqualTo($end)) {
+            if ($cursor->isWeekday()) {
+                $expectedDays++;
+            }
+            $cursor->addDay();
+            if ($expectedDays > 500) {
+                return null;
+            }
+        }
 
-        return back()->with('status', 'Status user berhasil diperbarui.');
-    }
-
-    public function updateScoringSettings(Request $request)
-    {
-        $validated = $request->validate([
-            'points_per_attendance' => ['required', 'integer', 'min:0', 'max:100'],
-            'max_score' => ['required', 'integer', 'min:0', 'max:100'],
-        ]);
-
-        Setting::setValue(AppSettings::SCORE_POINTS_PER_ATTENDANCE, (string) $validated['points_per_attendance']);
-        Setting::setValue(AppSettings::SCORE_MAX, (string) $validated['max_score']);
-
-        return back()->with('status', 'Aturan penilaian berhasil disimpan.');
+        return $expectedDays;
     }
 }

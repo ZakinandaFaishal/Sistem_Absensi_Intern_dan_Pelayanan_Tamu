@@ -381,8 +381,9 @@
 
                 <div class="p-6">
                     {{-- Filter + Sorting --}}
-                    <form method="GET" action="{{ route('admin.attendance.index') }}"
+                    <form id="attendanceFilterForm" method="GET" action="{{ route('admin.attendance.index') }}"
                         class="mb-5 grid grid-cols-1 md:grid-cols-12 gap-3">
+                        <input type="hidden" name="page" value="1">
                         <div class="md:col-span-4">
                             <label class="text-xs font-semibold text-slate-700">Cari Nama</label>
                             <input name="q" value="{{ $filters['q'] ?? '' }}"
@@ -422,17 +423,54 @@
                             </div>
                         </div>
 
-                        <div class="md:col-span-12 flex items-center justify-end gap-2">
-                            <a href="{{ route('admin.attendance.index') }}"
-                                class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-                                Reset
-                            </a>
-                            <button type="submit"
-                                class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
-                                Terapkan
-                            </button>
+                        <div class="md:col-span-12 flex items-center justify-end">
+                            <div class="text-xs text-slate-500">Filter diterapkan otomatis.</div>
                         </div>
                     </form>
+
+                    <script>
+                        (function() {
+                            const form = document.getElementById('attendanceFilterForm');
+                            if (!form) return;
+
+                            const qInput = form.querySelector('input[name="q"]');
+                            const dateFrom = form.querySelector('input[name="date_from"]');
+                            const dateTo = form.querySelector('input[name="date_to"]');
+                            const sortSelect = form.querySelector('select[name="sort"]');
+                            const dirSelect = form.querySelector('select[name="dir"]');
+
+                            let timer = null;
+                            let isComposing = false;
+
+                            const submit = () => {
+                                const pageInput = form.querySelector('input[name="page"]');
+                                if (pageInput) pageInput.value = '1';
+                                form.submit();
+                            };
+
+                            const debounceSubmit = () => {
+                                if (isComposing) return;
+                                if (timer) window.clearTimeout(timer);
+                                timer = window.setTimeout(submit, 900);
+                            };
+
+                            if (qInput) {
+                                qInput.addEventListener('compositionstart', () => {
+                                    isComposing = true;
+                                });
+                                qInput.addEventListener('compositionend', () => {
+                                    isComposing = false;
+                                    debounceSubmit();
+                                });
+                                qInput.addEventListener('input', debounceSubmit);
+                            }
+
+                            [dateFrom, dateTo, sortSelect, dirSelect].forEach((el) => {
+                                if (!el) return;
+                                el.addEventListener('change', submit);
+                            });
+                        })();
+                    </script>
 
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-sm">
@@ -444,7 +482,6 @@
                                     <th class="py-3 pr-4 font-semibold whitespace-nowrap">Koordinat</th>
                                     <th class="py-3 pr-4 font-semibold whitespace-nowrap">Check-in</th>
                                     <th class="py-3 pr-4 font-semibold whitespace-nowrap">Check-out</th>
-                                    <th class="py-3 pr-4 font-semibold whitespace-nowrap">Fake GPS</th>
                                     <th class="py-3 pr-0 font-semibold">Catatan</th>
                                 </tr>
                             </thead>
@@ -502,19 +539,6 @@
                                             </span>
                                         </td>
 
-                                        <td class="py-3 pr-4 whitespace-nowrap">
-                                            <form method="POST"
-                                                action="{{ route('admin.attendance.fake-gps', $attendance) }}"
-                                                onsubmit="return confirm('{{ $attendance->is_fake_gps ? 'Hapus flag Fake GPS?' : 'Tandai sebagai Fake GPS?' }}');">
-                                                @csrf
-                                                <button type="submit"
-                                                    class="inline-flex items-center rounded-lg px-3 py-1 text-xs font-semibold transition
-                                                    {{ $attendance->is_fake_gps ? 'bg-rose-100 text-rose-800 hover:bg-rose-200' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
-                                                    {{ $attendance->is_fake_gps ? 'FLAGGED' : 'Tandai' }}
-                                                </button>
-                                            </form>
-                                        </td>
-
                                         <td class="py-3 pr-0 text-slate-700">
                                             <div class="max-w-[380px] whitespace-normal break-words">
                                                 {{ $attendance->notes ?? '-' }}
@@ -523,7 +547,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="py-10 text-center text-slate-500">
+                                        <td colspan="7" class="py-10 text-center text-slate-500">
                                             Belum ada data presensi.
                                         </td>
                                     </tr>

@@ -13,10 +13,12 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-            <a href="{{ route('admin.attendance.index') }}"
-                class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-                ← Kembali ke Presensi
-            </a>
+            @if (($isSuperAdmin ?? false) === true)
+                <a href="{{ route('admin.attendance.index') }}"
+                    class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    ← Kembali ke Presensi
+                </a>
+            @endif
         </div>
     </div>
 
@@ -34,8 +36,46 @@
                 <p class="mt-0.5 text-xs text-slate-500">Geofence radius + pembatasan jam check-in/check-out.</p>
             </div>
 
+            @if (($isSuperAdmin ?? false) === true)
+                <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/40">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <div class="text-xs font-semibold text-slate-700">Scope Dinas</div>
+                            <div class="text-sm text-slate-600">Pilih dinas untuk mengatur aturan presensi.</div>
+                        </div>
+                        <form method="GET" action="{{ route('admin.attendance.rules') }}" class="flex items-center gap-2">
+                            <select name="dinas_id" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                required>
+                                <option value="" disabled {{ empty($activeDinasId ?? 0) ? 'selected' : '' }}>Pilih
+                                    dinas</option>
+                                @foreach ($dinasOptions ?? [] as $d)
+                                    <option value="{{ $d->id }}"
+                                        {{ (int) ($activeDinasId ?? 0) === (int) $d->id ? 'selected' : '' }}>
+                                        {{ $d->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <button type="submit"
+                                class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
+                                Terapkan
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @else
+                <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/40">
+                    <div class="text-sm font-semibold text-slate-900">
+                        Dinas: {{ $activeDinas->name ?? '-' }}
+                    </div>
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('admin.attendance.settings') }}" class="p-6 space-y-5">
                 @csrf
+
+                @if (!empty($activeDinasId ?? 0))
+                    <input type="hidden" name="dinas_id" value="{{ (int) $activeDinasId }}">
+                @endif
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
