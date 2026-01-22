@@ -4,8 +4,21 @@
 
 @section('content')
 <main id="kiosk-root" class="relative min-h-screen w-full overflow-hidden">
+    {{-- BACKGROUND VIDEO --}}
     <div id="kiosk-bg" class="absolute inset-0">
-        <img src="{{ asset('img/background.png') }}" alt="Kabupaten Magelang" class="h-full w-full object-cover scale-[1.03]">
+        <video
+            class="h-full w-full object-cover scale-[1.03]"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto"
+            poster="{{ asset('img/background.png') }}"
+        >
+            <source src="{{ asset('img/vid_bg_kab.mp4') }}" type="video/mp4">
+        </video>
+
+        {{-- overlays --}}
         <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/70"></div>
         <div class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.55)_70%,rgba(0,0,0,0.8)_100%)]"></div>
     </div>
@@ -62,7 +75,7 @@
         </div>
     </section>
 
-    {{-- Floating panel: responsive --}}
+    {{-- Floating panel --}}
     <section
         id="kiosk-active-guests"
         class="anim fixed bottom-3 left-3 right-3 z-20 sm:left-4 sm:right-auto sm:bottom-4 sm:w-[360px] sm:max-w-[calc(100vw-32px)]"
@@ -113,7 +126,7 @@
         </div>
     </section>
 
-    {{-- Modal reminder (responsive centered) --}}
+    {{-- Modal reminder --}}
     <div id="surveyReminderModal" class="hidden fixed inset-0 z-50">
         <div class="absolute inset-0 bg-black/60"></div>
 
@@ -166,9 +179,58 @@
 </main>
 
 <style>
+
+    html, body {
+        height: 100%;
+        overflow: hidden !important;      /* kunci scroll halaman */
+        overscroll-behavior: none;
+    }
+
+    /* sembunyikan scrollbar (Chrome/Edge/Safari) */
+    body::-webkit-scrollbar,
+    html::-webkit-scrollbar {
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    /* sembunyikan scrollbar (Firefox) */
+    html, body {
+        scrollbar-width: none;
+    }
+
+    /* sembunyikan scrollbar (IE/legacy Edge) */
+    html, body {
+        -ms-overflow-style: none;
+    }
+
+    /* ====== OPTIONAL: list tamu tetap bisa scroll tapi scrollbar disembunyikan ====== */
+    #kioskActiveGuestList {
+        scrollbar-width: none;          /* Firefox */
+        -ms-overflow-style: none;       /* IE/legacy */
+    }
+    #kioskActiveGuestList::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+    }
+
     @media (prefers-reduced-motion: reduce) {
-        .anim,
-        .anim * { animation: none !important; transition: none !important; }
+        .anim, .anim * { animation: none !important; transition: none !important; }
+    }
+
+    @keyframes popIn {
+        from { opacity: 0; transform: translateY(8px) scale(.98); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .pop-in { animation: popIn .22s ease-out both; }
+
+    @keyframes fadeOutDown {
+        from { opacity: 1; transform: translateY(0); }
+        to   { opacity: 0; transform: translateY(10px); }
+    }
+    .fade-out-down { animation: fadeOutDown .22s ease-in both; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .anim, .anim * { animation: none !important; transition: none !important; }
     }
 
     @keyframes popIn {
@@ -184,6 +246,7 @@
     .fade-out-down { animation: fadeOutDown .22s ease-in both; }
 </style>
 
+{{-- CLOCK --}}
 <script>
     (function () {
         const clockEl = document.getElementById('kioskClock');
@@ -213,6 +276,7 @@
     })();
 </script>
 
+{{-- ACTIVE GUESTS --}}
 <script>
     (function () {
         const ENDPOINT = @json(route('guest.active'));
@@ -322,11 +386,10 @@
         function surveyAllowed(item) {
             if (typeof item.survey_allowed === 'boolean') return item.survey_allowed === true;
             if (typeof item.service_type === 'string') return item.service_type === 'layanan';
-            return false; // fallback aman
+            return false;
         }
 
         function needsSurveyReminder(item) {
-            // kalau bukan layanan, jangan pernah popup
             if (!surveyAllowed(item)) return false;
 
             if (typeof item.survey_filled === 'boolean') return item.survey_filled === false;
@@ -338,7 +401,6 @@
 
         function openModalFor(item) {
             pendingCompleteId = String(item.id);
-
             if (modalName) modalName.textContent = `Tamu: ${item.name || 'Tamu'}`;
 
             const surveyUrl = item.survey_url || `${SURVEY_BASE}/${encodeURIComponent(item.id)}/survey`;

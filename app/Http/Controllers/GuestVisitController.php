@@ -53,7 +53,6 @@ class GuestVisitController extends Controller
             $purpose .= ' (' . implode(', ', $extras) . ')';
         }
 
-        // guest_visits.purpose is a string (VARCHAR 255). Keep it safe to avoid DB errors.
         $purpose = Str::of($purpose)->limit(255, '')->toString();
 
         $visit = GuestVisit::query()->create([
@@ -81,14 +80,16 @@ class GuestVisitController extends Controller
 
     public function index(Request $request)
     {
-        $q = trim((string) $request->query('q', ''));
-        $status = (string) $request->query('status', '');
-        $from = (string) $request->query('from', '');
-        $to = (string) $request->query('to', '');
-        $sort = (string) $request->query('sort', 'arrived_at');
-        $dir = strtolower((string) $request->query('dir', 'desc'));
+        $q         = trim((string) $request->query('q', ''));
+        $status    = (string) $request->query('status', '');
+        $visitType = (string) $request->query('visit_type', '');
+        $from      = (string) $request->query('from', '');
+        $to        = (string) $request->query('to', '');
+        $sort      = (string) $request->query('sort', 'arrived_at');
+        $dir       = strtolower((string) $request->query('dir', 'desc'));
 
-        $allowedSort = ['arrived_at', 'completed_at', 'name'];
+        // ✅ allow sort visit_type
+        $allowedSort = ['arrived_at', 'completed_at', 'name', 'visit_type'];
         if (!in_array($sort, $allowedSort, true)) {
             $sort = 'arrived_at';
         }
@@ -98,11 +99,10 @@ class GuestVisitController extends Controller
 
         if ($q !== '') {
             $visitsQuery->where(function ($qb) use ($q) {
-                $qb
-                    ->where('name', 'like', "%{$q}%")
-                    ->orWhere('purpose', 'like', "%{$q}%")
-                    ->orWhere('institution', 'like', "%{$q}%")
-                    ->orWhere('email', 'like', "%{$q}%");
+                $qb->where('name', 'like', "%{$q}%")
+                ->orWhere('purpose', 'like', "%{$q}%")
+                ->orWhere('institution', 'like', "%{$q}%")
+                ->orWhere('email', 'like', "%{$q}%");
             });
         }
 
@@ -112,6 +112,11 @@ class GuestVisitController extends Controller
             $visitsQuery->whereNotNull('completed_at');
         }
 
+        // ✅ Filter kelompok / sendiri
+        if (in_array($visitType, ['single', 'group'], true)) {
+            $visitsQuery->where('visit_type', $visitType);
+        }
+
         if ($from !== '') {
             $visitsQuery->whereDate('arrived_at', '>=', $from);
         }
@@ -119,8 +124,15 @@ class GuestVisitController extends Controller
             $visitsQuery->whereDate('arrived_at', '<=', $to);
         }
 
+        // ✅ Sorting
+        if ($sort === 'visit_type') {
+            $visitsQuery->orderByRaw("CASE WHEN visit_type='single' THEN 0 WHEN visit_type='group' THEN 1 ELSE 2 END {$dir}");
+            $visitsQuery->orderByDesc('arrived_at');
+        } else {
+            $visitsQuery->orderBy($sort, $dir);
+        }
+
         $visits = $visitsQuery
-            ->orderBy($sort, $dir)
             ->paginate(20)
             ->withQueryString();
 
@@ -128,6 +140,7 @@ class GuestVisitController extends Controller
             'visits' => $visits,
         ]);
     }
+
 
 
     public function complete(Request $request, GuestVisit $visit)
@@ -388,11 +401,9 @@ class GuestVisitController extends Controller
                     'arrived_at' => optional($v->arrived_at)->format('d M Y H:i'),
                     'status' => 'Sedang berkunjung',
 
-                    // ====== PENTING UNTUK FRONTEND ======
                     'service_type'   => $v->service_type,
                     'survey_allowed' => $isLayanan,
 
-                    // survey hanya relevan jika layanan
                     'survey_filled'  => $isLayanan
                         ? (bool) ($v->survey_exists ?? false)
                         : true,
@@ -404,4 +415,58 @@ class GuestVisitController extends Controller
             })->values(),
         ]);
     }
+    private function applyFiltersAndSort(GuestVisit|\Illuminate\Database\Eloquent\Builder $query, Request $request): array
+    {
+        $q         = trim((string) $request->query('q', ''));
+        $status    = (string) $request->query('status', '');
+        $visitType = (string) $request->query('visit_type', ''); // ✅ NEW
+        $from      = (string) $request->query('from', '');
+        $to        = (string) $request->query('to', '');
+        $sort      = (string) $request->query('sort', 'arrived_at');
+        $dir       = strtolower((string) $request->query('dir', 'desc'));
+
+        // ✅ allow sort visit_type
+        $allowedSort = ['arrived_at', 'completed_at', 'name', 'visit_type'];
+        if (!in_array($sort, $allowedSort, true)) {
+            $sort = 'arrived_at';
+        }
+        $dir = $dir === 'asc' ? 'asc' : 'desc';
+
+        if ($q !== '') {
+            $query->where(function ($qb) use ($q) {
+                $qb->where('name', 'like', "%{$q}%")
+                ->orWhere('purpose', 'like', "%{$q}%")
+                ->orWhere('institution', 'like', "%{$q}%")
+                ->orWhere('email', 'like', "%{$q}%");
+            });
+        }
+
+        if ($status === 'pending') {
+            $query->whereNull('completed_at');
+        } elseif ($status === 'done') {
+            $query->whereNotNull('completed_at');
+        }
+
+        // ✅ NEW: filter single / group
+        if (in_array($visitType, ['single', 'group'], true)) {
+            $query->where('visit_type', $visitType);
+        }
+
+        if ($from !== '') {
+            $query->whereDate('arrived_at', '>=', $from);
+        }
+        if ($to !== '') {
+            $query->whereDate('arrived_at', '<=', $to);
+        }
+
+        if ($sort === 'visit_type') {
+            $query->orderByRaw("CASE WHEN visit_type = 'single' THEN 0 WHEN visit_type = 'group' THEN 1 ELSE 2 END {$dir}");
+            $query->orderByDesc('arrived_at');
+        } else {
+            $query->orderBy($sort, $dir);
+        }
+
+        return compact('q', 'status', 'visitType', 'from', 'to', 'sort', 'dir');
+    }
+
 }
