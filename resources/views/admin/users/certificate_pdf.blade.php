@@ -1,36 +1,44 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <title>Sertifikat Magang</title>
 
     <style>
+        /* ===== PAGE ===== */
         @page {
             size: A4 landscape;
-            margin: 18mm;
+            margin: 14mm; /* lebih kecil biar ruang konten aman */
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            font-family: DejaVu Sans, sans-serif;
+            font-family: "DejaVu Sans", Arial, sans-serif;
             color: #111827;
             background: #ffffff;
         }
 
         /* ===== FRAME ===== */
-        .outer {
+        .certificate-outer {
+            height: 100%;
             border: 4px solid #111827;
-            padding: 10mm;
-            box-sizing: border-box;
+            padding: 7mm;              /* diperkecil supaya tidak overflow */
         }
 
-        .inner {
+        .certificate-inner {
             position: relative;
-            border: 3px solid #caa24a; /* emas */
-            padding: 12mm 14mm;
-            min-height: 165mm;
-            box-sizing: border-box;
+            height: 100%;
+            border: 3px solid #caa24a;
+            padding: 10mm 12mm;        /* diperkecil */
             overflow: hidden;
         }
 
@@ -45,93 +53,85 @@
             pointer-events: none;
             z-index: 0;
         }
-
         .watermark img {
-            width: 120mm;
+            width: 110mm;
             height: auto;
         }
 
-        /* ===== CORNER ORNAMENT ===== */
+        /* ===== CORNERS ===== */
         .corner {
             position: absolute;
-            width: 24mm;
-            height: 24mm;
+            width: 22mm;
+            height: 22mm;
             border: 2px solid #caa24a;
             pointer-events: none;
             z-index: 2;
         }
+        .corner--top-left    { top: 6mm; left: 6mm;  border-right: none; border-bottom: none; }
+        .corner--top-right   { top: 6mm; right: 6mm; border-left: none;  border-bottom: none; }
+        .corner--bottom-left { bottom: 6mm; left: 6mm; border-right: none; border-top: none; }
+        .corner--bottom-right{ bottom: 6mm; right: 6mm; border-left: none;  border-top: none; }
 
-        .corner.tl { top: 6mm; left: 6mm; border-right: none; border-bottom: none; }
-        .corner.tr { top: 6mm; right: 6mm; border-left: none; border-bottom: none; }
-        .corner.bl { bottom: 6mm; left: 6mm; border-right: none; border-top: none; }
-        .corner.br { bottom: 6mm; right: 6mm; border-left: none; border-top: none; }
-
-        /* ===== RIBBON (TOP RIGHT) ===== */
+        /* ===== RIBBON ===== */
         .ribbon {
             position: absolute;
             top: 0;
             right: 0;
             width: 0;
             height: 0;
-            border-top: 36mm solid #caa24a;
-            border-left: 36mm solid transparent;
-            z-index: 1;
+            border-top: 34mm solid #caa24a;
+            border-left: 34mm solid transparent;
             pointer-events: none;
+            z-index: 1;
         }
-
-        .ribbon.dark {
+        .ribbon--dark {
             border-top-color: #111827;
-            border-top-width: 26mm;
-            border-left-width: 26mm;
+            border-top-width: 24mm;
+            border-left-width: 24mm;
         }
 
-        /* ===== CONTENT LAYER ===== */
-        .layer {
+        /* ===== LAYER ===== */
+        .content-layer {
             position: relative;
-            z-index: 3; /* di atas watermark */
+            height: 100%;
+            z-index: 3;
         }
 
         /* ===== HEADER ===== */
         .header {
             text-align: center;
-            margin-top: 2mm;
         }
-
-        .logo {
-            width: 18mm;
+        .header__logo {
+            width: 16mm;
             height: auto;
-            margin: 0 auto 4mm;
+            margin: 0 auto 3mm;
             display: block;
-            /* Dompdf tidak selalu support filter, jadi aman tanpa efek */
         }
-
-        .org {
+        .header__organization {
             font-weight: 800;
-            font-size: 18px;
-            letter-spacing: 0.8px;
-            margin: 0;
+            font-size: 16px;
+            letter-spacing: 0.7px;
             text-transform: uppercase;
         }
-
-        .dept {
+        .header__department {
             font-weight: 600;
-            font-size: 13px;
-            margin: 2px 0 0;
+            font-size: 12px;
             text-transform: uppercase;
+            margin-top: 1mm;
         }
 
         /* ===== MEDAL ===== */
         .medal {
-            margin: 8mm auto 0;
-            width: 22mm;
-            height: 22mm;
+            margin: 6mm auto 0;  /* diperkecil */
+            width: 20mm;
+            height: 20mm;
             border-radius: 50%;
             border: 3px solid #111827;
             background: #caa24a;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 900;
             color: #111827;
         }
@@ -139,145 +139,126 @@
         /* ===== TITLE ===== */
         .title {
             text-align: center;
-            margin-top: 6mm;
+            margin-top: 4mm; /* diperkecil */
         }
-
-        .title-main {
-            font-size: 36px;
+        .title__main {
+            font-size: 34px;
             font-weight: 900;
             letter-spacing: 3px;
             color: #caa24a;
-            margin: 0;
             text-transform: uppercase;
         }
-
-        .title-no {
+        .title__number {
             margin-top: 2mm;
             font-size: 12px;
             font-weight: 700;
         }
 
-        /* ===== CONTENT ===== */
-        .content {
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
             text-align: center;
-            margin-top: 10mm;
-            padding: 0 12mm;
+            margin-top: 7mm;    /* diperkecil */
+            padding: 0 10mm;    /* diperkecil */
         }
-
-        .given {
-            font-size: 14px;
-            margin: 0 0 3mm;
+        .main-content__label {
+            font-size: 13px;
+            margin-bottom: 2.5mm;
         }
-
-        .name {
-            font-size: 36px;
+        .main-content__name {
+            font-size: 34px;
             font-weight: 900;
-            margin: 3mm 0;
+            margin: 2mm 0;
         }
-
-        .name-line {
+        .main-content__underline {
             width: 120mm;
-            margin: 0 auto 3mm;
+            margin: 0 auto 2.5mm;
             border-top: 2px solid #111827;
         }
-
-        .sub {
-            font-size: 13px;
-            font-weight: 600;
-            margin: 0 0 4mm;
+        .main-content__institution {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 3.5mm;
         }
-
-        .desc {
-            font-size: 13px;
-            line-height: 1.7;
-            margin: 0;
+        .main-content__description {
+            font-size: 12px;
+            line-height: 1.65;
         }
 
         /* ===== SIGNATURE ===== */
-        .sign {
+        .signature {
             position: absolute;
-            right: 16mm;
-            bottom: 18mm;
-            width: 90mm;
+            right: 14mm;
+            bottom: 12mm; /* dinaikkan sedikit biar aman */
+            width: 88mm;
             text-align: center;
-            font-size: 11px;
             z-index: 3;
         }
-
-        .role {
+        .signature__role {
             font-weight: 800;
             font-size: 10px;
             text-transform: uppercase;
-            line-height: 1.4;
+            line-height: 1.35;
         }
-
-        .space {
-            height: 22mm;
+        .signature__space {
+            height: 18mm; /* diperkecil agar tidak overflow */
         }
-
-        .sign-name {
+        .signature__name {
             font-size: 12px;
             font-weight: 900;
             text-decoration: underline;
         }
-
-        .meta {
-            margin-top: 2px;
+        .signature__meta {
+            margin-top: 1.5mm;
             font-size: 10px;
             color: #374151;
+            line-height: 1.35;
         }
     </style>
 </head>
 
 <body>
-<div class="outer">
-    <div class="inner">
+<div class="certificate-outer">
+    <div class="certificate-inner">
 
-        {{-- Ornament --}}
-        <div class="corner tl"></div>
-        <div class="corner tr"></div>
-        <div class="corner bl"></div>
-        <div class="corner br"></div>
+        <!-- Ornamen -->
+        <div class="corner corner--top-left"></div>
+        <div class="corner corner--top-right"></div>
+        <div class="corner corner--bottom-left"></div>
+        <div class="corner corner--bottom-right"></div>
+
         <div class="ribbon"></div>
-        <div class="ribbon dark"></div>
+        <div class="ribbon ribbon--dark"></div>
 
-        {{-- Watermark (logo transparan) --}}
+        <!-- Watermark -->
         <div class="watermark">
-            <img src="{{ public_path('img/logo kab.mgl.png') }}" alt="Watermark Logo Kabupaten Magelang">
+            <img src="{{ public_path('img/logo kab.mgl.png') }}" alt="">
         </div>
 
-        <div class="layer">
-            {{-- Header --}}
-            <div class="header">
-                <img class="logo"
-                     src="{{ public_path('img/logo kab.mgl.png') }}"
-                     alt="Logo Kabupaten Magelang">
+        <!-- Content -->
+        <div class="content-layer">
+            <header class="header">
+                <img class="header__logo" src="{{ public_path('img/logo kab.mgl.png') }}" alt="">
+                <div class="header__organization">Pemerintah Kabupaten Magelang</div>
+                <div class="header__department">Dinas Komunikasi dan Informatika</div>
+            </header>
 
-                <p class="org">PEMERINTAH KABUPATEN MAGELANG</p>
-                <p class="dept">DINAS KOMUNIKASI DAN INFORMATIKA</p>
-            </div>
-
-            {{-- Medal --}}
             <div class="medal">★</div>
 
-            {{-- Title --}}
-            <div class="title">
-                <p class="title-main">SERTIFIKAT</p>
-                <div class="title-no">NOMOR : {{ $certificateNo }}</div>
-            </div>
+            <section class="title">
+                <div class="title__main">Sertifikat</div>
+                <div class="title__number">Nomor: {{ $certificateNo }}</div>
+            </section>
 
-            {{-- Content --}}
-            <div class="content">
-                <p class="given">Diberikan kepada :</p>
+            <section class="main-content">
+                <div class="main-content__label">Diberikan kepada:</div>
+                <div class="main-content__name">{{ $user->name }}</div>
+                <div class="main-content__underline"></div>
 
-                <div class="name">{{ $user->name }}</div>
-                <div class="name-line"></div>
-
-                <div class="sub">
+                <div class="main-content__institution">
                     {{ $user->institution ?? 'Mahasiswa / Peserta Magang' }}
                 </div>
 
-                <p class="desc">
+                <div class="main-content__description">
                     Telah menyelesaikan kegiatan Magang di
                     <strong>Dinas Komunikasi dan Informatika Kabupaten Magelang</strong>
                     @if ($user->internship_start_date && $user->internship_end_date)
@@ -293,27 +274,27 @@
                     @else
                         sesuai dengan periode yang berlaku.
                     @endif
-                </p>
-            </div>
+                </div>
+            </section>
 
-            {{-- Signature --}}
-            <div class="sign">
-                <div class="role">
-                    KEPALA DINAS KOMUNIKASI DAN INFORMATIKA<br>
-                    KABUPATEN MAGELANG
+            <aside class="signature">
+                <div class="signature__role">
+                    Kepala Dinas Komunikasi dan Informatika<br>
+                    Kabupaten Magelang
                 </div>
 
-                <div class="space"></div>
+                <div class="signature__space"></div>
 
-                <div class="sign-name">{{ $signatoryName }}</div>
-                <div class="meta">
+                <div class="signature__name">{{ $signatoryName }}</div>
+                <div class="signature__meta">
                     {{ $signatoryRank ?? 'Pembina Tingkat I' }}<br>
                     NIP. {{ $signatoryNip ?? '-' }}
                 </div>
-            </div>
-        </div>
+            </aside>
 
+        </div>
     </div>
 </div>
 </body>
+
 </html>

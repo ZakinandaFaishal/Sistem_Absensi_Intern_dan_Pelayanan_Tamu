@@ -18,15 +18,16 @@
 <body class="font-sans antialiased">
     <main class="relative min-h-screen w-full overflow-hidden">
 
-        {{-- Background --}}
-        <div id="kiosk-bg" class="absolute inset-0">
+        {{-- Background (FIXED) --}}
+        <div id="kiosk-bg" class="fixed inset-0 -z-10 overflow-hidden">
             <video
-                class="h-full w-full object-cover scale-[1.03]"
+                class="absolute inset-0 h-full w-full object-cover object-center"
                 autoplay
                 muted
                 loop
                 playsinline
                 preload="auto"
+                poster="{{ asset('img/background.png') }}"
             >
                 <source src="{{ asset('img/vid_bg_kab.mp4') }}" type="video/mp4">
             </video>
@@ -35,6 +36,7 @@
             <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/70"></div>
             <div class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.55)_70%,rgba(0,0,0,0.8)_100%)]"></div>
         </div>
+
 
         {{-- Top bar --}}
         <header class="relative z-10 flex items-start justify-between px-6 py-5 sm:px-10">
