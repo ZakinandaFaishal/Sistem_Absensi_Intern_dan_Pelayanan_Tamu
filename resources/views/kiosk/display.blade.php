@@ -13,6 +13,7 @@
             loop
             playsinline
             preload="auto"
+            poster="{{ asset('img/background.png') }}"
         >
             <source src="{{ asset('img/vid_bg_kab.mp4') }}" type="video/mp4">
         </video>

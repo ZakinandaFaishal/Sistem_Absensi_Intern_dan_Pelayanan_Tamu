@@ -69,7 +69,7 @@
                        class="rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-xs font-semibold
                               hover:bg-white/10 transition flex items-center gap-2">
                         <x-icon name="computer-desktop" class="h-5 w-5" />
-                        Kiosk
+                        Main Page
                     </a>
                 </div>
 
@@ -307,7 +307,7 @@
                 <a href="{{ route('kiosk.display') }}" target="_blank" rel="noopener"
                     class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition">
                     <x-icon name="computer-desktop" class="h-5 w-5" />
-                    Buka Mode Kiosk
+                    Buka Main Page
                 </a>
 
                 <div class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
