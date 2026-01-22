@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="id">
-
 <head>
     <meta charset="utf-8">
     <title>Sertifikat Magang</title>
@@ -22,76 +21,74 @@
         /* ===== FRAME ===== */
         .outer {
             border: 4px solid #111827;
-            padding: 12mm;
+            padding: 10mm;
             box-sizing: border-box;
         }
 
         .inner {
             position: relative;
-            border: 3px solid #b78b2a;
-            /* emas */
-            padding: 10mm 12mm;
+            border: 3px solid #caa24a; /* emas */
+            padding: 12mm 14mm;
+            min-height: 165mm;
             box-sizing: border-box;
-            min-height: 160mm;
-            /* supaya stabil */
+            overflow: hidden;
         }
 
-        /* ===== DECOR (corner emas sederhana) ===== */
+        /* ===== WATERMARK ===== */
+        .watermark {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .watermark img {
+            width: 120mm;
+            height: auto;
+        }
+
+        /* ===== CORNER ORNAMENT ===== */
         .corner {
             position: absolute;
-            width: 26mm;
-            height: 26mm;
-            border: 2px solid #b78b2a;
+            width: 24mm;
+            height: 24mm;
+            border: 2px solid #caa24a;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .corner.tl { top: 6mm; left: 6mm; border-right: none; border-bottom: none; }
+        .corner.tr { top: 6mm; right: 6mm; border-left: none; border-bottom: none; }
+        .corner.bl { bottom: 6mm; left: 6mm; border-right: none; border-top: none; }
+        .corner.br { bottom: 6mm; right: 6mm; border-left: none; border-top: none; }
+
+        /* ===== RIBBON (TOP RIGHT) ===== */
+        .ribbon {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-top: 36mm solid #caa24a;
+            border-left: 36mm solid transparent;
+            z-index: 1;
             pointer-events: none;
         }
 
-        .corner.tl {
-            top: 6mm;
-            left: 6mm;
-            border-right: none;
-            border-bottom: none;
+        .ribbon.dark {
+            border-top-color: #111827;
+            border-top-width: 26mm;
+            border-left-width: 26mm;
         }
 
-        .corner.tr {
-            top: 6mm;
-            right: 6mm;
-            border-left: none;
-            border-bottom: none;
-        }
-
-        .corner.bl {
-            bottom: 6mm;
-            left: 6mm;
-            border-right: none;
-            border-top: none;
-        }
-
-        .corner.br {
-            bottom: 6mm;
-            right: 6mm;
-            border-left: none;
-            border-top: none;
-        }
-
-        /* ===== TOP RIGHT RIBBON ===== */
-        .ribbon1 {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 0;
-            height: 0;
-            border-top: 34mm solid rgba(183, 139, 42, .95);
-            border-left: 34mm solid transparent;
-        }
-
-        .ribbon2 {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 0;
-            height: 0;
-            border-top: 24mm solid rgba(17, 24, 39, .85);
-            border-left: 24mm solid transparent;
+        /* ===== CONTENT LAYER ===== */
+        .layer {
+            position: relative;
+            z-index: 3; /* di atas watermark */
         }
 
         /* ===== HEADER ===== */
@@ -101,44 +98,60 @@
         }
 
         .logo {
-            margin: 0 auto 4mm;
             width: 18mm;
-            height: 18mm;
+            height: auto;
+            margin: 0 auto 4mm;
+            display: block;
+            /* Dompdf tidak selalu support filter, jadi aman tanpa efek */
         }
 
-        .h1 {
-            font-family: DejaVu Sans, sans-serif;
+        .org {
             font-weight: 800;
             font-size: 18px;
-            letter-spacing: .5px;
+            letter-spacing: 0.8px;
             margin: 0;
             text-transform: uppercase;
         }
 
-        .h2 {
+        .dept {
             font-weight: 600;
             font-size: 13px;
-            margin: 3px 0 0;
+            margin: 2px 0 0;
             text-transform: uppercase;
+        }
+
+        /* ===== MEDAL ===== */
+        .medal {
+            margin: 8mm auto 0;
+            width: 22mm;
+            height: 22mm;
+            border-radius: 50%;
+            border: 3px solid #111827;
+            background: #caa24a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 900;
+            color: #111827;
         }
 
         /* ===== TITLE ===== */
         .title {
             text-align: center;
-            margin-top: 10mm;
+            margin-top: 6mm;
         }
 
-        .title .main {
-            font-family: DejaVu Sans, sans-serif;
+        .title-main {
+            font-size: 36px;
             font-weight: 900;
-            font-size: 34px;
-            letter-spacing: 2px;
-            color: #b78b2a;
+            letter-spacing: 3px;
+            color: #caa24a;
             margin: 0;
             text-transform: uppercase;
         }
 
-        .title .no {
+        .title-no {
             margin-top: 2mm;
             font-size: 12px;
             font-weight: 700;
@@ -148,151 +161,159 @@
         .content {
             text-align: center;
             margin-top: 10mm;
-            padding: 0 10mm;
+            padding: 0 12mm;
         }
 
-        .give {
+        .given {
             font-size: 14px;
-            margin: 0;
+            margin: 0 0 3mm;
         }
 
         .name {
-            margin: 6mm 0 2mm;
-            font-family: DejaVu Sans, sans-serif;
+            font-size: 36px;
             font-weight: 900;
-            font-size: 34px;
-            color: #111827;
+            margin: 3mm 0;
         }
 
         .name-line {
             width: 120mm;
-            border-top: 2px solid #111827;
             margin: 0 auto 3mm;
+            border-top: 2px solid #111827;
         }
 
         .sub {
             font-size: 13px;
-            margin: 0;
             font-weight: 600;
+            margin: 0 0 4mm;
         }
 
         .desc {
-            margin-top: 5mm;
             font-size: 13px;
-            line-height: 1.6;
+            line-height: 1.7;
+            margin: 0;
         }
 
-        /* ===== SIGNATURE BLOCK ===== */
+        /* ===== SIGNATURE ===== */
         .sign {
             position: absolute;
-            right: 14mm;
-            bottom: 16mm;
+            right: 16mm;
+            bottom: 18mm;
             width: 90mm;
             text-align: center;
             font-size: 11px;
+            z-index: 3;
         }
 
-        .sign .role {
+        .role {
             font-weight: 800;
-            text-transform: uppercase;
             font-size: 10px;
-            line-height: 1.3;
+            text-transform: uppercase;
+            line-height: 1.4;
         }
 
-        .ttd-space {
+        .space {
             height: 22mm;
         }
 
-        .sign .sign-name {
-            margin-top: 2mm;
+        .sign-name {
+            font-size: 12px;
             font-weight: 900;
             text-decoration: underline;
-            font-size: 12px;
         }
 
-        .sign .meta {
+        .meta {
             margin-top: 2px;
-            color: #374151;
             font-size: 10px;
+            color: #374151;
         }
     </style>
 </head>
 
 <body>
-    <div class="outer">
-        <div class="inner">
-            <!-- decorations -->
-            <div class="corner tl"></div>
-            <div class="corner tr"></div>
-            <div class="corner bl"></div>
-            <div class="corner br"></div>
-            <div class="ribbon1"></div>
-            <div class="ribbon2"></div>
+<div class="outer">
+    <div class="inner">
 
-            <!-- header -->
+        {{-- Ornament --}}
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+        <div class="ribbon"></div>
+        <div class="ribbon dark"></div>
+
+        {{-- Watermark (logo transparan) --}}
+        <div class="watermark">
+            <img src="{{ public_path('img/logo kab.mgl.png') }}" alt="Watermark Logo Kabupaten Magelang">
+        </div>
+
+        <div class="layer">
+            {{-- Header --}}
             <div class="header">
-                {{-- Logo: ganti path sesuai file kamu --}}
-                {{-- Jika mau pakai gambar: pastikan file ada di public/img/logo_kab_mgl.png --}}
-                <img class="logo" src="{{ public_path('img/logo_kab_mgl.png') }}" alt="Logo">
-                <p class="h1">PEMERINTAH KABUPATEN MAGELANG</p>
-                <p class="h2">DINAS KOMUNIKASI DAN INFORMATIKA</p>
+                <img class="logo"
+                     src="{{ public_path('img/logo kab.mgl.png') }}"
+                     alt="Logo Kabupaten Magelang">
+
+                <p class="org">PEMERINTAH KABUPATEN MAGELANG</p>
+                <p class="dept">DINAS KOMUNIKASI DAN INFORMATIKA</p>
             </div>
 
-            <!-- title -->
+            {{-- Medal --}}
+            <div class="medal">★</div>
+
+            {{-- Title --}}
             <div class="title">
-                <p class="main">SERTIFIKAT</p>
-                <div class="no">NOMOR : {{ $certificateNo }}</div>
+                <p class="title-main">SERTIFIKAT</p>
+                <div class="title-no">NOMOR : {{ $certificateNo }}</div>
             </div>
 
-            <!-- content -->
+            {{-- Content --}}
             <div class="content">
-                <p class="give">Diberikan kepada :</p>
+                <p class="given">Diberikan kepada :</p>
 
                 <div class="name">{{ $user->name }}</div>
                 <div class="name-line"></div>
 
-                <p class="sub">
+                <div class="sub">
                     {{ $user->institution ?? 'Mahasiswa / Peserta Magang' }}
-                </p>
+                </div>
 
-                <div class="desc">
-                    Telah menyelesaikan Magang di Dinas Komunikasi dan Informatika Kabupaten Magelang
+                <p class="desc">
+                    Telah menyelesaikan kegiatan Magang di
+                    <strong>Dinas Komunikasi dan Informatika Kabupaten Magelang</strong>
                     @if ($user->internship_start_date && $user->internship_end_date)
                         selama
                         <strong>
                             {{ \Carbon\Carbon::parse($user->internship_start_date)->diffInDays(\Carbon\Carbon::parse($user->internship_end_date)) + 1 }}
                             hari
                         </strong>
-                        dari tanggal
+                        terhitung sejak
                         <strong>{{ optional($user->internship_start_date)->format('d F Y') }}</strong>
-                        s/d
-                        <strong>{{ optional($user->internship_end_date)->format('d F Y') }}</strong>
+                        sampai dengan
+                        <strong>{{ optional($user->internship_end_date)->format('d F Y') }}</strong>.
                     @else
-                        sesuai periode yang berlaku.
+                        sesuai dengan periode yang berlaku.
                     @endif
-                </div>
+                </p>
             </div>
 
-            <!-- signature -->
+            {{-- Signature --}}
             <div class="sign">
                 <div class="role">
                     KEPALA DINAS KOMUNIKASI DAN INFORMATIKA<br>
                     KABUPATEN MAGELANG
                 </div>
 
-                <div class="ttd-space"></div>
+                <div class="space"></div>
 
-                <div class="sign-name">
-                    {{ $signatoryName }}
-                </div>
+                <div class="sign-name">{{ $signatoryName }}</div>
                 <div class="meta">
                     {{ $signatoryRank ?? 'Pembina Tingkat I' }}<br>
                     NIP. {{ $signatoryNip ?? '-' }}
                 </div>
             </div>
-
         </div>
-    </div>
-</body>
 
+    </div>
+</div>
+</body>
 </html>

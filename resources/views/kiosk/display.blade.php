@@ -3,13 +3,35 @@
 @section('title', 'Mode Kiosk')
 
 @section('content')
-    <main id="kiosk-root" class="relative min-h-screen w-full overflow-hidden">
-        <div id="kiosk-bg" class="absolute inset-0">
-            <img src="{{ asset('img/background.png') }}" alt="Kabupaten Magelang"
-                class="h-full w-full object-cover scale-[1.03]">
-            <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/70"></div>
-            <div
-                class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.55)_70%,rgba(0,0,0,0.8)_100%)]">
+<main id="kiosk-root" class="relative min-h-screen w-full overflow-hidden">
+    {{-- BACKGROUND VIDEO --}}
+    <div id="kiosk-bg" class="absolute inset-0">
+        <video
+            class="h-full w-full object-cover scale-[1.03]"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto"
+            poster="{{ asset('img/background.png') }}"
+        >
+            <source src="{{ asset('img/vid_bg_kab.mp4') }}" type="video/mp4">
+        </video>
+
+        {{-- overlays --}}
+        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/70"></div>
+        <div class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.55)_70%,rgba(0,0,0,0.8)_100%)]"></div>
+    </div>
+
+    <header class="relative z-10 flex items-center justify-between px-4 py-4 sm:px-10 sm:py-5">
+        <div class="flex items-center gap-3">
+            <div class="rounded-2xl border border-white/20 bg-white/10 p-2 backdrop-blur-md shadow-lg">
+                <img src="{{ asset('img/logo kab.mgl.png') }}" alt="Logo Kabupaten Magelang"
+                     class="h-11 w-11 object-contain sm:h-14 sm:w-14">
+            </div>
+            <div class="hidden sm:block text-left">
+                <div class="text-white font-semibold">Diskominfo</div>
+                <div class="text-white/70 text-sm">Kabupaten Magelang</div>
             </div>
         </div>
 
@@ -64,24 +86,24 @@
                     </a>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        {{-- Floating panel: responsive --}}
-        <section id="kiosk-active-guests"
-            class="anim fixed bottom-3 left-3 right-3 z-20 sm:left-4 sm:right-auto sm:bottom-4 sm:w-[360px] sm:max-w-[calc(100vw-32px)]">
-            <div class="overflow-hidden rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl">
-                <div class="flex items-center justify-between gap-3 border-b border-white/15 px-4 py-3">
-                    <div class="flex items-center gap-2 min-w-0">
-                        <div
-                            class="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/15 bg-white/10">
-                            <x-icon name="clipboard-document" class="h-5 w-5 text-white" />
-                        </div>
-                        <div class="min-w-0">
-                            <div class="truncate text-sm font-extrabold text-white">Tamu Sedang Hadir</div>
-                            <div class="truncate text-[11px] text-white/70">
-                                <span id="kioskActiveGuestCount" class="font-semibold text-white/90">0</span> aktif • update
-                                5 detik
-                            </div>
+    {{-- Floating panel --}}
+    <section
+        id="kiosk-active-guests"
+        class="anim fixed bottom-3 left-3 right-3 z-20 sm:left-4 sm:right-auto sm:bottom-4 sm:w-[360px] sm:max-w-[calc(100vw-32px)]"
+    >
+        <div class="overflow-hidden rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl">
+            <div class="flex items-center justify-between gap-3 border-b border-white/15 px-4 py-3">
+                <div class="flex items-center gap-2 min-w-0">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/15 bg-white/10">
+                        <x-icon name="clipboard-document" class="h-5 w-5 text-white" />
+                    </div>
+                    <div class="min-w-0">
+                        <div class="truncate text-sm font-extrabold text-white">Tamu Sedang Hadir</div>
+                        <div class="truncate text-[11px] text-white/70">
+                            <span id="kioskActiveGuestCount" class="font-semibold text-white/90">0</span> aktif • update 5 detik
                         </div>
                     </div>
 
@@ -97,11 +119,26 @@
                         Memuat daftar tamu...
                     </div>
 
-                    <ul id="kioskActiveGuestList" class="hidden space-y-2 max-h-[45vh] sm:max-h-72 overflow-auto pr-1"></ul>
+                <div
+                    id="kioskActiveGuestEmpty"
+                    class="hidden rounded-2xl border border-white/15 bg-white/5 px-3 py-3 text-sm text-white/80"
+                >
+                    Belum ada tamu yang sedang berkunjung.
+                </div>
+            </div>
+        </div>
+    </section>
 
-                    <div id="kioskActiveGuestEmpty"
-                        class="hidden rounded-2xl border border-white/15 bg-white/5 px-3 py-3 text-sm text-white/80">
-                        Belum ada tamu yang sedang berkunjung.
+    {{-- Modal reminder --}}
+    <div id="surveyReminderModal" class="hidden fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-black/60"></div>
+
+        <div class="relative mx-auto flex min-h-screen w-full items-center justify-center p-4">
+            <div class="w-full max-w-md overflow-hidden rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl">
+                <div class="flex items-start justify-between gap-3 border-b border-white/15 px-5 py-4">
+                    <div class="min-w-0">
+                        <div class="text-white font-extrabold text-base">Ingatkan Isi Survey</div>
+                        <div id="surveyReminderName" class="truncate text-white/70 text-sm">—</div>
                     </div>
                 </div>
             </div>
@@ -151,44 +188,148 @@
                 </div>
             </div>
         </div>
-    </main>
+    </div>
+</main>
 
-    <style>
-        @media (prefers-reduced-motion: reduce) {
+<style>
 
-            .anim,
-            .anim * {
-                animation: none !important;
-                transition: none !important;
+    html, body {
+        height: 100%;
+        overflow: hidden !important;      /* kunci scroll halaman */
+        overscroll-behavior: none;
+    }
+
+    /* sembunyikan scrollbar (Chrome/Edge/Safari) */
+    body::-webkit-scrollbar,
+    html::-webkit-scrollbar {
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    /* sembunyikan scrollbar (Firefox) */
+    html, body {
+        scrollbar-width: none;
+    }
+
+    /* sembunyikan scrollbar (IE/legacy Edge) */
+    html, body {
+        -ms-overflow-style: none;
+    }
+
+    /* ====== OPTIONAL: list tamu tetap bisa scroll tapi scrollbar disembunyikan ====== */
+    #kioskActiveGuestList {
+        scrollbar-width: none;          /* Firefox */
+        -ms-overflow-style: none;       /* IE/legacy */
+    }
+    #kioskActiveGuestList::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .anim, .anim * { animation: none !important; transition: none !important; }
+    }
+
+    @keyframes popIn {
+        from { opacity: 0; transform: translateY(8px) scale(.98); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .pop-in { animation: popIn .22s ease-out both; }
+
+    @keyframes fadeOutDown {
+        from { opacity: 1; transform: translateY(0); }
+        to   { opacity: 0; transform: translateY(10px); }
+    }
+    .fade-out-down { animation: fadeOutDown .22s ease-in both; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .anim, .anim * { animation: none !important; transition: none !important; }
+    }
+
+    @keyframes popIn {
+        from { opacity: 0; transform: translateY(8px) scale(.98); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .pop-in { animation: popIn .22s ease-out both; }
+
+    @keyframes fadeOutDown {
+        from { opacity: 1; transform: translateY(0); }
+        to   { opacity: 0; transform: translateY(10px); }
+    }
+    .fade-out-down { animation: fadeOutDown .22s ease-in both; }
+</style>
+
+{{-- CLOCK --}}
+<script>
+    (function () {
+        const clockEl = document.getElementById('kioskClock');
+        const dateEl = document.getElementById('kioskDate');
+
+        function pad(n) { return String(n).padStart(2, '0'); }
+
+        function tick() {
+            const now = new Date();
+            const hh = pad(now.getHours());
+            const mm = pad(now.getMinutes());
+            const ss = pad(now.getSeconds());
+
+            if (clockEl) clockEl.textContent = `${hh}:${mm}:${ss}`;
+            if (dateEl) {
+                dateEl.textContent = now.toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                });
             }
         }
 
-        @keyframes popIn {
-            from {
-                opacity: 0;
-                transform: translateY(8px) scale(.98);
-            }
+        tick();
+        setInterval(tick, 1000);
+    })();
+</script>
 
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
+{{-- ACTIVE GUESTS --}}
+<script>
+    (function () {
+        const ENDPOINT = @json(route('guest.active'));
+        const COMPLETE_BASE = @json(url('/admin/tamu'));
+        const SURVEY_BASE = @json(url('/tamu'));
 
-        .pop-in {
-            animation: popIn .22s ease-out both;
-        }
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-        @keyframes fadeOutDown {
-            from {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        const listEl = document.getElementById('kioskActiveGuestList');
+        const loadingEl = document.getElementById('kioskActiveGuestLoading');
+        const emptyEl = document.getElementById('kioskActiveGuestEmpty');
+        const countEl = document.getElementById('kioskActiveGuestCount');
 
-            to {
-                opacity: 0;
-                transform: translateY(10px);
-            }
+        const btnToggle = document.getElementById('kioskBtnToggleGuest');
+        const bodyEl = document.getElementById('kioskGuestBody');
+        const chev = document.getElementById('kioskGuestChevron');
+
+        const modal = document.getElementById('surveyReminderModal');
+        const btnCloseModal = document.getElementById('btnCloseSurveyModal');
+        const btnGoSurvey = document.getElementById('btnGoSurvey');
+        const btnForceComplete = document.getElementById('btnForceComplete');
+        const modalName = document.getElementById('surveyReminderName');
+
+        const latestById = new Map();
+        let pendingCompleteId = null;
+
+        btnToggle?.addEventListener('click', () => {
+            if (!bodyEl) return;
+            const isHidden = bodyEl.classList.contains('hidden');
+            bodyEl.classList.toggle('hidden');
+            if (chev) chev.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(-180deg)';
+        });
+
+        function escapeHtml(str) {
+            return String(str)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
         }
 
         .fade-out-down {
@@ -328,16 +469,14 @@
                 listEl?.classList.remove('hidden');
             }
 
-            function closeModal() {
-                modal?.classList.add('hidden');
-                pendingCompleteId = null;
-            }
+        function surveyAllowed(item) {
+            if (typeof item.survey_allowed === 'boolean') return item.survey_allowed === true;
+            if (typeof item.service_type === 'string') return item.service_type === 'layanan';
+            return false;
+        }
 
-            function surveyAllowed(item) {
-                if (typeof item.survey_allowed === 'boolean') return item.survey_allowed === true;
-                if (typeof item.service_type === 'string') return item.service_type === 'layanan';
-                return false; // fallback aman
-            }
+        function needsSurveyReminder(item) {
+            if (!surveyAllowed(item)) return false;
 
             function needsSurveyReminder(item) {
                 // kalau bukan layanan, jangan pernah popup
@@ -347,11 +486,9 @@
                 if (typeof item.has_survey === 'boolean') return item.has_survey === false;
                 if (typeof item.survey_completed === 'boolean') return item.survey_completed === false;
 
-                return false;
-            }
-
-            function openModalFor(item) {
-                pendingCompleteId = String(item.id);
+        function openModalFor(item) {
+            pendingCompleteId = String(item.id);
+            if (modalName) modalName.textContent = `Tamu: ${item.name || 'Tamu'}`;
 
                 if (modalName) modalName.textContent = `Tamu: ${item.name || 'Tamu'}`;
 

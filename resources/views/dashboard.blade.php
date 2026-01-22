@@ -181,7 +181,7 @@
                 </div>
             </div>
 
-            {{-- CHART BOX (PENTING: overflow-visible supaya tooltip gak kepotong) --}}
+            {{-- CHART BOX --}}
             <div class="relative mt-5 rounded-xl bg-slate-50 border border-slate-200 overflow-visible">
                 <div
                     class="pointer-events-none absolute inset-0 opacity-60
