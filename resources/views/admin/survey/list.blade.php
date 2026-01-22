@@ -314,13 +314,17 @@
                     <div class="absolute inset-0 bg-slate-900/40" data-modal-close></div>
 
                     <div class="absolute inset-0 flex items-center justify-center p-4">
-                        <div class="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
-                            <div class="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-200 bg-slate-50">
+                        <div
+                            class="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+                            <div
+                                class="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-200 bg-slate-50">
                                 <div class="min-w-0">
                                     <div class="text-sm font-extrabold tracking-tight text-slate-900">Detail Survey</div>
                                     <div class="text-xs text-slate-500" id="surveyDetailMeta">-</div>
                                 </div>
-                                <button type="button" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50" data-modal-close>
+                                <button type="button"
+                                    class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                    data-modal-close>
                                     Tutup
                                 </button>
                             </div>
@@ -329,13 +333,15 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div class="rounded-xl border border-slate-200 px-4 py-3">
                                         <div class="text-xs font-semibold text-slate-500">Nama</div>
-                                        <div class="mt-1 text-sm font-semibold text-slate-900" id="surveyDetailName">-</div>
+                                        <div class="mt-1 text-sm font-semibold text-slate-900" id="surveyDetailName">-
+                                        </div>
                                         <div class="mt-1 text-xs text-slate-500" id="surveyDetailEmail"></div>
                                     </div>
                                     <div class="rounded-xl border border-slate-200 px-4 py-3">
                                         <div class="text-xs font-semibold text-slate-500">Keperluan</div>
                                         <div class="mt-1 text-sm text-slate-800" id="surveyDetailPurpose">-</div>
-                                        <div class="mt-2 text-xs text-slate-500">Avg: <span class="font-semibold text-slate-700" id="surveyDetailAvg">-</span></div>
+                                        <div class="mt-2 text-xs text-slate-500">Avg: <span
+                                                class="font-semibold text-slate-700" id="surveyDetailAvg">-</span></div>
                                     </div>
                                 </div>
 
@@ -417,7 +423,8 @@
                         return;
                     }
 
-                    if (metaEl) metaEl.textContent = data.submitted_at ? `Dikirim: ${data.submitted_at}` : '-';
+                    if (metaEl) metaEl.textContent = data.submitted_at ?
+                        `Dikirim: ${data.submitted_at}` : '-';
                     if (nameEl) nameEl.textContent = data.name || '-';
                     if (emailEl) emailEl.textContent = data.email || '';
                     if (purposeEl) purposeEl.textContent = data.purpose || '-';

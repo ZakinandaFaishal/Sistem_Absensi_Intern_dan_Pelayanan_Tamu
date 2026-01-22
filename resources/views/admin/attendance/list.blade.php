@@ -231,7 +231,8 @@
                             <tbody class="divide-y divide-slate-100">
                                 @forelse ($attendances as $a)
                                     <tr class="hover:bg-slate-50/70">
-                                        <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ optional($a->date)->format('Y-m-d') ?? '-' }}</td>
+                                        <td class="py-3 pr-4 whitespace-nowrap text-slate-700">
+                                            {{ optional($a->date)->format('Y-m-d') ?? '-' }}</td>
                                         <td class="py-3 pr-4 whitespace-nowrap">
                                             <div class="font-semibold text-slate-900">{{ $a->user?->name ?? '-' }}</div>
                                             <div class="text-xs text-slate-500">{{ $a->user?->nik ?? '' }}</div>
