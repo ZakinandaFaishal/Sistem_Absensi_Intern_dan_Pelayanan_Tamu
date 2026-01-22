@@ -296,12 +296,13 @@
 
             {{-- FILTER BAR --}}
             <div class="px-6 pt-5">
-                <form method="GET" action="{{ route('admin.survey.index') }}"
+                <form id="surveyFilterForm" method="GET" action="{{ route('admin.survey.index') }}"
                     class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                    <input type="hidden" name="page" value="1">
 
                     <div class="sm:col-span-5">
                         <label class="block text-xs font-semibold text-slate-600">Cari</label>
-                        <input type="text" name="q" value="{{ $q }}"
+                        <input id="surveyQInput" type="text" name="q" value="{{ $q }}"
                             placeholder="Nama tamu / keperluan / komentar…"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
                                    focus:outline-none focus:ring-2 focus:ring-slate-200">
@@ -309,7 +310,7 @@
 
                     <div class="sm:col-span-3">
                         <label class="block text-xs font-semibold text-slate-600">Minimal Rata-rata (Q1–Q9)</label>
-                        <select name="avg_min"
+                        <select id="surveyAvgMinSelect" name="avg_min"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
                                    focus:outline-none focus:ring-2 focus:ring-slate-200">
                             <option value="" @selected($avgMin === '')>Semua</option>
@@ -325,24 +326,24 @@
 
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-semibold text-slate-600">Dari</label>
-                        <input type="date" name="from" value="{{ $from }}"
+                        <input id="surveyFromInput" type="date" name="from" value="{{ $from }}"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
                                    focus:outline-none focus:ring-2 focus:ring-slate-200">
                     </div>
 
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-semibold text-slate-600">Sampai</label>
-                        <input type="date" name="to" value="{{ $to }}"
+                        <input id="surveyToInput" type="date" name="to" value="{{ $to }}"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
                                    focus:outline-none focus:ring-2 focus:ring-slate-200">
                     </div>
 
                     <div class="sm:col-span-12 flex items-center justify-between gap-2">
                         <div class="text-xs text-slate-500">
-                            Sort:
-                            <span class="font-semibold text-slate-700">{{ $sort }}</span> ({{ $dir }})
                             @if ($activeFilter)
-                                <span class="mx-2 opacity-40">|</span> Filter aktif
+                                <span class="font-semibold text-slate-600">Filter aktif</span>
+                            @else
+                                Menampilkan data terbaru (paginasi).
                             @endif
                         </div>
 
@@ -350,20 +351,53 @@
                             <input type="hidden" name="sort" value="{{ $sort }}">
                             <input type="hidden" name="dir" value="{{ $dir }}">
 
-                            <button type="submit"
-                                class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white
-                                       hover:bg-slate-800 transition">
-                                Terapkan
-                            </button>
-
-                            <a href="{{ route('admin.survey.index') }}"
-                                class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700
-                                       hover:bg-slate-50 transition">
-                                Reset
-                            </a>
+                            <div class="text-xs text-slate-500">Filter diterapkan otomatis.</div>
                         </div>
                     </div>
                 </form>
+
+                <script>
+                    (function() {
+                        const form = document.getElementById('surveyFilterForm');
+                        if (!form) return;
+
+                        const qInput = document.getElementById('surveyQInput');
+                        const avgMinSelect = document.getElementById('surveyAvgMinSelect');
+                        const fromInput = document.getElementById('surveyFromInput');
+                        const toInput = document.getElementById('surveyToInput');
+
+                        let timer = null;
+                        let isComposing = false;
+
+                        const submit = () => {
+                            const pageInput = form.querySelector('input[name="page"]');
+                            if (pageInput) pageInput.value = '1';
+                            form.submit();
+                        };
+
+                        const debounceSubmit = () => {
+                            if (isComposing) return;
+                            if (timer) window.clearTimeout(timer);
+                            timer = window.setTimeout(submit, 900);
+                        };
+
+                        if (qInput) {
+                            qInput.addEventListener('compositionstart', () => {
+                                isComposing = true;
+                            });
+                            qInput.addEventListener('compositionend', () => {
+                                isComposing = false;
+                                debounceSubmit();
+                            });
+                            qInput.addEventListener('input', debounceSubmit);
+                        }
+
+                        [avgMinSelect, fromInput, toInput].forEach((el) => {
+                            if (!el) return;
+                            el.addEventListener('change', submit);
+                        });
+                    })();
+                </script>
 
                 {{-- SORT CHIPS --}}
                 <div class="mt-3 flex flex-wrap items-center gap-2">

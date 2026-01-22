@@ -6,18 +6,12 @@
 @section('content')
 
 @php
-    // ===== FILTER & SORT STATE =====
+    // ===== FILTER STATE =====
     $q         = request('q', '');
     $status    = request('status', '');      // '', 'pending', 'done'
     $visitType = request('visit_type', '');  // '', 'single', 'group'
     $from      = request('from', '');
     $to        = request('to', '');
-    $sort      = request('sort', 'arrived_at');
-    $dir       = request('dir', 'desc');
-
-    $mergeQuery = function (array $extra = []) {
-        return url()->current() . '?' . http_build_query(array_merge(request()->query(), $extra));
-    };
 
     $activeFilter = $q || $status !== '' || $visitType !== '' || $from || $to;
 
@@ -31,15 +25,6 @@
         };
     };
 
-    $sortLabel = function (string $col) {
-        return match($col) {
-            'arrived_at'    => 'Datang',
-            'completed_at'  => 'Selesai',
-            'name'          => 'Nama',
-            'visit_type'    => 'Jenis Kunjungan',
-            default         => $col,
-        };
-    };
 @endphp
 
 {{-- HEADER PAGE --}}
@@ -117,10 +102,11 @@
 
         {{-- FILTER BAR --}}
         <div class="px-6 pt-5">
-            <form method="GET" action="{{ route('admin.guest.index') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+            <form id="guestFilterForm" method="GET" action="{{ route('admin.guest.index') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                <input type="hidden" name="page" value="1">
                 <div class="sm:col-span-4">
                     <label class="block text-xs font-semibold text-slate-600">Cari</label>
-                    <input type="text" name="q" value="{{ $q }}"
+                    <input id="guestQInput" type="text" name="q" value="{{ $q }}"
                         placeholder="Nama tamu / keperluan…"
                         class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
                                focus:outline-none focus:ring-2 focus:ring-slate-200">
@@ -128,7 +114,7 @@
 
                 <div class="sm:col-span-2">
                     <label class="block text-xs font-semibold text-slate-600">Status</label>
-                    <select name="status"
+                    <select id="guestStatusSelect" name="status"
                         class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
                                focus:outline-none focus:ring-2 focus:ring-slate-200">
                         <option value="" @selected($status === '')>Semua</option>
@@ -140,7 +126,7 @@
                 {{-- ✅ NEW: Kelompok / Sendiri dropdown --}}
                 <div class="sm:col-span-2">
                     <label class="block text-xs font-semibold text-slate-600">Jenis Kunjungan</label>
-                    <select name="visit_type"
+                    <select id="guestVisitTypeSelect" name="visit_type"
                         class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
                                focus:outline-none focus:ring-2 focus:ring-slate-200">
                         <option value="" @selected($visitType === '')>Semua</option>
@@ -151,67 +137,75 @@
 
                 <div class="sm:col-span-2">
                     <label class="block text-xs font-semibold text-slate-600">Dari</label>
-                    <input type="date" name="from" value="{{ $from }}"
+                    <input id="guestFromInput" type="date" name="from" value="{{ $from }}"
                         class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
                                focus:outline-none focus:ring-2 focus:ring-slate-200">
                 </div>
 
                 <div class="sm:col-span-2">
                     <label class="block text-xs font-semibold text-slate-600">Sampai</label>
-                    <input type="date" name="to" value="{{ $to }}"
+                    <input id="guestToInput" type="date" name="to" value="{{ $to }}"
                         class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
                                focus:outline-none focus:ring-2 focus:ring-slate-200">
                 </div>
 
-                {{-- ✅ NEW: Sort dropdown (termasuk visit_type) --}}
-                <div class="sm:col-span-4">
-                    <label class="block text-xs font-semibold text-slate-600">Urutkan</label>
-                    <div class="mt-1 grid grid-cols-2 gap-2">
-                        <select name="sort"
-                            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
-                                   focus:outline-none focus:ring-2 focus:ring-slate-200">
-                            <option value="arrived_at"   @selected($sort === 'arrived_at')>Datang</option>
-                            <option value="completed_at" @selected($sort === 'completed_at')>Selesai</option>
-                            <option value="name"         @selected($sort === 'name')>Nama</option>
-                            <option value="visit_type"   @selected($sort === 'visit_type')>Jenis Kunjungan</option>
-                        </select>
-
-                        <select name="dir"
-                            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
-                                   focus:outline-none focus:ring-2 focus:ring-slate-200">
-                            <option value="asc"  @selected($dir === 'asc')>A → Z / Lama → Baru</option>
-                            <option value="desc" @selected($dir === 'desc')>Z → A / Baru → Lama</option>
-                        </select>
-                    </div>
-                </div>
-
                 <div class="sm:col-span-8 flex flex-wrap items-end justify-between gap-2">
                     <div class="text-xs text-slate-500">
-                        Menampilkan:
-                        <span class="font-semibold text-slate-700">{{ $sortLabel($sort) }}</span>
-                        <span class="opacity-60">({{ $dir }})</span>
                         @if ($activeFilter)
-                            <span class="mx-2 opacity-40">|</span>
                             <span class="font-semibold text-slate-600">Filter aktif</span>
+                        @else
+                            Menampilkan data terbaru.
                         @endif
                     </div>
 
-                    <div class="flex items-center gap-2">
-                        <button type="submit"
-                            class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white
-                                   hover:bg-slate-800 transition">
-                            Terapkan
-                        </button>
-
-                        <a href="{{ route('admin.guest.index') }}"
-                            class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700
-                                   hover:bg-slate-50 transition">
-                            Reset
-                        </a>
-                    </div>
+                    <div class="text-xs text-slate-500">Filter diterapkan otomatis.</div>
                 </div>
             </form>
         </div>
+
+        <script>
+            (function() {
+                const form = document.getElementById('guestFilterForm');
+                if (!form) return;
+
+                const qInput = document.getElementById('guestQInput');
+                const statusSelect = document.getElementById('guestStatusSelect');
+                const visitTypeSelect = document.getElementById('guestVisitTypeSelect');
+                const fromInput = document.getElementById('guestFromInput');
+                const toInput = document.getElementById('guestToInput');
+
+                let timer = null;
+                let isComposing = false;
+
+                const submit = () => {
+                    const pageInput = form.querySelector('input[name="page"]');
+                    if (pageInput) pageInput.value = '1';
+                    form.submit();
+                };
+
+                const debounceSubmit = () => {
+                    if (isComposing) return;
+                    if (timer) window.clearTimeout(timer);
+                    timer = window.setTimeout(submit, 900);
+                };
+
+                if (qInput) {
+                    qInput.addEventListener('compositionstart', () => {
+                        isComposing = true;
+                    });
+                    qInput.addEventListener('compositionend', () => {
+                        isComposing = false;
+                        debounceSubmit();
+                    });
+                    qInput.addEventListener('input', debounceSubmit);
+                }
+
+                [statusSelect, visitTypeSelect, fromInput, toInput].forEach((el) => {
+                    if (!el) return;
+                    el.addEventListener('change', submit);
+                });
+            })();
+        </script>
 
         {{-- LIST --}}
         <div class="p-6 space-y-3">

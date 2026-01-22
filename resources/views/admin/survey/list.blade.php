@@ -100,19 +100,20 @@
 
             {{-- FILTER BAR --}}
             <div class="px-6 pt-5">
-                <form method="GET" action="{{ route('admin.survey.index') }}"
+                <form id="surveyFilterForm" method="GET" action="{{ route('admin.survey.index') }}"
                     class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                    <input type="hidden" name="page" value="1">
 
                     <div class="sm:col-span-5">
                         <label class="block text-xs font-semibold text-slate-600">Cari</label>
-                        <input type="text" name="q" value="{{ $q }}"
+                        <input id="surveyQInput" type="text" name="q" value="{{ $q }}"
                             placeholder="Nama tamu / keperluan / komentar…"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
                     </div>
 
                     <div class="sm:col-span-3">
                         <label class="block text-xs font-semibold text-slate-600">Minimal Rata-rata (Q1–Q9)</label>
-                        <select name="avg_min"
+                        <select id="surveyAvgMinSelect" name="avg_min"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
                             <option value="" @selected($avgMin === '')>Semua</option>
                             <option value="4" @selected($avgMin === '4')>≥ 4.00</option>
@@ -127,22 +128,22 @@
 
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-semibold text-slate-600">Dari</label>
-                        <input type="date" name="from" value="{{ $from }}"
+                        <input id="surveyFromInput" type="date" name="from" value="{{ $from }}"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
                     </div>
 
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-semibold text-slate-600">Sampai</label>
-                        <input type="date" name="to" value="{{ $to }}"
+                        <input id="surveyToInput" type="date" name="to" value="{{ $to }}"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
                     </div>
 
                     <div class="sm:col-span-12 flex items-center justify-between gap-2">
                         <div class="text-xs text-slate-500">
-                            Sort:
-                            <span class="font-semibold text-slate-700">{{ $sort }}</span> ({{ $dir }})
                             @if ($activeFilter)
-                                <span class="mx-2 opacity-40">|</span> Filter aktif
+                                <span class="font-semibold text-slate-600">Filter aktif</span>
+                            @else
+                                Menampilkan data terbaru (paginasi).
                             @endif
                         </div>
 
@@ -150,17 +151,53 @@
                             <input type="hidden" name="sort" value="{{ $sort }}">
                             <input type="hidden" name="dir" value="{{ $dir }}">
 
-                            <button type="submit"
-                                class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
-                                Terapkan
-                            </button>
-                            <a href="{{ route('admin.survey.index') }}"
-                                class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-                                Reset
-                            </a>
+                            <div class="text-xs text-slate-500">Filter diterapkan otomatis.</div>
                         </div>
                     </div>
                 </form>
+
+                <script>
+                    (function() {
+                        const form = document.getElementById('surveyFilterForm');
+                        if (!form) return;
+
+                        const qInput = document.getElementById('surveyQInput');
+                        const avgMinSelect = document.getElementById('surveyAvgMinSelect');
+                        const fromInput = document.getElementById('surveyFromInput');
+                        const toInput = document.getElementById('surveyToInput');
+
+                        let timer = null;
+                        let isComposing = false;
+
+                        const submit = () => {
+                            const pageInput = form.querySelector('input[name="page"]');
+                            if (pageInput) pageInput.value = '1';
+                            form.submit();
+                        };
+
+                        const debounceSubmit = () => {
+                            if (isComposing) return;
+                            if (timer) window.clearTimeout(timer);
+                            timer = window.setTimeout(submit, 900);
+                        };
+
+                        if (qInput) {
+                            qInput.addEventListener('compositionstart', () => {
+                                isComposing = true;
+                            });
+                            qInput.addEventListener('compositionend', () => {
+                                isComposing = false;
+                                debounceSubmit();
+                            });
+                            qInput.addEventListener('input', debounceSubmit);
+                        }
+
+                        [avgMinSelect, fromInput, toInput].forEach((el) => {
+                            if (!el) return;
+                            el.addEventListener('change', submit);
+                        });
+                    })();
+                </script>
 
                 <div class="mt-3 flex flex-wrap items-center gap-2">
                     <a href="{{ $sortUrl('submitted_at') }}"
@@ -188,6 +225,7 @@
                                 <th class="py-3 pr-4 font-semibold whitespace-nowrap">Keperluan</th>
                                 <th class="py-3 pr-4 font-semibold whitespace-nowrap">Avg</th>
                                 <th class="py-3 pr-4 font-semibold whitespace-nowrap">Komentar</th>
+                                <th class="py-3 pr-0 font-semibold whitespace-nowrap">Detail</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -217,6 +255,26 @@
                                                 (int) $s->q9) /
                                             9.0;
                                     }
+
+                                    $surveyPayload = [
+                                        'submitted_at' => $s->submitted_at?->format('Y-m-d H:i'),
+                                        'name' => $s->visit?->name,
+                                        'email' => $s->visit?->email,
+                                        'purpose' => $s->visit?->purpose,
+                                        'avg' => $avg !== null ? number_format((float) $avg, 2, ',', '.') : null,
+                                        'comment' => $s->comment,
+                                        'answers' => [
+                                            'Q1' => $s->q1,
+                                            'Q2' => $s->q2,
+                                            'Q3' => $s->q3,
+                                            'Q4' => $s->q4,
+                                            'Q5' => $s->q5,
+                                            'Q6' => $s->q6,
+                                            'Q7' => $s->q7,
+                                            'Q8' => $s->q8,
+                                            'Q9' => $s->q9,
+                                        ],
+                                    ];
                                 @endphp
                                 <tr class="hover:bg-slate-50/70">
                                     <td class="py-3 pr-4 whitespace-nowrap text-slate-700">
@@ -233,15 +291,78 @@
                                     <td class="py-3 pr-4 text-slate-700">
                                         <div class="max-w-xl break-words">{{ $s->comment ?? '-' }}</div>
                                     </td>
+                                    <td class="py-3 pr-0 whitespace-nowrap">
+                                        <button type="button"
+                                            class="btnSurveyDetail inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+                                            data-survey='@json($surveyPayload)'>
+                                            Lihat
+                                        </button>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="py-10 text-center text-slate-600">Belum ada data survey.
+                                    <td colspan="6" class="py-10 text-center text-slate-600">Belum ada data survey.
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+
+                {{-- DETAIL MODAL --}}
+                <div id="surveyDetailModal" class="hidden fixed inset-0 z-50">
+                    <div class="absolute inset-0 bg-slate-900/40" data-modal-close></div>
+
+                    <div class="absolute inset-0 flex items-center justify-center p-4">
+                        <div class="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+                            <div class="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-200 bg-slate-50">
+                                <div class="min-w-0">
+                                    <div class="text-sm font-extrabold tracking-tight text-slate-900">Detail Survey</div>
+                                    <div class="text-xs text-slate-500" id="surveyDetailMeta">-</div>
+                                </div>
+                                <button type="button" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50" data-modal-close>
+                                    Tutup
+                                </button>
+                            </div>
+
+                            <div class="p-5 space-y-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div class="rounded-xl border border-slate-200 px-4 py-3">
+                                        <div class="text-xs font-semibold text-slate-500">Nama</div>
+                                        <div class="mt-1 text-sm font-semibold text-slate-900" id="surveyDetailName">-</div>
+                                        <div class="mt-1 text-xs text-slate-500" id="surveyDetailEmail"></div>
+                                    </div>
+                                    <div class="rounded-xl border border-slate-200 px-4 py-3">
+                                        <div class="text-xs font-semibold text-slate-500">Keperluan</div>
+                                        <div class="mt-1 text-sm text-slate-800" id="surveyDetailPurpose">-</div>
+                                        <div class="mt-2 text-xs text-slate-500">Avg: <span class="font-semibold text-slate-700" id="surveyDetailAvg">-</span></div>
+                                    </div>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 overflow-hidden">
+                                    <div class="px-4 py-3 border-b border-slate-200 bg-slate-50">
+                                        <div class="text-xs font-semibold text-slate-600">Jawaban (Skala 1–4)</div>
+                                    </div>
+                                    <div class="p-4 overflow-x-auto">
+                                        <table class="min-w-full text-sm">
+                                            <thead>
+                                                <tr class="text-left text-slate-600 border-b border-slate-200">
+                                                    <th class="py-2 pr-4 font-semibold">Pertanyaan</th>
+                                                    <th class="py-2 pr-0 font-semibold">Skor</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-100" id="surveyDetailAnswers"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="rounded-xl border border-slate-200 px-4 py-3">
+                                    <div class="text-xs font-semibold text-slate-500">Komentar</div>
+                                    <div class="mt-1 text-sm text-slate-800" id="surveyDetailComment">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mt-6">
@@ -254,6 +375,73 @@
     {{-- EXPORT SURVEY SCRIPT --}}
     <script>
         (function() {
+            // ===== Detail modal =====
+            const modal = document.getElementById('surveyDetailModal');
+            const metaEl = document.getElementById('surveyDetailMeta');
+            const nameEl = document.getElementById('surveyDetailName');
+            const emailEl = document.getElementById('surveyDetailEmail');
+            const purposeEl = document.getElementById('surveyDetailPurpose');
+            const avgEl = document.getElementById('surveyDetailAvg');
+            const commentEl = document.getElementById('surveyDetailComment');
+            const answersTbody = document.getElementById('surveyDetailAnswers');
+
+            const openModal = () => {
+                if (!modal) return;
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            };
+
+            const closeModal = () => {
+                if (!modal) return;
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            };
+
+            document.querySelectorAll('[data-modal-close]').forEach((el) => {
+                el.addEventListener('click', closeModal);
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+
+            document.querySelectorAll('.btnSurveyDetail').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const raw = btn.getAttribute('data-survey');
+                    if (!raw) return;
+
+                    let data = null;
+                    try {
+                        data = JSON.parse(raw);
+                    } catch (e) {
+                        return;
+                    }
+
+                    if (metaEl) metaEl.textContent = data.submitted_at ? `Dikirim: ${data.submitted_at}` : '-';
+                    if (nameEl) nameEl.textContent = data.name || '-';
+                    if (emailEl) emailEl.textContent = data.email || '';
+                    if (purposeEl) purposeEl.textContent = data.purpose || '-';
+                    if (avgEl) avgEl.textContent = data.avg || '-';
+                    if (commentEl) commentEl.textContent = data.comment || '-';
+
+                    if (answersTbody) {
+                        answersTbody.innerHTML = '';
+                        const answers = data.answers || {};
+                        Object.keys(answers).forEach((key) => {
+                            const value = answers[key];
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td class="py-2 pr-4 text-slate-700 font-semibold">${key}</td>
+                                <td class="py-2 pr-0 text-slate-700 tabular-nums">${value ?? '-'}</td>
+                            `;
+                            answersTbody.appendChild(tr);
+                        });
+                    }
+
+                    openModal();
+                });
+            });
+
             const btn = document.getElementById('btnExportSurvey');
             const menu = document.getElementById('menuExportSurvey');
             const chevron = document.getElementById('exportSurveyChevron');

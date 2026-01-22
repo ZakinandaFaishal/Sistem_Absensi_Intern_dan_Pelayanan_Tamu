@@ -67,18 +67,6 @@
             </div>
 
             <iframe id="dlAttendanceFrame" class="hidden"></iframe>
-
-            <a href="{{ route('attendance.scan.show') }}"
-                class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white
-                  hover:bg-slate-800 transition">
-                <x-icon name="camera" class="h-5 w-5" /> Scan Presensi
-            </a>
-
-            <a href="{{ route('dashboard') }}"
-                class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700
-                  hover:bg-slate-50 transition">
-                ← Kembali
-            </a>
         </div>
     </div>
 
@@ -243,7 +231,7 @@
                             <tbody class="divide-y divide-slate-100">
                                 @forelse ($attendances as $a)
                                     <tr class="hover:bg-slate-50/70">
-                                        <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $a->date }}</td>
+                                        <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ optional($a->date)->format('Y-m-d') ?? '-' }}</td>
                                         <td class="py-3 pr-4 whitespace-nowrap">
                                             <div class="font-semibold text-slate-900">{{ $a->user?->name ?? '-' }}</div>
                                             <div class="text-xs text-slate-500">{{ $a->user?->nik ?? '' }}</div>
