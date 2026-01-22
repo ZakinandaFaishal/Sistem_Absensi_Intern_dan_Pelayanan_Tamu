@@ -27,6 +27,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'dinas_id',
         'active',
         'intern_status',
         'internship_start_date',
@@ -74,8 +75,23 @@ class User extends Authenticatable
         return $this->hasMany(Attendance::class);
     }
 
+    public function dinas(): BelongsTo
+    {
+        return $this->belongsTo(Dinas::class);
+    }
+
     public function internshipLocation(): BelongsTo
     {
         return $this->belongsTo(Location::class, 'internship_location_id');
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return ($this->role ?? null) === 'super_admin';
+    }
+
+    public function isAdminDinas(): bool
+    {
+        return ($this->role ?? null) === 'admin_dinas';
     }
 }

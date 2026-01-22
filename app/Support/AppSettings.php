@@ -16,9 +16,6 @@ final class AppSettings
     public const CHECKOUT_START = 'attendance.checkout_start';
     public const CHECKOUT_END = 'attendance.checkout_end';
 
-    public const SCORE_POINTS_PER_ATTENDANCE = 'scoring.points_per_attendance';
-    public const SCORE_MAX = 'scoring.max_score';
-
     public const REGISTRATION_ADMIN_CODE_HASH = 'registration.admin_code_hash';
 
     public const CERTIFICATE_DEFAULT_SIGNATORY_NAME = 'certificate.default_signatory_name';

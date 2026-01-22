@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AttendanceRule;
 use App\Models\Attendance;
 use App\Models\Location;
 use App\Support\AppSettings;
@@ -53,11 +54,61 @@ class AttendanceScanController extends Controller
         $now = CarbonImmutable::now();
         $time = $now->format('H:i');
 
-        $checkinStart = AppSettings::getString(AppSettings::CHECKIN_START, '08:00');
-        $checkinEnd = AppSettings::getString(AppSettings::CHECKIN_END, '12:00');
-        $checkoutStart = AppSettings::getString(AppSettings::CHECKOUT_START, '13:00');
-        $checkoutEnd = AppSettings::getString(AppSettings::CHECKOUT_END, '16:30');
+        $dinasIdForRules = null;
+        if (($user?->role ?? null) === 'admin_dinas' && !empty($user?->dinas_id)) {
+            $dinasIdForRules = (int) $user->dinas_id;
+        }
 
+        $rule = null;
+        if ($dinasIdForRules !== null) {
+            $rule = AttendanceRule::query()->where('dinas_id', $dinasIdForRules)->first();
+        }
+
+        $checkinStart = $rule?->checkin_start ?? AppSettings::getString(AppSettings::CHECKIN_START, '08:00');
+        $checkinEnd = $rule?->checkin_end ?? AppSettings::getString(AppSettings::CHECKIN_END, '12:00');
+        $checkoutStart = $rule?->checkout_start ?? AppSettings::getString(AppSettings::CHECKOUT_START, '13:00');
+        $checkoutEnd = $rule?->checkout_end ?? AppSettings::getString(AppSettings::CHECKOUT_END, '16:30');
+
+        // Geofence + accuracy threshold.
+        $targetName = 'kantor';
+        $targetLat = $rule?->office_lat !== null ? (float) $rule->office_lat : AppSettings::getFloat(AppSettings::OFFICE_LAT, 0.0);
+        $targetLng = $rule?->office_lng !== null ? (float) $rule->office_lng : AppSettings::getFloat(AppSettings::OFFICE_LNG, 0.0);
+
+        $targetLocationId = null;
+        if (($user?->role ?? null) === 'intern' && $user?->internship_location_id) {
+            $internLocation = Location::query()->find($user->internship_location_id);
+            if ($internLocation === null) {
+                return back()->withErrors([
+                    'lat' => 'Lokasi magang Anda tidak ditemukan. Hubungi admin untuk memperbaiki penugasan lokasi.',
+                ]);
+            }
+
+            if ($dinasIdForRules === null && !empty($internLocation->dinas_id)) {
+                $dinasIdForRules = (int) $internLocation->dinas_id;
+                $rule = AttendanceRule::query()->where('dinas_id', $dinasIdForRules)->first();
+
+                $checkinStart = $rule?->checkin_start ?? $checkinStart;
+                $checkinEnd = $rule?->checkin_end ?? $checkinEnd;
+                $checkoutStart = $rule?->checkout_start ?? $checkoutStart;
+                $checkoutEnd = $rule?->checkout_end ?? $checkoutEnd;
+
+                $targetLat = $rule?->office_lat !== null ? (float) $rule->office_lat : $targetLat;
+                $targetLng = $rule?->office_lng !== null ? (float) $rule->office_lng : $targetLng;
+            }
+
+            if ($internLocation->lat === null || $internLocation->lng === null) {
+                return back()->withErrors([
+                    'lat' => 'Koordinat lokasi magang belum diatur admin. Hubungi admin untuk melengkapi titik lokasi.',
+                ]);
+            }
+
+            $targetName = (string) ($internLocation->name ?? 'lokasi magang');
+            $targetLat = (float) $internLocation->lat;
+            $targetLng = (float) $internLocation->lng;
+            $targetLocationId = (int) $internLocation->id;
+        }
+
+        // Enforce time windows (server time: Asia/Jakarta) after resolving per-dinas rules.
         if ($validated['action'] === 'in') {
             if ($time < $checkinStart || $time > $checkinEnd) {
                 return back()->withErrors([
@@ -74,36 +125,10 @@ class AttendanceScanController extends Controller
             }
         }
 
-        // Geofence + accuracy threshold.
-        $targetName = 'kantor';
-        $targetLat = AppSettings::getFloat(AppSettings::OFFICE_LAT, 0.0);
-        $targetLng = AppSettings::getFloat(AppSettings::OFFICE_LNG, 0.0);
-
-        $targetLocationId = null;
-        if (($user?->role ?? null) === 'intern' && $user?->internship_location_id) {
-            $internLocation = Location::query()->find($user->internship_location_id);
-            if ($internLocation === null) {
-                return back()->withErrors([
-                    'lat' => 'Lokasi magang Anda tidak ditemukan. Hubungi admin untuk memperbaiki penugasan lokasi.',
-                ]);
-            }
-
-            if ($internLocation->lat === null || $internLocation->lng === null) {
-                return back()->withErrors([
-                    'lat' => 'Koordinat lokasi magang belum diatur admin. Hubungi admin untuk melengkapi titik lokasi.',
-                ]);
-            }
-
-            $targetName = (string) ($internLocation->name ?? 'lokasi magang');
-            $targetLat = (float) $internLocation->lat;
-            $targetLng = (float) $internLocation->lng;
-            $targetLocationId = (int) $internLocation->id;
-        }
-
         // Strict rule: presensi hanya boleh dalam radius 50 meter dari titik kantor.
         // Even if settings are changed, we cap radius to 50m server-side.
-        $radiusM = min(AppSettings::getInt(AppSettings::RADIUS_M, 50), 50);
-        $maxAccuracyM = AppSettings::getInt(AppSettings::MAX_ACCURACY_M, 50);
+        $radiusM = min((int) ($rule?->radius_m ?? AppSettings::getInt(AppSettings::RADIUS_M, 50)), 50);
+        $maxAccuracyM = (int) ($rule?->max_accuracy_m ?? AppSettings::getInt(AppSettings::MAX_ACCURACY_M, 50));
 
         $accuracy = isset($validated['accuracy_m']) ? (float) $validated['accuracy_m'] : null;
         if ($accuracy === null) {

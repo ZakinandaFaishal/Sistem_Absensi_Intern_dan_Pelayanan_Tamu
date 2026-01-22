@@ -171,7 +171,7 @@
                             {{ isset($editUser) && $editUser ? 'Edit User' : 'Tambah User' }}
                         </p>
                         <p class="text-xs text-slate-500">
-                            Isi data akun dan atur role serta status aktif.
+                            Isi data akun dan atur role.
                         </p>
                     </div>
                 </div>
@@ -217,16 +217,6 @@
                             required inputmode="tel">
                     </div>
 
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-slate-700">Aktif</label>
-                        <div class="mt-2 flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                            <input type="hidden" name="active" value="0">
-                            <input id="active" type="checkbox" name="active" value="1"
-                                class="rounded border-slate-300" @checked(old('active', $editUser->active ?? true ? '1' : '0') === '1')>
-                            <label for="active" class="text-sm text-slate-700">Aktif</label>
-                        </div>
-                    </div>
-
                     <div class="md:col-span-3">
                         <label class="block text-sm font-semibold text-slate-700">Username</label>
                         <input name="username" value="{{ old('username', $editUser->username ?? '') }}"
@@ -251,7 +241,7 @@
                             required>
                             @php($roleValue = old('role', $editUser->role ?? 'intern'))
                             <option value="intern" @selected($roleValue === 'intern')>intern</option>
-                            <option value="admin" @selected($roleValue === 'admin')>admin</option>
+                            <option value="admin_dinas" @selected($roleValue === 'admin_dinas')>admin_dinas</option>
                         </select>
                     </div>
 
@@ -296,7 +286,8 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs text-slate-500">Diabaikan jika role = admin.</p>
+                        <p class="mt-1 text-xs text-slate-500">Diabaikan jika role bukan <span
+                                class="font-semibold">intern</span>.</p>
                     </div>
 
                     <div class="md:col-span-4">
@@ -353,53 +344,6 @@
             </div>
         </section>
 
-        {{-- SCORING SETTINGS CARD --}}
-        <section id="aturan-penilaian" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div
-                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
-                <div class="flex items-center gap-2">
-                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
-                        <x-icon name="star" class="h-5 w-5 text-slate-700" />
-                    </span>
-                    <div>
-                        <p class="text-sm font-semibold text-slate-900">Aturan Penilaian</p>
-                        <p class="text-xs text-slate-500">Nilai otomatis berbasis jumlah hari presensi.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-6">
-                <form method="POST" action="{{ route('admin.users.scoring.settings') }}"
-                    class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    @csrf
-
-                    <div class="md:col-span-6">
-                        <label class="block text-sm font-semibold text-slate-700">Poin per Hari Presensi</label>
-                        <input name="points_per_attendance"
-                            value="{{ old('points_per_attendance', $scoring['points_per_attendance'] ?? 4) }}"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
-                                  focus:outline-none focus:ring-2 focus:ring-slate-200"
-                            inputmode="numeric" required>
-                    </div>
-
-                    <div class="md:col-span-6">
-                        <label class="block text-sm font-semibold text-slate-700">Nilai Maksimal</label>
-                        <input name="max_score" value="{{ old('max_score', $scoring['max_score'] ?? 100) }}"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
-                                  focus:outline-none focus:ring-2 focus:ring-slate-200"
-                            inputmode="numeric" required>
-                    </div>
-
-                    <div class="md:col-span-12 flex items-center justify-end">
-                        <button type="submit"
-                            class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
-                            Simpan Aturan
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </section>
-
         {{-- TABLE CARD --}}
         <section id="daftar-users" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
 
@@ -407,7 +351,7 @@
                 class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
                 <div>
                     <h3 class="text-base font-extrabold text-slate-900">Daftar Users</h3>
-                    <p class="text-sm text-slate-500">Kelola role, status aktif, dan aksi akun.</p>
+                    <p class="text-sm text-slate-500">Kelola role, status, dan aksi akun.</p>
                 </div>
                 <div class="text-xs text-slate-500">
                     Menampilkan data (paginasi).
@@ -419,224 +363,200 @@
                 <form method="GET" action="{{ route('admin.users.index') }}"
                     class="grid grid-cols-1 sm:grid-cols-12 gap-3">
 
-                    <div class="sm:col-span-5">
-                        <label class="block text-xs font-semibold text-slate-600">Cari</label>
-                        <input type="text" name="q" value="{{ $q }}"
-                            placeholder="Nama / email / username / NIK / telepon…"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                    class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
                                    focus:outline-none focus:ring-2 focus:ring-slate-200">
-                    </div>
+                    <option value="" @selected($role === '')>Semua</option>
+                    <option value="intern" @selected($role === 'intern')>intern</option>
+                    <option value="admin_dinas" @selected($role === 'admin_dinas')>admin_dinas</option>
+                    </select>
+            </div>
 
-                    <div class="sm:col-span-3">
-                        <label class="block text-xs font-semibold text-slate-600">Role</label>
-                        <select name="role"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+            <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold text-slate-600">Status</label>
+                <select name="active"
+                    class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
                                    focus:outline-none focus:ring-2 focus:ring-slate-200">
-                            <option value="" @selected($role === '')>Semua</option>
-                            <option value="intern" @selected($role === 'intern')>intern</option>
-                            <option value="admin" @selected($role === 'admin')>admin</option>
-                        </select>
-                    </div>
+                    <option value="" @selected($active === '')>Semua</option>
+                    <option value="1" @selected($active === '1')>Aktif</option>
+                    <option value="0" @selected($active === '0')>Nonaktif</option>
+                </select>
+            </div>
 
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-semibold text-slate-600">Status</label>
-                        <select name="active"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
-                                   focus:outline-none focus:ring-2 focus:ring-slate-200">
-                            <option value="" @selected($active === '')>Semua</option>
-                            <option value="1" @selected($active === '1')>Aktif</option>
-                            <option value="0" @selected($active === '0')>Nonaktif</option>
-                        </select>
-                    </div>
+            <div class="sm:col-span-2 flex items-end gap-2">
+                {{-- keep sort state --}}
+                <input type="hidden" name="sort" value="{{ $sort }}">
+                <input type="hidden" name="dir" value="{{ $dir }}">
 
-                    <div class="sm:col-span-2 flex items-end gap-2">
-                        {{-- keep sort state --}}
-                        <input type="hidden" name="sort" value="{{ $sort }}">
-                        <input type="hidden" name="dir" value="{{ $dir }}">
-
-                        <button type="submit"
-                            class="w-full inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white
+                <button type="submit"
+                    class="w-full inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white
                                    hover:bg-slate-800 transition">
-                            Terapkan
-                        </button>
+                    Terapkan
+                </button>
 
-                        <a href="{{ route('admin.users.index') }}"
-                            class="w-full inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700
+                <a href="{{ route('admin.users.index') }}"
+                    class="w-full inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700
                                    hover:bg-slate-50 transition">
-                            Reset
-                        </a>
-                    </div>
-                </form>
-
-                {{-- INFO FILTER --}}
-                <div class="mt-3 text-xs text-slate-500">
-                    Sort: <span class="font-semibold text-slate-700">{{ $sort }}</span> ({{ $dir }})
-                    @if ($q || $role || $active !== '')
-                        <span class="mx-2 opacity-40">|</span>
-                        Filter aktif
-                    @endif
-                </div>
+                    Reset
+                </a>
             </div>
+            </form>
 
-            <div class="p-6">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm">
-                        <thead>
-                            <tr class="text-left text-slate-600 border-b border-slate-200">
-                                <th class="py-3 pr-4 font-semibold">Nama</th>
-                                <th class="py-3 pr-4 font-semibold">Username</th>
-                                <th class="py-3 pr-4 font-semibold">NIK</th>
-                                <th class="py-3 pr-4 font-semibold">No. Telepon</th>
-                                <th class="py-3 pr-4 font-semibold">Email</th>
-                                <th class="py-3 pr-4 font-semibold">Role</th>
-                                <th class="py-3 pr-4 font-semibold">Status</th>
-                                <th class="py-3 pr-4 font-semibold">Nilai</th>
-                                <th class="py-3 pr-4 font-semibold">Aktif</th>
-                                <th class="py-3 pr-0 font-semibold text-right">Aksi</th>
-                            </tr>
-                        </thead>
+            {{-- INFO FILTER --}}
+            <div class="mt-3 text-xs text-slate-500">
+                Sort: <span class="font-semibold text-slate-700">{{ $sort }}</span> ({{ $dir }})
+            </div>
+    </div>
 
-                        <tbody class="divide-y divide-slate-100">
-                            @forelse($users as $user)
-                                <tr class="hover:bg-slate-50/70">
-                                    <td class="py-3 pr-4 whitespace-nowrap">
-                                        <div class="font-semibold text-slate-900">{{ $user->name }}</div>
-                                        <div class="text-xs text-slate-500">{{ $user->email }}</div>
-                                    </td>
+    <div class="p-6">
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-slate-600 border-b border-slate-200">
+                        <th class="py-3 pr-4 font-semibold">Nama</th>
+                        <th class="py-3 pr-4 font-semibold">Username</th>
+                        <th class="py-3 pr-4 font-semibold">NIK</th>
+                        <th class="py-3 pr-4 font-semibold">No. Telepon</th>
+                        <th class="py-3 pr-4 font-semibold">Email</th>
+                        <th class="py-3 pr-4 font-semibold">Role</th>
+                        <th class="py-3 pr-4 font-semibold">Status</th>
+                        <th class="py-3 pr-4 font-semibold">Nilai</th>
+                        <th class="py-3 pr-0 font-semibold text-right">Aksi</th>
+                    </tr>
+                </thead>
 
-                                    <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->username ?? '—' }}
-                                    </td>
-                                    <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->nik ?? '—' }}</td>
-                                    <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->phone ?? '—' }}</td>
-                                    <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->email }}</td>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($users as $user)
+                        <tr class="hover:bg-slate-50/70">
+                            <td class="py-3 pr-4 whitespace-nowrap">
+                                <div class="font-semibold text-slate-900">{{ $user->name }}</div>
+                                <div class="text-xs text-slate-500">{{ $user->email }}</div>
+                            </td>
 
-                                    <td class="py-3 pr-4 whitespace-nowrap align-middle">
-                                        <form method="POST" action="{{ route('admin.users.role', $user) }}"
-                                            class="flex items-center gap-2">
-                                            @csrf
-                                            @method('PATCH')
+                            <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->username ?? '—' }}
+                            </td>
+                            <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->nik ?? '—' }}</td>
+                            <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->phone ?? '—' }}</td>
+                            <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->email }}</td>
 
-                                            <div class="relative">
-                                                <select name="role"
-                                                    class="appearance-none h-8 rounded-lg border border-slate-200 bg-white
+                            <td class="py-3 pr-4 whitespace-nowrap align-middle">
+                                <form method="POST" action="{{ route('admin.users.role', $user) }}"
+                                    class="flex items-center gap-2">
+                                    @csrf
+                                    @method('PATCH')
+
+                                    <div class="relative">
+                                        <select name="role"
+                                            class="appearance-none h-8 rounded-lg border border-slate-200 bg-white
                                                            pl-3 pr-7 text-xs focus:outline-none focus:ring-2 focus:ring-slate-200">
-                                                    <option value="intern" @selected(($user->role ?? 'intern') === 'intern')>intern</option>
-                                                    <option value="admin" @selected(($user->role ?? null) === 'admin')>admin</option>
-                                                </select>
-                                            </div>
+                                            <option value="intern" @selected(($user->role ?? 'intern') === 'intern')>intern</option>
+                                            <option value="admin_dinas" @selected(($user->role ?? null) === 'admin_dinas')>admin_dinas</option>
+                                        </select>
+                                    </div>
 
-                                            <button type="submit"
-                                                class="h-8 rounded-lg bg-slate-900 px-3 text-xs font-semibold text-white hover:bg-slate-800 transition">
-                                                Simpan
+                                    <div class="relative">
+                                        <select name="dinas_id"
+                                            class="appearance-none h-8 rounded-lg border border-slate-200 bg-white
+                                                           pl-3 pr-7 text-xs focus:outline-none focus:ring-2 focus:ring-slate-200">
+                                            <option value="">— dinas —</option>
+                                            @foreach ($dinasOptions ?? [] as $d)
+                                                <option value="{{ $d->id }}" @selected((string) ($user->dinas_id ?? '') === (string) $d->id)>
+                                                    {{ $d->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <button type="submit"
+                                        class="h-8 rounded-lg bg-slate-900 px-3 text-xs font-semibold text-white hover:bg-slate-800 transition">
+                                        Simpan
+                                    </button>
+                                </form>
+                            </td>
+
+                            <td class="py-3 pr-4 whitespace-nowrap">
+                                @if (($user->role ?? 'intern') === 'intern')
+                                    @php($st = $user->intern_status ?? 'aktif')
+                                    <span
+                                        class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $st === 'tamat' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800' }}">
+                                        {{ $st }}
+                                    </span>
+                                @else
+                                    <span class="text-slate-400">—</span>
+                                @endif
+                            </td>
+
+                            <td class="py-3 pr-4 whitespace-nowrap">
+                                @if (($user->role ?? 'intern') !== 'intern')
+                                    <span class="text-slate-400">—</span>
+                                @else
+                                    <div class="font-semibold text-slate-900">
+                                        {{ (int) ($user->computed_score ?? 0) }}</div>
+                                    @if (!empty($user->computed_score_subtitle))
+                                        <div class="text-xs text-slate-500">{{ $user->computed_score_subtitle }}
+                                        </div>
+                                    @endif
+                                @endif
+                            </td>
+
+                            <td class="py-3 pr-0 whitespace-nowrap text-right">
+                                @if (auth()->id() === $user->id)
+                                    <span
+                                        class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                                        Akun sendiri
+                                    </span>
+                                @else
+                                    <div class="inline-flex items-center gap-2">
+                                        @if (($user->role ?? 'intern') === 'intern' && ($user->intern_status ?? 'aktif') === 'aktif')
+                                            <button type="button"
+                                                class="btnCompleteInternship rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition"
+                                                data-url="{{ route('admin.users.complete-internship', $user) }}"
+                                                data-name="{{ $user->name }}">
+                                                Selesai Magang
                                             </button>
-                                        </form>
-                                    </td>
-
-                                    <td class="py-3 pr-4 whitespace-nowrap">
-                                        @if (($user->role ?? 'intern') === 'intern')
-                                            @php($st = $user->intern_status ?? 'aktif')
-                                            <span
-                                                class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $st === 'tamat' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800' }}">
-                                                {{ $st }}
-                                            </span>
-                                        @else
-                                            <span class="text-slate-400">—</span>
                                         @endif
-                                    </td>
 
-                                    <td class="py-3 pr-4 whitespace-nowrap">
-                                        @if (($user->role ?? 'intern') !== 'intern')
-                                            <span class="text-slate-400">—</span>
-                                        @else
-                                            <div class="font-semibold text-slate-900">
-                                                {{ (int) ($user->computed_score ?? 0) }}</div>
-                                            @if (!empty($user->computed_score_subtitle))
-                                                <div class="text-xs text-slate-500">{{ $user->computed_score_subtitle }}
-                                                </div>
-                                            @endif
+                                        @if (($user->role ?? 'intern') === 'intern' && ($user->intern_status ?? 'aktif') === 'tamat')
+                                            <a href="{{ route('admin.users.certificate.pdf', $user) }}"
+                                                class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                                                Sertifikat
+                                            </a>
                                         @endif
-                                    </td>
 
-                                    <td class="py-3 pr-4 whitespace-nowrap">
-                                        <form method="POST" action="{{ route('admin.users.active', $user) }}"
-                                            class="flex items-center gap-2">
+                                        <a href="{{ $mergeQuery(['edit' => $user->id]) }}"
+                                            class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                                            Edit
+                                        </a>
+
+                                        <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
+                                            onsubmit="return confirm('Hapus user ini?');">
                                             @csrf
-                                            @method('PATCH')
-                                            <input type="hidden" name="active" value="0">
-
-                                            <label
-                                                class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                                                <input type="checkbox" name="active" value="1"
-                                                    class="rounded border-slate-300" @checked(($user->active ?? true) === true)>
-                                                <span class="text-sm text-slate-700">Aktif</span>
-                                            </label>
-
+                                            @method('DELETE')
                                             <button type="submit"
-                                                class="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 transition">
-                                                Simpan
+                                                class="rounded-xl bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 transition">
+                                                Hapus
                                             </button>
                                         </form>
-                                    </td>
+                                    </div>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9" class="py-10 text-center text-slate-600">
+                                Belum ada user.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
 
-                                    <td class="py-3 pr-0 whitespace-nowrap text-right">
-                                        @if (auth()->id() === $user->id)
-                                            <span
-                                                class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                                                Akun sendiri
-                                            </span>
-                                        @else
-                                            <div class="inline-flex items-center gap-2">
-                                                @if (($user->role ?? 'intern') === 'intern' && ($user->intern_status ?? 'aktif') === 'aktif')
-                                                    <button type="button"
-                                                        class="btnCompleteInternship rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition"
-                                                        data-url="{{ route('admin.users.complete-internship', $user) }}"
-                                                        data-name="{{ $user->name }}">
-                                                        Selesai Magang
-                                                    </button>
-                                                @endif
-
-                                                @if (($user->role ?? 'intern') === 'intern' && ($user->intern_status ?? 'aktif') === 'tamat')
-                                                    <a href="{{ route('admin.users.certificate.pdf', $user) }}"
-                                                        class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-                                                        Sertifikat
-                                                    </a>
-                                                @endif
-
-                                                <a href="{{ $mergeQuery(['edit' => $user->id]) }}"
-                                                    class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-                                                    Edit
-                                                </a>
-
-                                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
-                                                    onsubmit="return confirm('Hapus user ini?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                        class="rounded-xl bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 transition">
-                                                        Hapus
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="10" class="py-10 text-center text-slate-600">
-                                        Belum ada user.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="mt-6">
-                    {{-- penting: pagination harus appends() di controller --}}
-                    {{ $users->links() }}
-                </div>
-            </div>
-        </section>
+        <div class="mt-6">
+            {{-- penting: pagination harus appends() di controller --}}
+            {{ $users->links() }}
+        </div>
+    </div>
+    </section>
 
     </div>
 

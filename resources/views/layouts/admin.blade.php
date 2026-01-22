@@ -84,34 +84,34 @@
                                 </button>
 
                                 <div x-show="open" x-transition.opacity class="px-2 pb-2" style="display:none;">
-                                    <a href="{{ route('admin.attendance.index') }}"
-                                        class="mt-1 flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition
-                                        {{ request()->routeIs('admin.attendance.index') ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white' }}">
-                                        <span>Daftar Presensi</span>
-                                        <span class="text-white/45">/admin/presensi</span>
-                                    </a>
+                                    @if ((auth()->user()->role ?? null) === 'super_admin')
+                                        <a href="{{ route('admin.attendance.index') }}"
+                                            class="mt-1 flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition
+                                            {{ request()->routeIs('admin.attendance.index') ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white' }}">
+                                            <span>Daftar Presensi</span>
+                                            <span class="text-white/45">/admin/presensi</span>
+                                        </a>
+                                    @endif
 
                                     <div class="mt-2 grid grid-cols-1 gap-2">
-                                        <a href="{{ route('admin.attendance.rules') }}"
+                                        <a href="{{ route('admin.attendance.manage') }}"
                                             class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
-                                            Aturan Presensi
-                                        </a>
-                                        <a href="{{ route('admin.attendance.locations') }}"
-                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
-                                            Lokasi / Dinas
+                                            Pengaturan Presensi
                                         </a>
                                     </div>
 
-                                    <div class="grid grid-cols-2 gap-2 mt-2">
-                                        <a href="{{ route('admin.attendance.export.excel', request()->query()) }}"
-                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
-                                            Export Excel
-                                        </a>
-                                        <a href="{{ route('admin.attendance.export.pdf', request()->query()) }}"
-                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
-                                            Export PDF
-                                        </a>
-                                    </div>
+                                    @if ((auth()->user()->role ?? null) === 'super_admin')
+                                        <div class="grid grid-cols-2 gap-2 mt-2">
+                                            <a href="{{ route('admin.attendance.export.excel', request()->query()) }}"
+                                                class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                                Export Excel
+                                            </a>
+                                            <a href="{{ route('admin.attendance.export.pdf', request()->query()) }}"
+                                                class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
+                                                Export PDF
+                                            </a>
+                                        </div>
+                                    @endif
 
                                     <a href="{{ route('attendance.scan.show') }}"
                                         class="mt-2 flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition text-white/75 hover:bg-white/10 hover:text-white">
@@ -234,10 +234,6 @@
                                         <a href="{{ route('admin.users.create') }}"
                                             class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
                                             Tambah User
-                                        </a>
-                                        <a href="{{ route('admin.users.scoring') }}"
-                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
-                                            Aturan Penilaian
                                         </a>
                                     </div>
 

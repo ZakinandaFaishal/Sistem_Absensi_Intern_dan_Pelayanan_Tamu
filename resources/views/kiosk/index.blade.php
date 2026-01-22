@@ -22,8 +22,8 @@
         if (!$isAuthed) {
             $absensiUrl = route('login');
             $absensiLabel = 'Login untuk Presensi';
-            $absensiHint = 'Presensi hanya untuk magang/admin.';
-        } elseif ($role === 'admin') {
+            $absensiHint = 'Presensi hanya untuk magang / admin dinas / super admin.';
+        } elseif (in_array($role, ['super_admin', 'admin_dinas'], true)) {
             $absensiUrl = route('kiosk.absensi');
             $absensiLabel = 'Tampilkan QR Absensi';
             $absensiHint = 'Buka halaman ini di monitor untuk ditampilkan.';

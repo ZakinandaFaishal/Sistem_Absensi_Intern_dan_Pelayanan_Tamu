@@ -9,7 +9,7 @@
         <div>
             <h2 class="text-xl font-extrabold tracking-tight text-slate-900">{{ $editUser ? 'Edit User' : 'Tambah User' }}
             </h2>
-            <p class="mt-1 text-sm text-slate-600">Isi data akun dan atur role serta status aktif.</p>
+            <p class="mt-1 text-sm text-slate-600">Isi data akun dan atur role.</p>
         </div>
 
         <div class="flex items-center gap-2">
@@ -89,16 +89,6 @@
                             required inputmode="tel">
                     </div>
 
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-slate-700">Aktif</label>
-                        <div class="mt-2 flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                            <input type="hidden" name="active" value="0">
-                            <input id="active" type="checkbox" name="active" value="1"
-                                class="rounded border-slate-300" @checked(old('active', $editUser->active ?? true ? '1' : '0') === '1')>
-                            <label for="active" class="text-sm text-slate-700">Aktif</label>
-                        </div>
-                    </div>
-
                     <div class="md:col-span-3">
                         <label class="block text-sm font-semibold text-slate-700">Username</label>
                         <input name="username" value="{{ old('username', $editUser->username ?? '') }}"
@@ -115,13 +105,37 @@
 
                     <div class="md:col-span-4">
                         <label class="block text-sm font-semibold text-slate-700">Role</label>
-                        <select name="role"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
-                            required>
-                            @php($roleValue = old('role', $editUser->role ?? 'intern'))
-                            <option value="intern" @selected($roleValue === 'intern')>intern</option>
-                            <option value="admin" @selected($roleValue === 'admin')>admin</option>
+
+                        @if ($editUser && ($editUser->role ?? 'intern') === 'super_admin')
+                            <input type="hidden" name="role" value="super_admin">
+                            <div
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                                <span class="font-semibold">super_admin</span>
+                                <span class="text-slate-500">(dikunci)</span>
+                            </div>
+                        @else
+                            <select name="role"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
+                                required>
+                                @php($roleValue = old('role', $editUser->role ?? 'intern'))
+                                <option value="intern" @selected($roleValue === 'intern')>intern</option>
+                                <option value="admin_dinas" @selected($roleValue === 'admin_dinas')>admin_dinas</option>
+                            </select>
+                        @endif
+                    </div>
+
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-semibold text-slate-700">Dinas (wajib untuk admin_dinas)</label>
+                        <select name="dinas_id"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            <option value="">—</option>
+                            @foreach ($dinasOptions ?? [] as $d)
+                                <option value="{{ $d->id }}" @selected((string) old('dinas_id', $editUser->dinas_id ?? '') === (string) $d->id)>
+                                    {{ $d->name }}{{ $d->code ? ' (' . $d->code . ')' : '' }}
+                                </option>
+                            @endforeach
                         </select>
+                        <p class="mt-1 text-xs text-slate-500">Kosongkan untuk role intern/super_admin.</p>
                     </div>
 
                     <div class="md:col-span-4">
@@ -161,7 +175,7 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs text-slate-500">Diabaikan jika role = admin.</p>
+                        <p class="mt-1 text-xs text-slate-500">Diabaikan jika role bukan intern.</p>
                     </div>
 
                     <div class="md:col-span-4">
