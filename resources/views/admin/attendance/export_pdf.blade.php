@@ -57,46 +57,41 @@
 </head>
 
 <body>
+
+    {{-- HEADER --}}
     <h1>Laporan Presensi</h1>
-    <div class="muted">Generated: {{ $generatedAt->format('Y-m-d H:i:s') }}</div>
+    <div class="muted">
+        Generated: {{ $generatedAt->format('Y-m-d H:i:s') }}
+    </div>
 
-    <h2>Filter</h2>
-    <table>
-        <tr>
-            <th style="width: 14%">q</th>
-            <td>{{ $filters['q'] !== '' ? $filters['q'] : '-' }}</td>
-            <th style="width: 14%">date_from</th>
-            <td class="nowrap">{{ $filters['date_from'] !== '' ? $filters['date_from'] : '-' }}</td>
-            <th style="width: 14%">date_to</th>
-            <td class="nowrap">{{ $filters['date_to'] !== '' ? $filters['date_to'] : '-' }}</td>
-        </tr>
-    </table>
+    <div class="muted small">
+        Menampilkan {{ $attendances->count() }} data (maksimal {{ $maxRows }} baris).
+    </div>
 
-    <div class="muted small">Menampilkan {{ $attendances->count() }} data (maks {{ $maxRows }} baris).</div>
-
+    {{-- DATA --}}
+    <h2>Data Presensi</h2>
     <table>
         <thead>
             <tr>
-                <th style="width: 18%">Nama</th>
-                <th style="width: 10%">Tanggal</th>
-                <th style="width: 11%">Check-in</th>
-                <th style="width: 11%">Check-out</th>
-                <th style="width: 14%">Lokasi</th>
-                <th style="width: 10%">Status</th>
+                <th style="width:18%">Nama</th>
+                <th style="width:10%">Tanggal</th>
+                <th style="width:11%">Check-in</th>
+                <th style="width:11%">Check-out</th>
+                <th style="width:14%">Lokasi</th>
+                <th style="width:10%">Status</th>
                 <th>Catatan</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($attendances as $a)
+            @forelse ($attendances as $a)
                 @php
-                    $status = '-';
-                    if (!empty($a->check_in_at) && empty($a->check_out_at)) {
+                    if ($a->check_in_at && !$a->check_out_at) {
                         $status = 'Open';
-                    }
-                    if (!empty($a->check_in_at) && !empty($a->check_out_at)) {
+                    } elseif ($a->check_in_at && $a->check_out_at) {
                         $status = 'Selesai';
+                    } else {
+                        $status = '-';
                     }
-                    $note = (string) ($a->notes ?? '');
                 @endphp
                 <tr>
                     <td>{{ $a->user?->name ?? '-' }}</td>
@@ -105,7 +100,11 @@
                     <td class="nowrap">{{ optional($a->check_out_at)->format('H:i') }}</td>
                     <td>{{ $a->location?->name ?? '-' }}</td>
                     <td class="nowrap">{{ $status }}</td>
-                    <td>{{ $note !== '' ? \Illuminate\Support\Str::limit($note, 60) : '-' }}</td>
+                    <td>
+                        {{ $a->notes
+                            ? \Illuminate\Support\Str::limit($a->notes, 60)
+                            : '-' }}
+                    </td>
                 </tr>
             @empty
                 <tr>
@@ -114,6 +113,6 @@
             @endforelse
         </tbody>
     </table>
-</body>
 
+</body>
 </html>

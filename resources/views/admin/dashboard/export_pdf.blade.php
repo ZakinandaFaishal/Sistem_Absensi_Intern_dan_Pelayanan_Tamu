@@ -49,21 +49,30 @@
         .nowrap {
             white-space: nowrap;
         }
+
+        .small {
+            font-size: 9px;
+        }
     </style>
 </head>
 
 <body>
-    <h1>Export Dashboard</h1>
-    <div class="muted">Generated: {{ $generatedAt->format('Y-m-d H:i:s') }}</div>
 
+    {{-- HEADER --}}
+    <h1>Export Dashboard</h1>
+    <div class="muted">
+        Generated: {{ $generatedAt->format('Y-m-d H:i:s') }}
+    </div>
+
+    {{-- RINGKASAN --}}
     <h2>Ringkasan Hari Ini</h2>
     <table>
         <tr>
-            <th style="width: 45%">Presensi hari ini</th>
+            <th style="width: 60%">Presensi hari ini</th>
             <td class="right">{{ (int) ($stats['attendance_today'] ?? 0) }}</td>
         </tr>
         <tr>
-            <th>Intern masih open (belum checkout)</th>
+            <th>Intern masih open (belum check-out)</th>
             <td class="right">{{ (int) ($stats['intern_open'] ?? 0) }}</td>
         </tr>
         <tr>
@@ -75,30 +84,36 @@
             <td class="right">{{ (int) ($stats['survey_today'] ?? 0) }}</td>
         </tr>
         <tr>
-            <th>Total users</th>
+            <th>Total pengguna</th>
             <td class="right">{{ (int) ($stats['users_total'] ?? 0) }}</td>
         </tr>
     </table>
 
+    {{-- AKTIVITAS --}}
     <h2>Aktivitas 7 Hari Terakhir</h2>
     <table>
         <thead>
             <tr>
-                <th style="width: 20%">Tanggal</th>
-                <th class="right" style="width: 20%">Tamu</th>
-                <th class="right" style="width: 20%">Survey</th>
+                <th style="width: 30%">Tanggal</th>
+                <th class="right" style="width: 35%">Jumlah Tamu</th>
+                <th class="right" style="width: 35%">Jumlah Survey</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($chart as $row)
+            @forelse ($chart as $row)
                 <tr>
                     <td class="nowrap">{{ $row['date'] }}</td>
                     <td class="right">{{ (int) ($row['guest'] ?? 0) }}</td>
                     <td class="right">{{ (int) ($row['survey'] ?? 0) }}</td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="3" class="muted">Tidak ada data.</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
+
 </body>
 
 </html>

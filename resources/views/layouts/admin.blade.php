@@ -62,10 +62,38 @@
                         <a href="{{ route('kiosk.display') }}"
                             class="rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-xs font-semibold
                               hover:bg-white/10 transition flex items-center gap-2">
-                            <x-icon name="computer-desktop" class="h-5 w-5" />
-                            Kiosk
-                        </a>
-                    </div>
+                        <x-icon name="computer-desktop" class="h-5 w-5" />
+                        Main Page
+                    </a>
+                </div>
+
+                {{-- Section title --}}
+                <div>
+                    <p class="px-1 text-[11px] uppercase tracking-wider text-white/40">Menu</p>
+
+                    <div class="mt-2 space-y-2">
+
+                        {{-- PRESENSI --}}
+                        <div
+                            x-data="{ open: {{ request()->routeIs('admin.attendance.*') ? 'true' : 'false' }} }"
+                            class="rounded-2xl border border-white/10 bg-white/5 overflow-hidden"
+                        >
+                            <button
+                                type="button"
+                                @click="open = !open"
+                                class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold transition
+                                {{ request()->routeIs('admin.attendance.*') ? 'bg-white/10 text-white' : 'text-white/85 hover:bg-white/10 hover:text-white' }}"
+                            >
+                                <span class="flex items-center gap-3">
+                                    <x-icon name="map-pin" class="h-5 w-5" />
+                                    Presensi
+                                </span>
+
+                                <span class="inline-flex items-center gap-2 text-[11px] text-white/55">
+                                    <span>Menu</span>
+                                    <span class="transition" :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">▾</span>
+                                </span>
+                            </button>
 
                     {{-- Section title --}}
                     <div>
