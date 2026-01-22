@@ -314,7 +314,7 @@ class UserController extends Controller
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html, 'UTF-8');
-        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
 
         $filename = 'sertifikat-magang-' . Str::slug((string) $user->name) . '-' . $issuedAt->format('Ymd') . '.pdf';

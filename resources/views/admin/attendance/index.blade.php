@@ -73,18 +73,6 @@
 
             {{-- Hidden iframe download --}}
             <iframe id="dlAttendanceFrame" class="hidden"></iframe>
-
-            <a href="{{ route('attendance.scan.show') }}"
-                class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white
-                  hover:bg-slate-800 transition">
-                <x-icon name="camera" class="h-5 w-5" /> Scan Presensi
-            </a>
-
-            <a href="{{ route('dashboard') }}"
-                class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700
-                  hover:bg-slate-50 transition">
-                ← Kembali
-            </a>
         </div>
     </div>
 
