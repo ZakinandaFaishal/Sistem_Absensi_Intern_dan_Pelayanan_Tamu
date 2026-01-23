@@ -28,7 +28,7 @@
         <div class="flex items-center gap-3">
             <div class="rounded-2xl border border-white/20 bg-white/10 p-2 backdrop-blur-md shadow-lg">
                 <img
-                    src="{{ asset('img/logo kab.mgl.png') }}"
+                    src="{{ asset('img/logo_kab_mgl.png') }}"
                     alt="Logo Kabupaten Magelang"
                     class="h-11 w-11 object-contain sm:h-14 sm:w-14"
                 >

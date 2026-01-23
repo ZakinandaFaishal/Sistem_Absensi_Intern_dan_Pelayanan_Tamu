@@ -43,7 +43,7 @@
             <a href="{{ route('kiosk.index') }}" class="flex items-center gap-3">
                 <div class="rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md shadow-lg p-2">
                     <img
-                        src="{{ asset('img/logo kab.mgl.png') }}"
+                        src="{{ asset('img/logo_kab_mgl.png') }}"
                         alt="Logo Kabupaten Magelang"
                         class="h-12 w-12 object-contain"
                     >

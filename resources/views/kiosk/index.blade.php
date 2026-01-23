@@ -66,7 +66,7 @@
         <header class="relative z-10 flex items-center justify-between px-6 py-5 sm:px-10">
             <a href="{{ url('/') }}" class="flex items-center gap-3">
                 <div class="rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md shadow-lg p-2">
-                    <img src="{{ asset('img/logo kab.mgl.png') }}" alt="Logo Kabupaten Magelang"
+                    <img src="{{ asset('img/logo_kab_mgl.png') }}" alt="Logo Kabupaten Magelang"
                         class="h-12 w-12 sm:h-14 sm:w-14 object-contain">
                 </div>
             </a>

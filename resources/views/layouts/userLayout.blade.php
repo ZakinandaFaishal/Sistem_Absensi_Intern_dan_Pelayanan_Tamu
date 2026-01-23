@@ -54,7 +54,7 @@
             {{-- Brand --}}
             <div class="h-16 px-5 flex items-center gap-3 border-b border-white/15 shrink-0 relative">
                 <div class="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden">
-                    <img src="{{ asset('img/logo kab.mgl.png') }}" class="h-6 w-6 object-contain" alt="Logo">
+                    <img src="{{ asset('img/logo_kab_mgl.png') }}" class="h-6 w-6 object-contain" alt="Logo">
                 </div>
                 <div class="leading-tight">
                     <p class="text-sm font-bold">Diskominfo</p>
