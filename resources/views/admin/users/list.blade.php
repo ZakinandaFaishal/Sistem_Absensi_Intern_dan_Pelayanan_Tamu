@@ -139,7 +139,6 @@
                     <div class="sm:col-span-4 flex items-end">
                         <input type="hidden" name="sort" value="{{ $sort }}">
                         <input type="hidden" name="dir" value="{{ $dir }}">
-                        <div class="w-full text-xs text-slate-500">Filter diterapkan otomatis.</div>
                     </div>
                 </form>
 
@@ -204,7 +203,6 @@
                                 <th class="py-3 pr-4 font-semibold">NIK</th>
                                 <th class="py-3 pr-4 font-semibold">No. Telepon</th>
                                 <th class="py-3 pr-4 font-semibold">Email</th>
-                                <th class="py-3 pr-4 font-semibold">Role</th>
                                 <th class="py-3 pr-4 font-semibold">Status</th>
                                 <th class="py-3 pr-4 font-semibold">Nilai</th>
                                 <th class="py-3 pr-0 font-semibold text-right">Aksi</th>
@@ -225,7 +223,7 @@
                                     <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->phone ?? '—' }}</td>
                                     <td class="py-3 pr-4 whitespace-nowrap text-slate-700">{{ $user->email }}</td>
 
-                                    <td class="py-3 pr-4 whitespace-nowrap align-middle">
+                                    <!-- <td class="py-3 pr-4 whitespace-nowrap align-middle">
                                         @if (($user->role ?? 'intern') === 'super_admin')
                                             <span
                                                 class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
@@ -265,7 +263,7 @@
                                                 </button>
                                             </form>
                                         @endif
-                                    </td>
+                                    </td> -->
 
                                     <td class="py-3 pr-4 whitespace-nowrap">
                                         @if (($user->role ?? 'intern') === 'intern')
