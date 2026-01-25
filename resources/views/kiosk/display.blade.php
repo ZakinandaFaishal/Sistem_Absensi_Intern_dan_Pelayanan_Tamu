@@ -1,6 +1,6 @@
 @extends('layouts.kiosk_mode')
 
-@section('title', 'Mode Kiosk')
+@section('title', 'Resepsionis')
 
 @section('content')
 <main id="kiosk-root" class="relative min-h-screen w-full overflow-hidden">
@@ -18,15 +18,15 @@
             <source src="{{ asset('img/vid_bg_kab.mp4') }}" type="video/mp4">
         </video>
 
-        {{-- overlays --}}
-        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/70"></div>
-        <div class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.55)_70%,rgba(0,0,0,0.8)_100%)]"></div>
+        {{-- overlays (sedikit ditingkatkan biar glass dark lebih “nyatu”) --}}
+        <div class="absolute inset-0 bg-gradient-to-b from-black/65 via-black/40 to-black/75"></div>
+        <div class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(20,184,166,0.08)_0%,rgba(0,0,0,0.55)_65%,rgba(0,0,0,0.86)_100%)]"></div>
     </div>
 
     {{-- HEADER --}}
     <header class="relative z-10 flex items-center justify-between px-4 py-4 sm:px-10 sm:py-5">
         <div class="flex items-center gap-3">
-            <div class="rounded-2xl border border-white/20 bg-white/10 p-2 backdrop-blur-md shadow-lg">
+            <div class="rounded-2xl border border-white/15 bg-slate-950/35 p-2 backdrop-blur-md shadow-lg">
                 <img
                     src="{{ asset('img/logo_kab_mgl.png') }}"
                     alt="Logo Kabupaten Magelang"
@@ -56,13 +56,15 @@
                 Silakan pilih layanan
             </p>
 
-            <div class="mt-6 h-[2px] w-24 rounded-full bg-white/40"></div>
+            <div class="mt-6 h-[2px] w-24 rounded-full bg-white/30"></div>
 
             @php
-                $btnBase = 'w-full sm:w-72 max-w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-white/15 px-6 py-5 text-base font-semibold text-white
-                            backdrop-blur-md border border-white/25 shadow-xl
-                            hover:bg-white/25 hover:-translate-y-0.5 hover:shadow-2xl
-                            focus:outline-none focus:ring-2 focus:ring-white/50
+                // Dark glass base (lebih modern & selaras)
+                $btnBase = 'w-full sm:w-72 max-w-full inline-flex items-center justify-center gap-3 rounded-2xl
+                            bg-slate-950/30 px-6 py-5 text-base font-semibold text-white
+                            backdrop-blur-md border border-white/18 shadow-xl
+                            hover:bg-slate-950/40 hover:-translate-y-0.5 hover:shadow-2xl
+                            focus:outline-none focus:ring-2 focus:ring-white/35
                             transition duration-200';
             @endphp
 
@@ -73,7 +75,7 @@
                 </a>
 
                 <a href="{{ route('guest.create') }}" class="{{ $btnBase }}">
-                    <x-icon name="clipboard-document" class="h-7 w-7 shrink-0" />
+                    <x-icon name="book-open" class="h-7 w-7 shrink-0" />
                     <span class="leading-none">Buku Tamu</span>
                 </a>
             </div>
@@ -85,11 +87,11 @@
         id="kiosk-active-guests"
         class="anim fixed bottom-3 left-3 right-3 z-20 sm:left-4 sm:right-auto sm:bottom-4 sm:w-[360px] sm:max-w-[calc(100vw-32px)]"
     >
-        <div class="overflow-hidden rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl">
-            <div class="flex items-center justify-between gap-3 border-b border-white/15 px-4 py-3">
+        <div class="overflow-hidden rounded-3xl border border-white/15 bg-slate-950/30 backdrop-blur-xl shadow-2xl">
+            <div class="flex items-center justify-between gap-3 border-b border-white/12 px-4 py-3">
                 <div class="flex items-center gap-2 min-w-0">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/15 bg-white/10">
-                        <x-icon name="clipboard-document" class="h-5 w-5 text-white" />
+                    <div class="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/12 bg-slate-950/30">
+                        <x-icon name="book-open" class="h-5 w-5 text-white" />
                     </div>
 
                     <div class="min-w-0">
@@ -103,7 +105,7 @@
                 <button
                     id="kioskBtnToggleGuest"
                     type="button"
-                    class="rounded-xl border border-white/15 bg-white/10 px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/15 transition"
+                    class="rounded-xl border border-white/12 bg-slate-950/30 px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-slate-950/40 transition"
                 >
                     <span id="kioskGuestChevron" class="inline-block transition">▾</span>
                 </button>
@@ -112,7 +114,7 @@
             <div id="kioskGuestBody" class="p-3">
                 <div
                     id="kioskActiveGuestLoading"
-                    class="rounded-2xl border border-white/15 bg-white/5 px-3 py-3 text-sm text-white/80"
+                    class="rounded-2xl border border-white/12 bg-slate-950/20 px-3 py-3 text-sm text-white/80"
                 >
                     Memuat daftar tamu...
                 </div>
@@ -124,7 +126,7 @@
 
                 <div
                     id="kioskActiveGuestEmpty"
-                    class="hidden rounded-2xl border border-white/15 bg-white/5 px-3 py-3 text-sm text-white/80"
+                    class="hidden rounded-2xl border border-white/12 bg-slate-950/20 px-3 py-3 text-sm text-white/80"
                 >
                     Belum ada tamu yang sedang berkunjung.
                 </div>
@@ -134,11 +136,11 @@
 
     {{-- MODAL REMINDER --}}
     <div id="surveyReminderModal" class="hidden fixed inset-0 z-50">
-        <div class="absolute inset-0 bg-black/60"></div>
+        <div class="absolute inset-0 bg-black/65"></div>
 
         <div class="relative mx-auto flex min-h-screen w-full items-center justify-center p-4">
-            <div class="w-full max-w-md overflow-hidden rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl">
-                <div class="flex items-start justify-between gap-3 border-b border-white/15 px-5 py-4">
+            <div class="w-full max-w-md overflow-hidden rounded-3xl border border-white/15 bg-slate-950/35 backdrop-blur-xl shadow-2xl">
+                <div class="flex items-start justify-between gap-3 border-b border-white/12 px-5 py-4">
                     <div class="min-w-0">
                         <div class="text-white font-extrabold text-base">Ingatkan Isi Survey</div>
                         <div id="surveyReminderName" class="truncate text-white/70 text-sm">—</div>
@@ -147,14 +149,14 @@
                     <button
                         id="btnCloseSurveyModal"
                         type="button"
-                        class="rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-white/90 hover:bg-white/15 transition"
+                        class="rounded-xl border border-white/12 bg-slate-950/30 px-3 py-2 text-xs font-semibold text-white/90 hover:bg-slate-950/40 transition"
                     >
                         Tutup
                     </button>
                 </div>
 
                 <div class="space-y-3 px-5 py-4">
-                    <div class="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white/85">
+                    <div class="rounded-2xl border border-white/12 bg-slate-950/20 px-4 py-3 text-sm text-white/85">
                         Tamu ini <span class="font-semibold">belum mengisi survey</span>. Silakan ingatkan untuk mengisi survey sebelum selesai.
                     </div>
 
@@ -162,7 +164,7 @@
                         <a
                             id="btnGoSurvey"
                             href="#"
-                            class="inline-flex w-full items-center justify-center rounded-2xl border border-white/25 bg-white/20 px-4 py-3 text-sm font-semibold text-white hover:bg-white/25 transition"
+                            class="inline-flex w-full items-center justify-center rounded-2xl border border-white/18 bg-slate-950/25 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-950/35 transition"
                         >
                             Isi Survey
                         </a>
@@ -170,7 +172,7 @@
                         <button
                             id="btnForceComplete"
                             type="button"
-                            class="inline-flex w-full items-center justify-center rounded-2xl border border-emerald-400/30 bg-emerald-500/25 px-4 py-3 text-sm font-semibold text-emerald-50 hover:bg-emerald-500/30 transition"
+                            class="inline-flex w-full items-center justify-center rounded-2xl border border-emerald-400/25 bg-emerald-500/18 px-4 py-3 text-sm font-semibold text-emerald-50 hover:bg-emerald-500/24 transition"
                         >
                             Tetap Selesai
                         </button>
@@ -192,8 +194,8 @@
         height: 100%;
         overflow: hidden !important;
         overscroll-behavior: none;
-        scrollbar-width: none;      /* Firefox */
-        -ms-overflow-style: none;   /* IE/legacy Edge */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
     }
     html::-webkit-scrollbar,
     body::-webkit-scrollbar {
@@ -276,11 +278,11 @@
         const bodyEl    = document.getElementById('kioskGuestBody');
         const chev      = document.getElementById('kioskGuestChevron');
 
-        const modal          = document.getElementById('surveyReminderModal');
-        const btnCloseModal  = document.getElementById('btnCloseSurveyModal');
-        const btnGoSurvey    = document.getElementById('btnGoSurvey');
+        const modal            = document.getElementById('surveyReminderModal');
+        const btnCloseModal    = document.getElementById('btnCloseSurveyModal');
+        const btnGoSurvey      = document.getElementById('btnGoSurvey');
         const btnForceComplete = document.getElementById('btnForceComplete');
-        const modalName      = document.getElementById('surveyReminderName');
+        const modalName        = document.getElementById('surveyReminderName');
 
         const latestById = new Map();
         let pendingCompleteId = null;
@@ -303,7 +305,7 @@
 
         function badgeHtml(status) {
             return `
-                <span class="inline-flex items-center rounded-full bg-emerald-500/20 border border-emerald-400/30 px-2.5 py-1 text-[10px] font-semibold text-emerald-100">
+                <span class="inline-flex items-center rounded-full bg-emerald-500/18 border border-emerald-400/22 px-2.5 py-1 text-[10px] font-semibold text-emerald-100">
                     ${escapeHtml(status)}
                 </span>
             `;
@@ -314,7 +316,7 @@
                 <button type="button"
                     data-action="complete"
                     data-id="${id}"
-                    class="inline-flex items-center justify-center rounded-xl bg-white/10 border border-white/15 px-3 py-2 text-[11px] font-semibold text-white/90 hover:bg-white/15 transition active:scale-[0.98]">
+                    class="inline-flex items-center justify-center rounded-xl bg-slate-950/30 border border-white/12 px-3 py-2 text-[11px] font-semibold text-white/90 hover:bg-slate-950/40 transition active:scale-[0.98]">
                     Selesai
                 </button>
             `;
@@ -326,7 +328,7 @@
                 : '';
 
             return `
-                <li data-id="${item.id}" class="pop-in rounded-2xl border border-white/15 bg-white/5 px-3 py-2.5 hover:bg-white/10 transition">
+                <li data-id="${item.id}" class="pop-in rounded-2xl border border-white/12 bg-slate-950/20 px-3 py-2.5 hover:bg-slate-950/28 transition">
                     <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0">
                             <div class="truncate text-sm font-semibold text-white">${escapeHtml(item.name || 'Tamu')}</div>
