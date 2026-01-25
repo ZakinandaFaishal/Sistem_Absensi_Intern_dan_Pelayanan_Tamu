@@ -18,7 +18,7 @@
             <source src="{{ asset('img/vid_bg_kab.mp4') }}" type="video/mp4">
         </video>
 
-        {{-- overlays (sedikit ditingkatkan biar glass dark lebih “nyatu”) --}}
+        {{-- overlays --}}
         <div class="absolute inset-0 bg-gradient-to-b from-black/65 via-black/40 to-black/75"></div>
         <div class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(20,184,166,0.08)_0%,rgba(0,0,0,0.55)_65%,rgba(0,0,0,0.86)_100%)]"></div>
     </div>
@@ -26,55 +26,52 @@
     {{-- HEADER --}}
     <header class="relative z-10 flex items-center justify-between px-4 py-4 sm:px-10 sm:py-5">
         <div class="flex items-center gap-3">
-            <div class="rounded-2xl border border-white/15 bg-slate-950/35 p-2 backdrop-blur-md shadow-lg">
+            {{-- LOGO GLASS (match button glass) --}}
+            <div
+                class="rounded-2xl
+                    bg-slate-950/30
+                    border border-white/18
+                    backdrop-blur-md
+                    shadow-xl
+                    p-2"
+            >
                 <img
                     src="{{ asset('img/logo_kab_mgl.png') }}"
                     alt="Logo Kabupaten Magelang"
                     class="h-11 w-11 object-contain sm:h-14 sm:w-14"
                 >
             </div>
+
             <div class="hidden sm:block text-left">
-                <div class="text-white font-semibold">Diskominfo</div>
+                <div class="text-white font-semibold leading-tight">SIMANTA</div>
+                <div class="text-white/80 text-[11px] leading-tight">
+                    Sistem Informasi Manajemen Magang &amp; Tamu
+                </div>
                 <div class="text-white/70 text-sm">Kabupaten Magelang</div>
             </div>
         </div>
 
-        {{-- HEADER --}}
-        <header class="relative z-10 flex items-center justify-between px-4 py-4 sm:px-10 sm:py-5">
-            <div class="flex items-center gap-3">
-                <div class="rounded-2xl border border-white/20 bg-white/10 p-2 backdrop-blur-md shadow-lg">
-                    <img src="{{ asset('img/logo_kab_mgl.png') }}" alt="Logo Kabupaten Magelang"
-                        class="h-11 w-11 object-contain sm:h-14 sm:w-14">
-                </div>
-                <div class="hidden sm:block text-left">
-                    <div class="text-white font-semibold leading-tight">SIMANTA</div>
-                    <div class="text-white/80 text-[11px] leading-tight">Sistem Informasi Manajemen Magang &amp; Tamu</div>
-                    <div class="text-white/70 text-sm">Kabupaten Magelang</div>
-                </div>
-            </div>
+        <div class="text-right">
+            <div id="kioskClock" class="text-white font-semibold text-lg tabular-nums sm:text-2xl">--:--:--</div>
+            <div id="kioskDate" class="text-white/70 text-xs sm:text-sm">—</div>
+        </div>
+    </header>
 
-            <div class="text-right">
-                <div id="kioskClock" class="text-white font-semibold text-lg tabular-nums sm:text-2xl">--:--:--</div>
-                <div id="kioskDate" class="text-white/70 text-xs sm:text-sm">—</div>
-            </div>
-        </header>
 
-        {{-- HERO --}}
-        <section class="relative z-10 min-h-[calc(100vh-76px)] px-4 sm:min-h-[calc(100vh-84px)] sm:px-10">
-            <div
-                class="mx-auto flex min-h-[calc(100vh-76px)] max-w-3xl flex-col items-center justify-center text-center sm:min-h-[calc(100vh-84px)]">
-                <h1 class="font-serif text-3xl text-white drop-shadow tracking-wide sm:text-5xl md:text-6xl">
-                    Selamat Datang
-                </h1>
+    {{-- HERO --}}
+    <section class="relative z-10 min-h-[calc(100vh-76px)] px-4 sm:min-h-[calc(100vh-84px)] sm:px-10">
+        <div class="mx-auto flex min-h-[calc(100vh-76px)] max-w-3xl flex-col items-center justify-center text-center sm:min-h-[calc(100vh-84px)]">
+            <h1 class="font-serif text-3xl text-white drop-shadow tracking-wide sm:text-5xl md:text-6xl">
+                Selamat Datang
+            </h1>
 
-                <p class="mt-2 text-sm text-white/90 tracking-wide sm:text-base">
-                    Silakan pilih layanan
-                </p>
+            <p class="mt-2 text-sm text-white/90 tracking-wide sm:text-base">
+                Silakan pilih layanan
+            </p>
 
             <div class="mt-6 h-[2px] w-24 rounded-full bg-white/30"></div>
 
             @php
-                // Dark glass base (lebih modern & selaras)
                 $btnBase = 'w-full sm:w-72 max-w-full inline-flex items-center justify-center gap-3 rounded-2xl
                             bg-slate-950/30 px-6 py-5 text-base font-semibold text-white
                             backdrop-blur-md border border-white/18 shadow-xl
@@ -109,12 +106,10 @@
                         <x-icon name="book-open" class="h-5 w-5 text-white" />
                     </div>
 
-                        <div class="min-w-0">
-                            <div class="truncate text-sm font-extrabold text-white">Tamu Sedang Hadir</div>
-                            <div class="truncate text-[11px] text-white/70">
-                                <span id="kioskActiveGuestCount" class="font-semibold text-white/90">0</span> aktif • update
-                                5 detik
-                            </div>
+                    <div class="min-w-0">
+                        <div class="truncate text-sm font-extrabold text-white">Tamu Sedang Hadir</div>
+                        <div class="truncate text-[11px] text-white/70">
+                            <span id="kioskActiveGuestCount" class="font-semibold text-white/90">0</span> aktif • update 5 detik
                         </div>
                     </div>
                 </div>
@@ -131,144 +126,104 @@
             <div id="kioskGuestBody" class="p-3">
                 <div
                     id="kioskActiveGuestLoading"
-                    class="rounded-2xl border border-white/12 bg-slate-950/20 px-3 py-3 text-sm text-white/80"
+                    class="rounded-2xl border border-white/15 bg-white/5 px-3 py-3 text-sm text-white/80"
                 >
                     Memuat daftar tamu...
                 </div>
 
-                <div id="kioskGuestBody" class="p-3">
-                    <div id="kioskActiveGuestLoading"
-                        class="rounded-2xl border border-white/15 bg-white/5 px-3 py-3 text-sm text-white/80">
-                        Memuat daftar tamu...
-                    </div>
+                <ul id="kioskActiveGuestList" class="hidden space-y-2 max-h-[45vh] sm:max-h-72 overflow-auto pr-1"></ul>
 
-                    <ul id="kioskActiveGuestList" class="hidden space-y-2 max-h-[45vh] sm:max-h-72 overflow-auto pr-1"></ul>
-
-                    <div id="kioskActiveGuestEmpty"
-                        class="hidden rounded-2xl border border-white/15 bg-white/5 px-3 py-3 text-sm text-white/80">
-                        Belum ada tamu yang sedang berkunjung.
-                    </div>
+                <div
+                    id="kioskActiveGuestEmpty"
+                    class="hidden rounded-2xl border border-white/15 bg-white/5 px-3 py-3 text-sm text-white/80"
+                >
+                    Belum ada tamu yang sedang berkunjung.
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        {{-- MODAL REMINDER --}}
-        <div id="surveyReminderModal" class="hidden fixed inset-0 z-50">
-            <div class="absolute inset-0 bg-black/60"></div>
+    {{-- MODAL REMINDER --}}
+    <div id="surveyReminderModal" class="hidden fixed inset-0 z-50">
+        <div id="surveyBackdrop" class="absolute inset-0 bg-black/60"></div>
 
-            <div class="relative mx-auto flex min-h-screen w-full items-center justify-center p-4">
-                <div
-                    class="w-full max-w-md overflow-hidden rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl">
-                    <div class="flex items-start justify-between gap-3 border-b border-white/15 px-5 py-4">
-                        <div class="min-w-0">
-                            <div class="text-white font-extrabold text-base">Ingatkan Isi Survey</div>
-                            <div id="surveyReminderName" class="truncate text-white/70 text-sm">—</div>
-                        </div>
+        <div class="relative mx-auto flex min-h-screen w-full items-center justify-center p-4">
+            <div class="w-full max-w-md overflow-hidden rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl">
+                <div class="flex items-start justify-between gap-3 border-b border-white/15 px-5 py-4">
+                    <div class="min-w-0">
+                        <div class="text-white font-extrabold text-base">Ingatkan Isi Survey</div>
+                        <div id="surveyReminderName" class="truncate text-white/70 text-sm">—</div>
+                    </div>
 
-                        <button id="btnCloseSurveyModal" type="button"
-                            class="rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-white/90 hover:bg-white/15 transition">
-                            Tutup
+                    <button
+                        id="btnCloseSurveyModal"
+                        type="button"
+                        class="rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-white/90 hover:bg-white/15 transition"
+                    >
+                        Tutup
+                    </button>
+                </div>
+
+                <div class="space-y-3 px-5 py-4">
+                    <div class="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white/85">
+                        Tamu ini <span class="font-semibold">belum mengisi survey</span>. Silakan ingatkan untuk mengisi survey sebelum selesai.
+                    </div>
+
+                    <div class="flex flex-col gap-2 sm:flex-row">
+                        <a
+                            id="btnGoSurvey"
+                            href="#"
+                            class="inline-flex w-full items-center justify-center rounded-2xl border border-white/25 bg-white/20 px-4 py-3 text-sm font-semibold text-white hover:bg-white/25 transition"
+                        >
+                            Isi Survey
+                        </a>
+
+                        <button
+                            id="btnForceComplete"
+                            type="button"
+                            class="inline-flex w-full items-center justify-center rounded-2xl border border-emerald-400/30 bg-emerald-500/25 px-4 py-3 text-sm font-semibold text-emerald-50 hover:bg-emerald-500/30 transition"
+                        >
+                            Tetap Selesai
                         </button>
                     </div>
 
-                    <div class="space-y-3 px-5 py-4">
-                        <div class="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white/85">
-                            Tamu ini <span class="font-semibold">belum mengisi survey</span>. Silakan ingatkan untuk mengisi
-                            survey sebelum selesai.
-                        </div>
-
-                        <div class="flex flex-col gap-2 sm:flex-row">
-                            <a id="btnGoSurvey" href="#"
-                                class="inline-flex w-full items-center justify-center rounded-2xl border border-white/25 bg-white/20 px-4 py-3 text-sm font-semibold text-white hover:bg-white/25 transition">
-                                Isi Survey
-                            </a>
-
-                            <button id="btnForceComplete" type="button"
-                                class="inline-flex w-full items-center justify-center rounded-2xl border border-emerald-400/30 bg-emerald-500/25 px-4 py-3 text-sm font-semibold text-emerald-50 hover:bg-emerald-500/30 transition">
-                                Tetap Selesai
-                            </button>
-                        </div>
-
-                        <div class="text-[11px] text-white/60">
-                            Klik <span class="font-semibold text-white/80">Isi Survey</span> untuk membuka form survey, atau
-                            <span class="font-semibold text-white/80">Tetap Selesai</span> untuk menutup kunjungan.
-                        </div>
+                    <div class="text-[11px] text-white/60">
+                        Klik <span class="font-semibold text-white/80">Isi Survey</span> untuk membuka form survey, atau
+                        <span class="font-semibold text-white/80">Tetap Selesai</span> untuk menutup kunjungan.
                     </div>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 
     <style>
-        /* Kunci scroll halaman + sembunyikan scrollbar */
-        html,
-        body {
+        html, body {
             height: 100%;
             overflow: hidden !important;
             overscroll-behavior: none;
             scrollbar-width: none;
-            /* Firefox */
-            -ms-overflow-style: none;
-            /* IE/legacy Edge */
-        }
-
-        html::-webkit-scrollbar,
-        body::-webkit-scrollbar {
-            width: 0 !important;
-            height: 0 !important;
-        }
-
-        /* List tamu tetap bisa scroll, tapi scrollbar disembunyikan */
-        #kioskActiveGuestList {
-            scrollbar-width: none;
             -ms-overflow-style: none;
         }
+        html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0 !important; height: 0 !important; }
 
-        #kioskActiveGuestList::-webkit-scrollbar {
-            width: 0;
-            height: 0;
-        }
+        #kioskActiveGuestList { scrollbar-width: none; -ms-overflow-style: none; }
+        #kioskActiveGuestList::-webkit-scrollbar { width: 0; height: 0; }
 
         @media (prefers-reduced-motion: reduce) {
-
-            .anim,
-            .anim * {
-                animation: none !important;
-                transition: none !important;
-            }
+            .anim, .anim * { animation: none !important; transition: none !important; }
         }
 
         @keyframes popIn {
-            from {
-                opacity: 0;
-                transform: translateY(8px) scale(.98);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(8px) scale(.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
-
-        .pop-in {
-            animation: popIn .22s ease-out both;
-        }
+        .pop-in { animation: popIn .22s ease-out both; }
 
         @keyframes fadeOutDown {
-            from {
-                opacity: 1;
-                transform: translateY(0);
-            }
-
-            to {
-                opacity: 0;
-                transform: translateY(10px);
-            }
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(10px); }
         }
-
-        .fade-out-down {
-            animation: fadeOutDown .22s ease-in both;
-        }
+        .fade-out-down { animation: fadeOutDown .22s ease-in both; }
     </style>
 
     {{-- CLOCK --}}
@@ -277,9 +232,7 @@
             const clockEl = document.getElementById('kioskClock');
             const dateEl = document.getElementById('kioskDate');
 
-            function pad(n) {
-                return String(n).padStart(2, '0');
-            }
+            const pad = (n) => String(n).padStart(2, '0');
 
             function tick() {
                 const now = new Date();
@@ -322,6 +275,7 @@
             const chev = document.getElementById('kioskGuestChevron');
 
             const modal = document.getElementById('surveyReminderModal');
+            const backdrop = document.getElementById('surveyBackdrop');
             const btnCloseModal = document.getElementById('btnCloseSurveyModal');
             const btnGoSurvey = document.getElementById('btnGoSurvey');
             const btnForceComplete = document.getElementById('btnForceComplete');
@@ -348,42 +302,42 @@
 
             function badgeHtml(status) {
                 return `
-                <span class="inline-flex items-center rounded-full bg-emerald-500/20 border border-emerald-400/30 px-2.5 py-1 text-[10px] font-semibold text-emerald-100">
-                    ${escapeHtml(status)}
-                </span>
-            `;
+                    <span class="inline-flex items-center rounded-full bg-emerald-500/20 border border-emerald-400/30 px-2.5 py-1 text-[10px] font-semibold text-emerald-100">
+                        ${escapeHtml(status)}
+                    </span>
+                `;
             }
 
             function selesaiBtnHtml(id) {
                 return `
-                <button type="button"
-                    data-action="complete"
-                    data-id="${id}"
-                    class="inline-flex items-center justify-center rounded-xl bg-slate-950/30 border border-white/12 px-3 py-2 text-[11px] font-semibold text-white/90 hover:bg-slate-950/40 transition active:scale-[0.98]">
-                    Selesai
-                </button>
-            `;
+                    <button type="button"
+                        data-action="complete"
+                        data-id="${id}"
+                        class="inline-flex items-center justify-center rounded-xl bg-slate-950/30 border border-white/12 px-3 py-2 text-[11px] font-semibold text-white/90 hover:bg-slate-950/40 transition active:scale-[0.98]">
+                        Selesai
+                    </button>
+                `;
             }
 
             function itemHtml(item) {
-                const arrived = item.arrived_at ?
-                    `<div class="mt-0.5 text-[11px] text-white/60">Datang: <span class="font-semibold text-white/75">${escapeHtml(item.arrived_at)}</span></div>` :
-                    '';
+                const arrived = item.arrived_at
+                    ? `<div class="mt-0.5 text-[11px] text-white/60">Datang: <span class="font-semibold text-white/75">${escapeHtml(item.arrived_at)}</span></div>`
+                    : '';
 
-            return `
-                <li data-id="${item.id}" class="pop-in rounded-2xl border border-white/12 bg-slate-950/20 px-3 py-2.5 hover:bg-slate-950/28 transition">
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="min-w-0">
-                            <div class="truncate text-sm font-semibold text-white">${escapeHtml(item.name || 'Tamu')}</div>
-                            ${arrived}
+                return `
+                    <li data-id="${item.id}" class="pop-in rounded-2xl border border-white/12 bg-slate-950/20 px-3 py-2.5 hover:bg-slate-950/28 transition">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <div class="truncate text-sm font-semibold text-white">${escapeHtml(item.name || 'Tamu')}</div>
+                                ${arrived}
+                            </div>
+                            <div class="shrink-0 flex flex-col items-end gap-2">
+                                ${badgeHtml(item.status || 'Sedang berkunjung')}
+                                ${selesaiBtnHtml(item.id)}
+                            </div>
                         </div>
-                        <div class="shrink-0 flex flex-col items-end gap-2">
-                            ${badgeHtml(item.status || 'Sedang berkunjung')}
-                            ${selesaiBtnHtml(item.id)}
-                        </div>
-                    </div>
-                </li>
-            `;
+                    </li>
+                `;
             }
 
             function showState(state) {
@@ -436,9 +390,7 @@
             }
 
             btnCloseModal?.addEventListener('click', closeModal);
-            modal?.addEventListener('click', (e) => {
-                if (e.target === modal) closeModal();
-            });
+            backdrop?.addEventListener('click', closeModal);
 
             btnForceComplete?.addEventListener('click', async () => {
                 if (!pendingCompleteId) return;
@@ -449,9 +401,9 @@
             async function completeVisit(id) {
                 const url = `${COMPLETE_BASE}/${encodeURIComponent(id)}/complete`;
 
-                const btn = listEl?.querySelector(
-                    `button[data-action="complete"][data-id="${CSS.escape(String(id))}"]`);
+                const btn = listEl?.querySelector(`button[data-action="complete"][data-id="${CSS.escape(String(id))}"]`);
                 const original = btn ? btn.textContent : '';
+
                 if (btn) {
                     btn.disabled = true;
                     btn.textContent = '...';
@@ -506,11 +458,7 @@
 
             async function fetchActive() {
                 try {
-                    const res = await fetch(ENDPOINT, {
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
+                    const res = await fetch(ENDPOINT, { headers: { 'Accept': 'application/json' } });
                     const json = await res.json();
                     const data = Array.isArray(json.data) ? json.data : [];
 
@@ -562,4 +510,5 @@
             setInterval(fetchActive, 5000);
         })();
     </script>
+</main>
 @endsection
