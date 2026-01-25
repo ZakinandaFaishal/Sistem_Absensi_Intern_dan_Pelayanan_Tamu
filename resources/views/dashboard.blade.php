@@ -291,7 +291,7 @@
                     </div>
                     <div
                         class="bubble h-11 w-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
-                        <x-icon name="clipboard-document" class="h-5 w-5" />
+                        <x-icon name="book-open" class="h-5 w-5" />
                     </div>
                 </div>
             </div>

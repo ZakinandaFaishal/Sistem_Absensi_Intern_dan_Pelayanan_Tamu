@@ -82,7 +82,7 @@
                     <x-input-label for="name" value="Nama *" class="text-white/85" />
                     <div class="mt-1 relative">
                         <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
-                            <x-icon name="user" class="h-5 w-5" />
+                            <x-icon name="users" class="h-5 w-5" />
                         </span>
                         <x-text-input
                             id="name"
@@ -109,7 +109,9 @@
                         <div class="sm:col-span-1">
                             <x-input-label for="group_count" value="Jumlah orang *" class="text-white/85" />
                             <div class="mt-1 relative">
-                                <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">👥</span>
+                                <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                                    <x-icon name="users" />
+                                </span>
                                 <input
                                     id="group_count"
                                     name="group_count"
@@ -201,7 +203,7 @@
                         <x-input-label for="email" value="Email (Opsional)" class="text-white/85" />
                         <div class="mt-1 relative">
                             <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
-                                ✉️
+                                <x-icon name="envelope" />
                             </span>
                             <x-text-input
                                 id="email"
@@ -221,7 +223,7 @@
                         <x-input-label for="education" value="Pendidikan Terakhir" class="text-white/85" />
                         <div class="mt-1 relative">
                             <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
-                                🎓
+                                <x-icon name="academic-cap" />
                             </span>
                             <select id="education" name="education"
                                 class="block w-full pl-10 rounded-xl
@@ -252,7 +254,9 @@
                     <div>
                         <x-input-label for="job" value="Pekerjaan" class="text-white/85" />
                         <div class="mt-1 relative">
-                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">💼</span>
+                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                                <x-icon name="briefcase" />
+                            </span>
                             <x-text-input id="job" name="job" type="text" value="{{ old('job') }}"
                                 placeholder="Mahasiswa / ASN / Wiraswasta"
                                 class="block w-full pl-10 rounded-xl
@@ -283,7 +287,9 @@
                 <div>
                     <x-input-label for="institution" value="Instansi (Opsional)" class="text-white/85" />
                     <div class="mt-1 relative">
-                        <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">🏢</span>
+                        <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
+                            <x-icon name="building-office" />
+                        </span>
                         <x-text-input id="institution" name="institution" type="text"
                             value="{{ old('institution') }}" placeholder="Universitas / Perusahaan / Komunitas"
                             class="block w-full pl-10 rounded-xl
@@ -298,7 +304,7 @@
                     <x-input-label for="jabatan" value="Jabatan (Opsional)" class="text-white/85" />
                     <div class="mt-1 relative">
                         <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/55">
-                            <x-icon name="identification" class="h-5 w-5" />
+                            <x-icon name="badge" class="h-5 w-5" />
                         </span>
                         <x-text-input id="jabatan" name="jabatan" type="text" value="{{ old('jabatan') }}"
                             placeholder="Staf / Kepala Seksi / dll."
