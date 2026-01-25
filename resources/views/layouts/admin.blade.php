@@ -137,7 +137,7 @@
                                     class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold transition
                                     {{ request()->routeIs('admin.guest.*') ? 'bg-white/10 text-white' : 'text-white/85 hover:bg-white/10 hover:text-white' }}">
                                 <span class="flex items-center gap-3">
-                                    <x-icon name="clipboard-document" class="h-5 w-5" />
+                                    <x-icon name="book-open" class="h-5 w-5" />
                                     Buku Tamu
                                 </span>
 

@@ -274,6 +274,48 @@
         </svg>
     @break
 
+        @case('academic-cap') {{-- pendidikan --}}
+        <svg {{ $attributes->merge($baseAttrs) }}>
+            <path d="M12 3 2 8l10 5 10-5-10-5z" />
+            <path d="M5 10v5c0 2 3 4 7 4s7-2 7-4v-5" />
+            <path d="M22 8v6" />
+        </svg>
+    @break
+
+    @case('briefcase') {{-- pekerjaan --}}
+        <svg {{ $attributes->merge($baseAttrs) }}>
+            <path d="M9 7V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1" />
+            <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z" />
+            <path d="M3 13h18" />
+        </svg>
+    @break
+
+    @case('building-office') {{-- instansi / kantor (opsional, kalau mau seragam) --}}
+        <svg {{ $attributes->merge($baseAttrs) }}>
+            <path d="M4 21V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v14" />
+            <path d="M9 9h1" />
+            <path d="M9 12h1" />
+            <path d="M9 15h1" />
+            <path d="M12 9h1" />
+            <path d="M12 12h1" />
+            <path d="M12 15h1" />
+            <path d="M8 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4" />
+        </svg>
+    @break
+
+    @case('badge')
+        <svg {{ $attributes->merge($baseAttrs) }}>
+            <path d="M12 2l3 2 3.5.5-.5 3.5L20 11l-2 2 .5 3.5-3.5-.5-3 2-3-2-3.5.5.5-3.5-2-2 2-3-.5-3.5L9 4l3-2z" />
+            <path d="M9.5 12.5a3 3 0 1 0 5 0" />
+        </svg>
+    @break
+
+    @case('star')
+        <svg {{ $attributes->merge($baseAttrs) }}>
+            <path d="M12 17.3 6.8 20l1-5.8L3 9.5l5.9-.9L12 3l3.1 5.6 5.9.9-4.8 4.7 1 5.8z" />
+        </svg>
+    @break
+
     @default
         <svg {{ $attributes->merge($baseAttrs) }}><path d="M12 12h.01" /></svg>
 
