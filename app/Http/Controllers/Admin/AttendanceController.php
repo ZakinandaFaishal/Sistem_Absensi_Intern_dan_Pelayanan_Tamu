@@ -117,12 +117,7 @@ class AttendanceController extends Controller
     {
         $ctx = $this->resolveDinasContext($request);
 
-        if (($ctx['isSuperAdmin'] ?? false) && (int) ($ctx['dinasId'] ?? 0) <= 0) {
-            $firstDinasId = Dinas::query()->orderBy('name')->value('id');
-            if ($firstDinasId) {
-                return redirect()->route('admin.attendance.manage', ['dinas_id' => $firstDinasId]);
-            }
-        }
+        // Super admin: default is "all dinas" (no dinas dropdown required).
 
         $dinasId = (int) ($ctx['dinasId'] ?? 0);
         $activeLocationId = (int) $request->query('location_id', 0);
@@ -133,12 +128,15 @@ class AttendanceController extends Controller
                 ->value('id');
         }
 
-        $rule = $activeLocationId > 0
-            ? AttendanceRule::query()->firstOrCreate(
+        // Rules are only relevant for admin_dinas views on this page.
+        // Avoid creating a rule with dinas_id=0 when super_admin is viewing "all dinas".
+        $rule = null;
+        if (!($ctx['isSuperAdmin'] ?? false) && $activeLocationId > 0 && $dinasId > 0) {
+            $rule = AttendanceRule::query()->firstOrCreate(
                 ['location_id' => $activeLocationId],
                 ['dinas_id' => $dinasId]
-            )
-            : null;
+            );
+        }
 
         $settings = [
             'office_lat' => $rule?->office_lat !== null ? (string) $rule->office_lat : AppSettings::getString(AppSettings::OFFICE_LAT, ''),
@@ -158,14 +156,17 @@ class AttendanceController extends Controller
                 ->where('dinas_id', $dinasId)
                 ->orderBy('name')
                 ->get();
+        }
 
-            if (($ctx['isSuperAdmin'] ?? false)) {
-                $locations = Location::query()
-                    ->where('dinas_id', $dinasId)
-                    ->with(['dinas', 'attendanceRule'])
-                    ->orderBy('name')
-                    ->get();
+        if (($ctx['isSuperAdmin'] ?? false)) {
+            $locationsQuery = Location::query()->with(['dinas', 'attendanceRule']);
+            if ($dinasId > 0) {
+                $locationsQuery->where('dinas_id', $dinasId);
             }
+            $locations = $locationsQuery
+                ->orderByRaw('coalesce(dinas_id, 0) asc')
+                ->orderBy('name')
+                ->get();
         }
 
         return view('admin.attendance.manage', [
@@ -284,7 +285,7 @@ class AttendanceController extends Controller
         if ($back === 'locations') {
             $backUrl = route('admin.attendance.locations', ['dinas_id' => (int) ($location->dinas_id ?? 0)]);
         } else {
-            $backUrl = route('admin.attendance.manage', ['dinas_id' => (int) ($location->dinas_id ?? 0)]) . '#lokasi-dinas';
+            $backUrl = route('admin.attendance.manage') . '#lokasi-dinas';
         }
 
         $dinasId = (int) ($location->dinas_id ?? 0);
@@ -327,17 +328,27 @@ class AttendanceController extends Controller
         $ctx = $this->resolveDinasContext($request, true);
         $dinasId = (int) ($ctx['dinasId'] ?? 0);
 
-        if (($ctx['isSuperAdmin'] ?? false) && $dinasId <= 0) {
+        $isSuperAdmin = (bool) ($ctx['isSuperAdmin'] ?? false);
+
+        if ($isSuperAdmin && $dinasId <= 0) {
             return back()->withErrors(['dinas_id' => 'Pilih dinas terlebih dahulu.']);
         }
 
         $validated = $request->validate([
-            'dinas_id' => ['nullable', 'integer', 'exists:dinas,id'],
+            'dinas_id' => [$isSuperAdmin ? 'required' : 'nullable', 'integer', 'exists:dinas,id'],
             'name' => ['required', 'string', 'max:255'],
             'code' => ['nullable', 'string', 'max:50', Rule::unique('locations', 'code')],
             'lat' => ['required', 'numeric', 'between:-90,90'],
             'lng' => ['required', 'numeric', 'between:-180,180'],
             'address' => ['nullable', 'string', 'max:255'],
+
+            // Aturan presensi (wajib saat tambah lokasi)
+            'radius_m' => ['required', 'integer', 'min:1', 'max:5000'],
+            'max_accuracy_m' => ['required', 'integer', 'min:1', 'max:5000'],
+            'checkin_start' => ['required', 'date_format:H:i'],
+            'checkin_end' => ['required', 'date_format:H:i'],
+            'checkout_start' => ['required', 'date_format:H:i'],
+            'checkout_end' => ['required', 'date_format:H:i'],
         ]);
 
         $location = Location::query()->create([
@@ -351,24 +362,18 @@ class AttendanceController extends Controller
 
         // Pastikan aturan presensi benar-benar per lokasi: buat rule untuk lokasi baru.
         if ($dinasId > 0) {
-            $template = AttendanceRule::query()
-                ->where('dinas_id', $dinasId)
-                ->whereNotNull('location_id')
-                ->orderBy('id')
-                ->first();
-
-            AttendanceRule::query()->firstOrCreate(
+            AttendanceRule::query()->updateOrCreate(
                 ['location_id' => (int) $location->id],
                 [
                     'dinas_id' => $dinasId,
-                    'office_lat' => $template?->office_lat !== null ? (string) $template->office_lat : (string) $location->lat,
-                    'office_lng' => $template?->office_lng !== null ? (string) $template->office_lng : (string) $location->lng,
-                    'radius_m' => (int) ($template?->radius_m ?? AppSettings::getInt(AppSettings::RADIUS_M, 50)),
-                    'max_accuracy_m' => (int) ($template?->max_accuracy_m ?? AppSettings::getInt(AppSettings::MAX_ACCURACY_M, 50)),
-                    'checkin_start' => (string) ($template?->checkin_start ?? AppSettings::getString(AppSettings::CHECKIN_START, '08:00')),
-                    'checkin_end' => (string) ($template?->checkin_end ?? AppSettings::getString(AppSettings::CHECKIN_END, '12:00')),
-                    'checkout_start' => (string) ($template?->checkout_start ?? AppSettings::getString(AppSettings::CHECKOUT_START, '13:00')),
-                    'checkout_end' => (string) ($template?->checkout_end ?? AppSettings::getString(AppSettings::CHECKOUT_END, '16:30')),
+                    'office_lat' => (string) $location->lat,
+                    'office_lng' => (string) $location->lng,
+                    'radius_m' => (int) $validated['radius_m'],
+                    'max_accuracy_m' => (int) $validated['max_accuracy_m'],
+                    'checkin_start' => (string) $validated['checkin_start'],
+                    'checkin_end' => (string) $validated['checkin_end'],
+                    'checkout_start' => (string) $validated['checkout_start'],
+                    'checkout_end' => (string) $validated['checkout_end'],
                 ]
             );
         }
@@ -382,7 +387,7 @@ class AttendanceController extends Controller
         }
 
         if ((string) $request->input('_redirect', '') === 'manage') {
-            return redirect()->to(route('admin.attendance.manage', ['dinas_id' => $dinasId]) . '#lokasi-dinas')
+            return redirect()->to(route('admin.attendance.manage') . '#lokasi-dinas')
                 ->with('status', 'Lokasi berhasil ditambahkan.');
         }
 
@@ -453,8 +458,7 @@ class AttendanceController extends Controller
         }
 
         if ((string) $request->input('_redirect', '') === 'manage') {
-            $dinasId = (int) ($location->dinas_id ?? 0);
-            return redirect()->to(route('admin.attendance.manage', ['dinas_id' => $dinasId]) . '#lokasi-dinas')
+            return redirect()->to(route('admin.attendance.manage') . '#lokasi-dinas')
                 ->with('status', 'Lokasi berhasil diperbarui.');
         }
 
@@ -486,7 +490,7 @@ class AttendanceController extends Controller
         }
 
         if ((string) $request->input('_redirect', '') === 'manage') {
-            return redirect()->to(route('admin.attendance.manage', ['dinas_id' => $dinasId]) . '#lokasi-dinas')
+            return redirect()->to(route('admin.attendance.manage') . '#lokasi-dinas')
                 ->with('status', 'Lokasi berhasil dihapus.');
         }
 

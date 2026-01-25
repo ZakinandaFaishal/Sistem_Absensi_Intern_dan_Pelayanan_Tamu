@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit Lokasi - Diskominfo Kab. Magelang')
+@section('title', 'Edit Lokasi')
 @section('page_title', 'Edit Lokasi')
 
 @section('content')

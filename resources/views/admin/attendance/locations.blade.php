@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Lokasi / Dinas - Diskominfo Kab. Magelang')
+@section('title', 'Lokasi / Dinas')
 @section('page_title', 'Lokasi / Dinas')
 
 @section('content')
@@ -109,6 +109,55 @@
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
                             placeholder="Alamat singkat">
                     </div>
+                    <div class="md:col-span-12">
+                        <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50/40 px-4 py-4">
+                            <div class="text-xs font-semibold text-slate-700">Aturan Presensi (wajib)</div>
+                            <div class="mt-3 grid grid-cols-1 md:grid-cols-12 gap-3">
+                                <div class="md:col-span-3">
+                                    <label class="text-xs font-semibold text-slate-700">Radius (meter)</label>
+                                    <input type="number" name="radius_m" min="1" max="5000"
+                                        value="{{ old('radius_m', 50) }}"
+                                        class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                        required>
+                                </div>
+                                <div class="md:col-span-3">
+                                    <label class="text-xs font-semibold text-slate-700">Maks Akurasi (meter)</label>
+                                    <input type="number" name="max_accuracy_m" min="1" max="5000"
+                                        value="{{ old('max_accuracy_m', 50) }}"
+                                        class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                        required>
+                                </div>
+
+                                <div class="md:col-span-3">
+                                    <label class="text-xs font-semibold text-slate-700">Check-in Mulai</label>
+                                    <input type="time" name="checkin_start" value="{{ old('checkin_start', '08:00') }}"
+                                        class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                        required>
+                                </div>
+                                <div class="md:col-span-3">
+                                    <label class="text-xs font-semibold text-slate-700">Check-in Selesai</label>
+                                    <input type="time" name="checkin_end" value="{{ old('checkin_end', '12:00') }}"
+                                        class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                        required>
+                                </div>
+
+                                <div class="md:col-span-3">
+                                    <label class="text-xs font-semibold text-slate-700">Check-out Mulai</label>
+                                    <input type="time" name="checkout_start"
+                                        value="{{ old('checkout_start', '13:00') }}"
+                                        class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                        required>
+                                </div>
+                                <div class="md:col-span-3">
+                                    <label class="text-xs font-semibold text-slate-700">Check-out Selesai</label>
+                                    <input type="time" name="checkout_end" value="{{ old('checkout_end', '16:30') }}"
+                                        class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                        required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="md:col-span-12 flex justify-end">
                         <button type="submit"
                             class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">

@@ -20,6 +20,8 @@ class SurveyController extends Controller
 {
     public function index(Request $request)
     {
+        $user = $request->user();
+
         $q = trim((string) $request->query('q', ''));
         $avgMin = (string) $request->query('avg_min', '');
         $from = (string) $request->query('from', '');
@@ -74,6 +76,16 @@ class SurveyController extends Controller
 
         // Summary (IKM) based on all filtered rows (not just current page).
         $summaryQuery = GuestSurvey::query()->with('visit');
+
+        // admin_dinas hanya melihat survey dari buku tamu dinasnya.
+        if (($user?->role ?? null) === 'admin_dinas') {
+            $dinasId = (int) ($user->dinas_id ?? 0);
+            if ($dinasId > 0) {
+                $summaryQuery->whereHas('visit', fn($v) => $v->where('dinas_id', $dinasId));
+            } else {
+                $summaryQuery->whereRaw('1=0');
+            }
+        }
         $applyFilters($summaryQuery);
         $summaryQuery
             ->whereNotNull('q1')
@@ -123,6 +135,15 @@ class SurveyController extends Controller
         ];
 
         $surveysQuery = GuestSurvey::query()->with(['visit']);
+
+        if (($user?->role ?? null) === 'admin_dinas') {
+            $dinasId = (int) ($user->dinas_id ?? 0);
+            if ($dinasId > 0) {
+                $surveysQuery->whereHas('visit', fn($v) => $v->where('dinas_id', $dinasId));
+            } else {
+                $surveysQuery->whereRaw('1=0');
+            }
+        }
         $applyFilters($surveysQuery);
 
         if ($sort === 'avg') {
@@ -147,6 +168,8 @@ class SurveyController extends Controller
 
     public function ikm(Request $request)
     {
+        $user = $request->user();
+
         $q = trim((string) $request->query('q', ''));
         $avgMin = (string) $request->query('avg_min', '');
         $from = (string) $request->query('from', '');
@@ -192,6 +215,15 @@ class SurveyController extends Controller
         };
 
         $summaryQuery = GuestSurvey::query()->with('visit');
+
+        if (($user?->role ?? null) === 'admin_dinas') {
+            $dinasId = (int) ($user->dinas_id ?? 0);
+            if ($dinasId > 0) {
+                $summaryQuery->whereHas('visit', fn($v) => $v->where('dinas_id', $dinasId));
+            } else {
+                $summaryQuery->whereRaw('1=0');
+            }
+        }
         $applyFilters($summaryQuery);
         $summaryQuery
             ->whereNotNull('q1')

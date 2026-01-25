@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Dashboard Admin - Diskominfo Kab. Magelang')
+@section('title', 'Dashboard Admin')
 @section('page_title', 'Dashboard Admin')
 
 @section('content')

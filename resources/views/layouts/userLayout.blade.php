@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'User Panel - Diskominfo Kab. Magelang')</title>
+    <title>@yield('title', 'User Panel') - SIMANTA</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -19,6 +19,7 @@
 >
 @php
     $user = Auth::user();
+    $user?->loadMissing('dinas');
 
     $safeRoute = function (string $name, string $fallback) {
         return \Illuminate\Support\Facades\Route::has($name) ? route($name) : url($fallback);
@@ -61,8 +62,8 @@
                 </div>
 
                 <div class="leading-tight min-w-0">
-                    <p class="text-sm font-extrabold truncate">Diskominfo</p>
-                    <p class="text-xs text-white/60 truncate">User Panel</p>
+                    <p class="text-sm font-extrabold truncate">SIMANTA</p>
+                    <p class="text-[11px] text-white/70 truncate">Sistem Informasi Manajemen Magang &amp; Tamu</p>
                 </div>
 
                 {{-- Close (mobile) --}}

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Keamanan Registrasi - Diskominfo Kab. Magelang')
+@section('title', 'Keamanan Registrasi')
 @section('page_title', 'Keamanan Registrasi')
 
 @section('content')

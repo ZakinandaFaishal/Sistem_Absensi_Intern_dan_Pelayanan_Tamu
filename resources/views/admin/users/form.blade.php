@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', ($editUser ? 'Edit User' : 'Tambah User') . ' - Diskominfo Kab. Magelang')
+@section('title', $editUser ? 'Edit User' : 'Tambah User')
 @section('page_title', $editUser ? 'Edit User' : 'Tambah User')
 
 @section('content')
