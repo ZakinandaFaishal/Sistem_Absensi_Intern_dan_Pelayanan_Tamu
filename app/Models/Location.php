@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Location extends Model
 {
@@ -24,5 +25,10 @@ class Location extends Model
     public function dinas(): BelongsTo
     {
         return $this->belongsTo(Dinas::class);
+    }
+
+    public function attendanceRule(): HasOne
+    {
+        return $this->hasOne(AttendanceRule::class);
     }
 }

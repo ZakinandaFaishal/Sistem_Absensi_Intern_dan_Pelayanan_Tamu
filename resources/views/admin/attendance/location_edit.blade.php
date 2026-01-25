@@ -1,24 +1,21 @@
 @extends('layouts.admin')
 
-@section('title', 'Aturan Presensi - Diskominfo Kab. Magelang')
-@section('page_title', 'Aturan Presensi')
+@section('title', 'Edit Lokasi - Diskominfo Kab. Magelang')
+@section('page_title', 'Edit Lokasi')
 
 @section('content')
 
-    {{-- HEADER PAGE --}}
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h2 class="text-xl font-extrabold tracking-tight text-slate-900">Aturan Presensi</h2>
-            <p class="mt-1 text-sm text-slate-600">Geofence radius + pembatasan jam check-in/check-out.</p>
+            <h2 class="text-xl font-extrabold tracking-tight text-slate-900">Edit Lokasi</h2>
+            <p class="mt-1 text-sm text-slate-600">Perbarui data lokasi/dinas penugasan peserta magang.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-            @if (($isSuperAdmin ?? false) === true)
-                <a href="{{ route('admin.attendance.index') }}"
-                    class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-                    ← Kembali ke Presensi
-                </a>
-            @endif
+            <a href="{{ $backUrl }}"
+                class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                ← Kembali
+            </a>
         </div>
     </div>
 
@@ -30,97 +27,111 @@
             </div>
         @endif
 
+        @if ($errors->any())
+            <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                <div class="font-semibold">Terjadi kesalahan</div>
+                <ul class="mt-1 list-disc pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-200">
+                <p class="text-sm font-semibold text-slate-900">Form Edit Lokasi</p>
+                <p class="mt-0.5 text-xs text-slate-500">Dinas: {{ $location->dinas?->name ?? '—' }}</p>
+            </div>
+
+            <form method="POST" action="{{ route('admin.attendance.locations.update', $location) }}" class="p-6 space-y-5">
+                @csrf
+                @method('PATCH')
+
+                <input type="hidden" name="_redirect" value="{{ $backKey ?? 'manage' }}" />
+                @if (!empty($activeDinasId ?? 0))
+                    <input type="hidden" name="dinas_id" value="{{ (int) $activeDinasId }}" />
+                @endif
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-700">Nama</label>
+                        <input name="name" value="{{ old('name', $location->name) }}"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" required>
+                        @error('name')
+                            <p class="mt-1 text-xs text-rose-700">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-slate-700">Kode (opsional)</label>
+                        <input name="code" value="{{ old('code', $location->code) }}"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                            placeholder="KOMINFO">
+                        @error('code')
+                            <p class="mt-1 text-xs text-rose-700">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-700">Latitude</label>
+                        <input name="lat" value="{{ old('lat', $location->lat) }}"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" required>
+                        @error('lat')
+                            <p class="mt-1 text-xs text-rose-700">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-slate-700">Longitude</label>
+                        <input name="lng" value="{{ old('lng', $location->lng) }}"
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" required>
+                        @error('lng')
+                            <p class="mt-1 text-xs text-rose-700">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-slate-700">Alamat (opsional)</label>
+                    <input name="address" value="{{ old('address', $location->address) }}"
+                        class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                        placeholder="Alamat singkat">
+                    @error('address')
+                        <p class="mt-1 text-xs text-rose-700">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="flex items-center justify-end gap-2">
+                    <a href="{{ $backUrl }}"
+                        class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                        Batal
+                    </a>
+                    <button type="submit"
+                        class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+
         <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div class="px-6 py-5 border-b border-slate-200">
                 <p class="text-sm font-semibold text-slate-900">Aturan Presensi</p>
-                <p class="mt-0.5 text-xs text-slate-500">Geofence radius + pembatasan jam check-in/check-out.</p>
-            </div>
-
-            @if (($isSuperAdmin ?? false) === true)
-                <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/40">
-                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <div class="text-xs font-semibold text-slate-700">Scope Dinas</div>
-                            <div class="text-sm text-slate-600">Pilih dinas untuk mengatur aturan presensi.</div>
-                        </div>
-                        <form method="GET" action="{{ route('admin.attendance.rules') }}" class="flex items-center gap-2">
-                            <select name="dinas_id" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
-                                required>
-                                <option value="" disabled {{ empty($activeDinasId ?? 0) ? 'selected' : '' }}>Pilih
-                                    dinas</option>
-                                @foreach ($dinasOptions ?? [] as $d)
-                                    <option value="{{ $d->id }}"
-                                        {{ (int) ($activeDinasId ?? 0) === (int) $d->id ? 'selected' : '' }}>
-                                        {{ $d->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <button type="submit"
-                                class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
-                                Terapkan
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            @else
-                <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/40">
-                    <div class="text-sm font-semibold text-slate-900">
-                        Dinas: {{ $activeDinas->name ?? '-' }}
-                    </div>
-                </div>
-            @endif
-
-            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/40">
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <div class="text-xs font-semibold text-slate-700">Scope Lokasi</div>
-                        <div class="text-sm text-slate-600">Aturan presensi disimpan per lokasi.</div>
-                    </div>
-                    <form id="location-switch" method="GET" action="{{ route('admin.attendance.rules') }}" class="flex items-center gap-2">
-                        @if (!empty($activeDinasId ?? 0))
-                            <input type="hidden" name="dinas_id" value="{{ (int) $activeDinasId }}">
-                        @endif
-                        <select name="location_id" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" required>
-                            <option value="" disabled {{ empty($activeLocationId ?? 0) ? 'selected' : '' }}>Pilih lokasi</option>
-                            @foreach (($locationsForDinas ?? []) as $loc)
-                                <option value="{{ $loc->id }}" {{ (int) ($activeLocationId ?? 0) === (int) $loc->id ? 'selected' : '' }}>
-                                    {{ $loc->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <noscript>
-                            <button type="submit"
-                                class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
-                                Terapkan
-                            </button>
-                        </noscript>
-                    </form>
-                </div>
+                <p class="mt-0.5 text-xs text-slate-500">Aturan untuk dinas lokasi ini (radius + jam + akurasi).</p>
             </div>
 
             <form method="POST" action="{{ route('admin.attendance.settings') }}" class="p-6 space-y-5">
                 @csrf
 
-                @if (!empty($activeDinasId ?? 0))
-                    <input type="hidden" name="dinas_id" value="{{ (int) $activeDinasId }}">
-                @endif
-                <input type="hidden" name="location_id" value="{{ (int) old('location_id', $activeLocationId ?? 0) }}">
+                <input type="hidden" name="dinas_id" value="{{ (int) ($location->dinas_id ?? 0) }}" />
+                <input type="hidden" name="location_id" value="{{ (int) $location->id }}" />
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="text-xs font-semibold text-slate-700">Office Latitude</label>
-
-                <script>
-                    (function() {
-                        var form = document.getElementById('location-switch');
-                        if (!form) return;
-                        var select = form.querySelector('select[name="location_id"]');
-                        if (!select) return;
-                        select.addEventListener('change', function() {
-                            form.submit();
-                        });
-                    })();
-                </script>
                         <input name="office_lat" value="{{ old('office_lat', $settings['office_lat'] ?? '') }}"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
                             placeholder="contoh: -7.479xxx" />
@@ -226,23 +237,30 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    @if (($isSuperAdmin ?? false) === true)
-                        <label class="inline-flex items-center gap-2 text-sm text-slate-700">
-                            <input type="checkbox" name="apply_all" value="1" class="rounded border-slate-300">
-                            Terapkan aturan ini ke semua dinas
-                        </label>
-                    @endif
-
-                    <div class="flex items-center justify-end">
-                        <button type="submit"
-                            class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
-                            Simpan Aturan
-                        </button>
-                    </div>
+                <div class="flex items-center justify-end">
+                    <button type="submit"
+                        class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
+                        Simpan Aturan
+                    </button>
                 </div>
             </form>
         </div>
+
+        <form method="POST" action="{{ route('admin.attendance.locations.destroy', $location) }}"
+            onsubmit="return confirm('Hapus lokasi ini?');"
+            class="flex justify-end">
+            @csrf
+            @method('DELETE')
+            <input type="hidden" name="_redirect" value="{{ $backKey ?? 'manage' }}" />
+            @if (!empty($activeDinasId ?? 0))
+                <input type="hidden" name="dinas_id" value="{{ (int) $activeDinasId }}" />
+            @endif
+            <button type="submit"
+                class="inline-flex items-center rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 transition">
+                Hapus Lokasi
+            </button>
+        </form>
+
     </div>
 
     <script>

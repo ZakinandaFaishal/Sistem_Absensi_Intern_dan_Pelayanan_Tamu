@@ -13,7 +13,7 @@
 
         <div class="flex flex-wrap items-center gap-2">
             @if ($isSuperAdmin)
-                <form method="GET" action="{{ route('admin.attendance.manage') }}" class="flex items-center gap-2">
+                <form id="dinas-switch" method="GET" action="{{ route('admin.attendance.manage') }}" class="flex items-center gap-2">
                     <select name="dinas_id"
                         class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
                         @foreach ($dinasOptions as $d)
@@ -22,10 +22,12 @@
                             </option>
                         @endforeach
                     </select>
-                    <button type="submit"
-                        class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
-                        Terapkan
-                    </button>
+                    <noscript>
+                        <button type="submit"
+                            class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
+                            Terapkan
+                        </button>
+                    </noscript>
                 </form>
             @else
                 <div class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
@@ -51,12 +53,6 @@
             </div>
         @endif
 
-        @if (session('status'))
-            <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                {{ session('status') }}
-            </div>
-        @endif
-
         @if ($errors->any())
             <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
                 <div class="font-semibold">Terjadi kesalahan</div>
@@ -69,10 +65,12 @@
         @endif
 
         <div class="flex flex-wrap items-center gap-2">
-            <a href="#aturan-presensi"
-                class="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-                Aturan Presensi
-            </a>
+            @if (!$isSuperAdmin)
+                <a href="#aturan-presensi"
+                    class="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    Aturan Presensi
+                </a>
+            @endif
             @if ($isSuperAdmin)
                 <a href="#lokasi-dinas"
                     class="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
@@ -81,122 +79,90 @@
             @endif
         </div>
 
-        {{-- Aturan Presensi --}}
-        <section id="aturan-presensi" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div class="px-6 py-5 border-b border-slate-200">
-                <p class="text-sm font-semibold text-slate-900">Aturan Presensi</p>
-                <p class="mt-0.5 text-xs text-slate-500">Geofence radius + pembatasan jam check-in/check-out.</p>
-            </div>
+        {{-- Aturan Presensi (admin_dinas only) --}}
+        @if (!$isSuperAdmin)
+            <section id="aturan-presensi" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-slate-200">
+                    <p class="text-sm font-semibold text-slate-900">Aturan Presensi</p>
+                    <p class="mt-0.5 text-xs text-slate-500">Geofence radius + pembatasan jam check-in/check-out.</p>
+                </div>
 
-            <form method="POST" action="{{ route('admin.attendance.settings') }}" class="p-6 space-y-5">
-                @csrf
-
-                @if ($isSuperAdmin)
-                    <input type="hidden" name="dinas_id" value="{{ (int) $activeDinasId }}">
-                @endif
-
-                @if (($noDinas ?? false) === true)
-                    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                        Pilih/buat dinas terlebih dahulu. Form dinonaktifkan sementara.
+                @if (session('status'))
+                    <div class="px-6 pt-5">
+                        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                            {{ session('status') }}
+                        </div>
                     </div>
                 @endif
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-xs font-semibold text-slate-700">Office Latitude</label>
-                        <input name="office_lat" value="{{ old('office_lat', $settings['office_lat'] ?? '') }}"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
-                            placeholder="contoh: -7.479xxx" />
-                        @error('office_lat')
-                            <p class="mt-1 text-xs text-rose-700">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label class="text-xs font-semibold text-slate-700">Office Longitude</label>
-                        <input name="office_lng" value="{{ old('office_lng', $settings['office_lng'] ?? '') }}"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
-                            placeholder="contoh: 110.217xxx" />
-                        @error('office_lng')
-                            <p class="mt-1 text-xs text-rose-700">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-xs font-semibold text-slate-700">Radius (meter)</label>
-                        <input name="radius_m" type="number" min="1" max="50"
-                            value="{{ old('radius_m', $settings['radius_m'] ?? 50) }}"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" />
-                        @error('radius_m')
-                            <p class="mt-1 text-xs text-rose-700">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label class="text-xs font-semibold text-slate-700">Maks Akurasi GPS (meter)</label>
-                        <input name="max_accuracy_m" type="number" min="1" max="5000"
-                            value="{{ old('max_accuracy_m', $settings['max_accuracy_m'] ?? 100) }}"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" />
-                        @error('max_accuracy_m')
-                            <p class="mt-1 text-xs text-rose-700">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-semibold text-slate-700">Check-in Mulai</label>
-                            <input name="checkin_start" type="time"
-                                value="{{ old('checkin_start', $settings['checkin_start'] ?? '08:00') }}"
-                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" />
-                            @error('checkin_start')
-                                <p class="mt-1 text-xs text-rose-700">{{ $message }}</p>
-                            @enderror
+                <div class="p-6 space-y-5">
+                    @if (($locationsForDinas ?? collect())->count() > 0)
+                        <div class="rounded-xl border border-slate-200 bg-slate-50/40 px-4 py-4">
+                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <div class="text-xs font-semibold text-slate-700">Scope Lokasi</div>
+                                    <div class="text-sm text-slate-600">Aturan presensi disimpan per lokasi.</div>
+                                </div>
+                                <form id="location-switch" method="GET" action="{{ route('admin.attendance.manage') }}" class="flex items-center gap-2">
+                                    <select name="location_id" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" required>
+                                        <option value="" disabled {{ empty($activeLocationId ?? 0) ? 'selected' : '' }}>Pilih lokasi</option>
+                                        @foreach (($locationsForDinas ?? []) as $loc)
+                                            <option value="{{ $loc->id }}" {{ (int) ($activeLocationId ?? 0) === (int) $loc->id ? 'selected' : '' }}>
+                                                {{ $loc->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <noscript>
+                                        <button type="submit"
+                                            class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
+                                            Terapkan
+                                        </button>
+                                    </noscript>
+                                </form>
+                            </div>
                         </div>
-                        <div>
-                            <label class="text-xs font-semibold text-slate-700">Check-in Sampai</label>
-                            <input name="checkin_end" type="time"
-                                value="{{ old('checkin_end', $settings['checkin_end'] ?? '12:00') }}"
-                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" />
-                            @error('checkin_end')
-                                <p class="mt-1 text-xs text-rose-700">{{ $message }}</p>
-                            @enderror
+                    @endif
+
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50/40 px-4 py-4">
+                        <div class="text-xs font-semibold text-slate-700">Ringkasan Aturan</div>
+                        <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-700">
+                            <div>
+                                <div class="text-xs text-slate-500">Office Lat/Lng</div>
+                                <div class="font-semibold">
+                                    {{ ($settings['office_lat'] ?? '') !== '' ? $settings['office_lat'] : '—' }} ,
+                                    {{ ($settings['office_lng'] ?? '') !== '' ? $settings['office_lng'] : '—' }}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-500">Radius / Akurasi</div>
+                                <div class="font-semibold">
+                                    {{ (int) ($settings['radius_m'] ?? 50) }} m / maks {{ (int) ($settings['max_accuracy_m'] ?? 100) }} m
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-500">Jam Check-in</div>
+                                <div class="font-semibold">
+                                    {{ (string) ($settings['checkin_start'] ?? '08:00') }} – {{ (string) ($settings['checkin_end'] ?? '12:00') }}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-500">Jam Check-out</div>
+                                <div class="font-semibold">
+                                    {{ (string) ($settings['checkout_start'] ?? '13:00') }} – {{ (string) ($settings['checkout_end'] ?? '16:30') }}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-semibold text-slate-700">Check-out Mulai</label>
-                            <input name="checkout_start" type="time"
-                                value="{{ old('checkout_start', $settings['checkout_start'] ?? '13:00') }}"
-                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" />
-                            @error('checkout_start')
-                                <p class="mt-1 text-xs text-rose-700">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-slate-700">Check-out Sampai</label>
-                            <input name="checkout_end" type="time"
-                                value="{{ old('checkout_end', $settings['checkout_end'] ?? '16:30') }}"
-                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" />
-                            @error('checkout_end')
-                                <p class="mt-1 text-xs text-rose-700">{{ $message }}</p>
-                            @enderror
-                        </div>
+                    <div class="flex items-center justify-end">
+                        <a href="{{ route('admin.attendance.rules', ['location_id' => (int) ($activeLocationId ?? 0)]) }}"
+                            class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
+                            Edit Aturan Presensi
+                        </a>
                     </div>
                 </div>
-
-                <div class="flex items-center justify-end">
-                    <button type="submit" @disabled(($noDinas ?? false) === true)
-                        class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
-                        Simpan Aturan
-                    </button>
-                </div>
-            </form>
-        </section>
+            </section>
+        @endif
 
         {{-- Lokasi / Dinas (super_admin only) --}}
         @if ($isSuperAdmin)
@@ -206,10 +172,20 @@
                     <p class="mt-0.5 text-xs text-slate-500">Kelola titik koordinat untuk penugasan peserta magang.</p>
                 </div>
 
+                @if (session('status'))
+                    <div class="px-6 pt-5">
+                        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                            {{ session('status') }}
+                        </div>
+                    </div>
+                @endif
+
                 <div class="p-6 space-y-5">
                     <form method="POST" action="{{ route('admin.attendance.locations.store') }}"
                         class="grid grid-cols-1 md:grid-cols-12 gap-3">
                         @csrf
+
+                        <input type="hidden" name="_redirect" value="manage">
 
                         @if ($isSuperAdmin)
                             <input type="hidden" name="dinas_id" value="{{ (int) $activeDinasId }}">
@@ -265,61 +241,66 @@
                                     <th class="px-3 py-3 font-semibold w-28">Lat</th>
                                     <th class="px-3 py-3 font-semibold w-28">Lng</th>
                                     <th class="px-3 py-3 font-semibold w-72">Alamat</th>
-                                    <th class="px-3 py-3 font-semibold w-40 text-right">Aksi</th>
+                                    <th class="px-3 py-3 font-semibold w-32">Radius</th>
+                                    <th class="px-3 py-3 font-semibold w-36">Check-in</th>
+                                    <th class="px-3 py-3 font-semibold w-36">Check-out</th>
+                                    <th class="px-3 py-3 font-semibold w-44 text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
                                 @forelse ($locations as $loc)
+                                    @php
+                                        $rule = $loc->attendanceRule;
+                                        $radiusM = (int) ($rule?->radius_m ?? 50);
+                                        $maxAccuracyM = (int) ($rule?->max_accuracy_m ?? 100);
+                                        $checkinStart = (string) ($rule?->checkin_start ?? '08:00');
+                                        $checkinEnd = (string) ($rule?->checkin_end ?? '12:00');
+                                        $checkoutStart = (string) ($rule?->checkout_start ?? '13:00');
+                                        $checkoutEnd = (string) ($rule?->checkout_end ?? '16:30');
+                                    @endphp
                                     <tr class="hover:bg-slate-50/70">
                                         @if ($isSuperAdmin)
                                             <td class="px-3 py-3 whitespace-nowrap text-slate-700">
                                                 {{ $loc->dinas?->name ?? '—' }}
                                             </td>
                                         @endif
-                                        <td class="px-3 py-3">
-                                            <input type="text" name="name" value="{{ $loc->name }}"
-                                                form="loc-update-{{ $loc->id }}"
-                                                class="h-9 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-900 font-semibold">
+                                        <td class="px-3 py-3 whitespace-nowrap text-slate-900 font-semibold">
+                                            {{ $loc->name }}
                                         </td>
-                                        <td class="px-3 py-3">
-                                            <input type="text" name="code" value="{{ $loc->code ?? '' }}"
-                                                form="loc-update-{{ $loc->id }}"
-                                                class="h-9 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700">
+                                        <td class="px-3 py-3 whitespace-nowrap text-slate-700">
+                                            {{ $loc->code ?? '—' }}
                                         </td>
-                                        <td class="px-3 py-3">
-                                            <input type="text" name="lat" value="{{ $loc->lat ?? '' }}"
-                                                form="loc-update-{{ $loc->id }}"
-                                                class="h-9 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700">
+                                        <td class="px-3 py-3 whitespace-nowrap text-slate-700">
+                                            {{ $loc->lat ?? '—' }}
                                         </td>
-                                        <td class="px-3 py-3">
-                                            <input type="text" name="lng" value="{{ $loc->lng ?? '' }}"
-                                                form="loc-update-{{ $loc->id }}"
-                                                class="h-9 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700">
+                                        <td class="px-3 py-3 whitespace-nowrap text-slate-700">
+                                            {{ $loc->lng ?? '—' }}
                                         </td>
-                                        <td class="px-3 py-3">
-                                            <input type="text" name="address" value="{{ $loc->address ?? '' }}"
-                                                form="loc-update-{{ $loc->id }}"
-                                                class="h-9 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700"
-                                                placeholder="—">
+                                        <td class="px-3 py-3 text-slate-700 truncate" title="{{ $loc->address ?? '' }}">
+                                            {{ $loc->address ?? '—' }}
+                                        </td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-slate-700">
+                                            {{ $radiusM }} m
+                                            <div class="text-[11px] text-slate-500">maks akurasi {{ $maxAccuracyM }} m</div>
+                                        </td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-slate-700">
+                                            {{ $checkinStart }} – {{ $checkinEnd }}
+                                        </td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-slate-700">
+                                            {{ $checkoutStart }} – {{ $checkoutEnd }}
                                         </td>
                                         <td class="px-3 py-3 whitespace-nowrap text-right">
                                             <div class="inline-flex items-center justify-end gap-2">
-                                                <form id="loc-update-{{ $loc->id }}" method="POST"
-                                                    action="{{ route('admin.attendance.locations.update', $loc) }}">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                </form>
+                                                <a href="{{ route('admin.attendance.locations.edit', ['location' => $loc, 'dinas_id' => (int) $activeDinasId, 'back' => 'manage']) }}"
+                                                    class="h-9 inline-flex items-center rounded-lg bg-slate-900 px-3 text-xs font-semibold text-white hover:bg-slate-800 transition">
+                                                    Pengaturan
+                                                </a>
 
-                                                <button type="submit" form="loc-update-{{ $loc->id }}"
-                                                    class="h-9 rounded-lg bg-slate-900 px-3 text-xs font-semibold text-white hover:bg-slate-800 transition">
-                                                    Edit
-                                                </button>
-
-                                                <form method="POST"
-                                                    action="{{ route('admin.attendance.locations.destroy', $loc) }}"
+                                                <form method="POST" action="{{ route('admin.attendance.locations.destroy', $loc) }}"
                                                     onsubmit="return confirm('Hapus lokasi ini?');">
                                                     @csrf
                                                     @method('DELETE')
+                                                    <input type="hidden" name="_redirect" value="manage">
                                                     <button type="submit"
                                                         class="h-9 rounded-lg bg-rose-600 px-3 text-xs font-semibold text-white hover:bg-rose-700 transition">
                                                         Hapus
@@ -342,5 +323,44 @@
         @endif
 
     </div>
+
+    <script>
+        (function() {
+            var dinasSwitch = document.getElementById('dinas-switch');
+            if (dinasSwitch) {
+                var select = dinasSwitch.querySelector('select[name="dinas_id"]');
+                if (select) {
+                    select.addEventListener('change', function() {
+                        dinasSwitch.submit();
+                    });
+                }
+            }
+
+            var officeSelect = document.getElementById('officeFromLocation');
+            if (officeSelect) {
+                officeSelect.addEventListener('change', function() {
+                    var opt = officeSelect.options[officeSelect.selectedIndex];
+                    var lat = opt && opt.getAttribute('data-lat');
+                    var lng = opt && opt.getAttribute('data-lng');
+                    if (!lat || !lng) return;
+
+                    var latInput = document.querySelector('input[name="office_lat"]');
+                    var lngInput = document.querySelector('input[name="office_lng"]');
+                    if (latInput) latInput.value = lat;
+                    if (lngInput) lngInput.value = lng;
+                });
+            }
+
+            var locationSwitch = document.getElementById('location-switch');
+            if (locationSwitch) {
+                var locationSelect = locationSwitch.querySelector('select[name="location_id"]');
+                if (locationSelect) {
+                    locationSelect.addEventListener('change', function() {
+                        locationSwitch.submit();
+                    });
+                }
+            }
+        })();
+    </script>
 
 @endsection

@@ -140,48 +140,33 @@
                                             {{ $loc->dinas->name ?? '-' }}
                                         </td>
                                     @endif
-                                    <td class="py-3 pr-4">
-                                        <input form="locForm{{ $loc->id }}" name="name"
-                                            value="{{ $loc->name }}"
-                                            class="w-56 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                                    <td class="py-3 pr-4 whitespace-nowrap font-semibold text-slate-900">
+                                        {{ $loc->name }}
                                     </td>
-                                    <td class="py-3 pr-4">
-                                        <input form="locForm{{ $loc->id }}" name="code"
-                                            value="{{ $loc->code }}"
-                                            class="w-32 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                                    <td class="py-3 pr-4 whitespace-nowrap text-slate-700">
+                                        {{ $loc->code ?? '—' }}
                                     </td>
-                                    <td class="py-3 pr-4">
-                                        <input form="locForm{{ $loc->id }}" name="lat"
-                                            value="{{ $loc->lat }}"
-                                            class="w-40 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                                    <td class="py-3 pr-4 whitespace-nowrap text-slate-700">
+                                        {{ $loc->lat ?? '—' }}
                                     </td>
-                                    <td class="py-3 pr-4">
-                                        <input form="locForm{{ $loc->id }}" name="lng"
-                                            value="{{ $loc->lng }}"
-                                            class="w-40 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                                    <td class="py-3 pr-4 whitespace-nowrap text-slate-700">
+                                        {{ $loc->lng ?? '—' }}
                                     </td>
-                                    <td class="py-3 pr-4">
-                                        <input form="locForm{{ $loc->id }}" name="address"
-                                            value="{{ $loc->address }}"
-                                            class="w-72 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                                    <td class="py-3 pr-4 text-slate-700">
+                                        {{ $loc->address ?? '—' }}
                                     </td>
                                     <td class="py-3 pr-0 text-right whitespace-nowrap">
-                                        <form id="locForm{{ $loc->id }}" method="POST"
-                                            action="{{ route('admin.attendance.locations.update', $loc) }}"
-                                            class="inline-block">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit"
-                                                class="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition">
-                                                Simpan
-                                            </button>
-                                        </form>
+                                        <a href="{{ route('admin.attendance.locations.edit', ['location' => $loc, 'dinas_id' => (int) ($activeDinasId ?? 0), 'back' => 'locations']) }}"
+                                            class="inline-flex items-center rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition">
+                                            Edit
+                                        </a>
 
                                         <form method="POST"
                                             action="{{ route('admin.attendance.locations.destroy', $loc) }}"
                                             class="inline-block" onsubmit="return confirm('Hapus lokasi ini?');">
                                             @csrf
                                             @method('DELETE')
+                                            <input type="hidden" name="_redirect" value="locations">
                                             <button type="submit"
                                                 class="rounded-xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-700 transition">
                                                 Hapus
