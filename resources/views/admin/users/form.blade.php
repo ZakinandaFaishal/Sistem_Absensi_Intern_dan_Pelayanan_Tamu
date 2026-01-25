@@ -48,7 +48,7 @@
                     </span>
                     <div>
                         <p class="text-sm font-semibold text-slate-900">{{ $editUser ? 'Edit User' : 'Tambah User' }}</p>
-                        <p class="text-xs text-slate-500">Data akun + konfigurasi magang.</p>
+                        <p class="text-xs text-slate-500">Data akun + konfigurasi.</p>
                     </div>
                 </div>
 
@@ -68,6 +68,8 @@
                         @method('PATCH')
                     @endif
 
+                    @php($roleValue = old('role', $editUser->role ?? 'intern'))
+
                     <div class="md:col-span-4">
                         <label class="block text-sm font-semibold text-slate-700">Nama</label>
                         <input name="name" value="{{ old('name', $editUser->name ?? '') }}"
@@ -75,28 +77,28 @@
                             required>
                     </div>
 
-                    <div class="md:col-span-3">
+                    <div class="md:col-span-4">
                         <label class="block text-sm font-semibold text-slate-700">NIK</label>
                         <input name="nik" value="{{ old('nik', $editUser->nik ?? '') }}"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
                             required inputmode="numeric">
                     </div>
 
-                    <div class="md:col-span-3">
+                    <div class="md:col-span-4">
                         <label class="block text-sm font-semibold text-slate-700">No Telepon</label>
                         <input name="phone" value="{{ old('phone', $editUser->phone ?? '') }}"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
                             required inputmode="tel">
                     </div>
 
-                    <div class="md:col-span-3">
+                    <div class="md:col-span-4">
                         <label class="block text-sm font-semibold text-slate-700">Username</label>
                         <input name="username" value="{{ old('username', $editUser->username ?? '') }}"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
                             required autocomplete="off">
                     </div>
 
-                    <div class="md:col-span-5">
+                    <div class="md:col-span-4">
                         <label class="block text-sm font-semibold text-slate-700">Email</label>
                         <input type="email" name="email" value="{{ old('email', $editUser->email ?? '') }}"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
@@ -114,19 +116,18 @@
                                 <span class="text-slate-500">(dikunci)</span>
                             </div>
                         @else
-                            <select name="role"
+                            <select id="userRoleSelect" name="role"
                                 class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
                                 required>
-                                @php($roleValue = old('role', $editUser->role ?? 'intern'))
                                 <option value="intern" @selected($roleValue === 'intern')>intern</option>
                                 <option value="admin_dinas" @selected($roleValue === 'admin_dinas')>admin_dinas</option>
                             </select>
                         @endif
                     </div>
 
-                    <div class="md:col-span-4">
+                    <div id="userDinasFields" class="md:col-span-4 {{ $roleValue === 'admin_dinas' ? '' : 'hidden' }}">
                         <label class="block text-sm font-semibold text-slate-700">Dinas (wajib untuk admin_dinas)</label>
-                        <select name="dinas_id"
+                        <select id="userDinasSelect" name="dinas_id"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
                             <option value="">—</option>
                             @foreach ($dinasOptions ?? [] as $d)
@@ -135,62 +136,64 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs text-slate-500">Kosongkan untuk role intern/super_admin.</p>
+                        <p class="mt-1 text-xs text-slate-500">Wajib dipilih jika role <span
+                                class="font-semibold">admin_dinas</span>.</p>
                     </div>
 
-                    <div class="md:col-span-4">
-                        <label class="block text-sm font-semibold text-slate-700">Status Intern</label>
-                        <select name="intern_status"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
-                            @php($internStatusValue = old('intern_status', $editUser->intern_status ?? 'aktif'))
-                            <option value="aktif" @selected($internStatusValue === 'aktif')>aktif</option>
-                            <option value="tamat" @selected($internStatusValue === 'tamat')>tamat</option>
-                        </select>
-                        <p class="mt-1 text-xs text-slate-500">Jika <span class="font-semibold">tamat</span>, user tidak
-                            bisa presensi lagi.</p>
-                    </div>
+                    <div id="userInternFields" class="contents {{ $roleValue === 'intern' ? '' : 'hidden' }}">
+                        <div class="md:col-span-4">
+                            <label class="block text-sm font-semibold text-slate-700">Status Intern</label>
+                            <select name="intern_status"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
+                                @php($internStatusValue = old('intern_status', $editUser->intern_status ?? 'aktif'))
+                                <option value="aktif" @selected($internStatusValue === 'aktif')>aktif</option>
+                                <option value="tamat" @selected($internStatusValue === 'tamat')>tamat</option>
+                            </select>
+                            <p class="mt-1 text-xs text-slate-500">Jika <span class="font-semibold">tamat</span>, user tidak
+                                bisa presensi lagi.</p>
+                        </div>
 
-                    <div class="md:col-span-4">
-                        <label class="block text-sm font-semibold text-slate-700">Mulai Magang</label>
-                        <input name="internship_start_date" type="date"
-                            value="{{ old('internship_start_date', $editUser->internship_start_date ?? '') }}"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
-                    </div>
+                        <div class="md:col-span-4">
+                            <label class="block text-sm font-semibold text-slate-700">Mulai Magang</label>
+                            <input name="internship_start_date" type="date"
+                                value="{{ old('internship_start_date', $editUser->internship_start_date ?? '') }}"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
+                        </div>
 
-                    <div class="md:col-span-4">
-                        <label class="block text-sm font-semibold text-slate-700">Selesai Magang</label>
-                        <input name="internship_end_date" type="date"
-                            value="{{ old('internship_end_date', $editUser->internship_end_date ?? '') }}"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
-                    </div>
+                        <div class="md:col-span-4">
+                            <label class="block text-sm font-semibold text-slate-700">Selesai Magang</label>
+                            <input name="internship_end_date" type="date"
+                                value="{{ old('internship_end_date', $editUser->internship_end_date ?? '') }}"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
+                        </div>
+                        <div class="md:col-span-4">
+                            <label class="block text-sm font-semibold text-slate-700">Lokasi / Dinas Magang</label>
+                            <select name="internship_location_id"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
+                                <option value="">—</option>
+                                @foreach ($locations ?? [] as $loc)
+                                    <option value="{{ $loc->id }}" @selected((string) old('internship_location_id', $editUser->internship_location_id ?? '') === (string) $loc->id)>
+                                        {{ $loc->name }}{{ $loc->code ? ' (' . $loc->code . ')' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                    <div class="md:col-span-4">
-                        <label class="block text-sm font-semibold text-slate-700">Lokasi / Dinas Magang</label>
-                        <select name="internship_location_id"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
-                            <option value="">—</option>
-                            @foreach ($locations ?? [] as $loc)
-                                <option value="{{ $loc->id }}" @selected((string) old('internship_location_id', $editUser->internship_location_id ?? '') === (string) $loc->id)>
-                                    {{ $loc->name }}{{ $loc->code ? ' (' . $loc->code . ')' : '' }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <p class="mt-1 text-xs text-slate-500">Diabaikan jika role bukan intern.</p>
-                    </div>
+                        <div class="md:col-span-4">
+                            <label class="block text-sm font-semibold text-slate-700">Override Nilai (0–100)</label>
+                            <input name="score_override"
+                                value="{{ old('score_override', $editUser->score_override ?? '') }}"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
+                                inputmode="numeric" placeholder="Kosongkan untuk auto">
+                        </div>
 
-                    <div class="md:col-span-4">
-                        <label class="block text-sm font-semibold text-slate-700">Override Nilai (0–100)</label>
-                        <input name="score_override" value="{{ old('score_override', $editUser->score_override ?? '') }}"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
-                            inputmode="numeric" placeholder="Kosongkan untuk auto">
-                    </div>
-
-                    <div class="md:col-span-12">
-                        <label class="block text-sm font-semibold text-slate-700">Catatan Override (opsional)</label>
-                        <input name="score_override_note"
-                            value="{{ old('score_override_note', $editUser->score_override_note ?? '') }}"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
-                            placeholder="Contoh: penugasan khusus / dispensasi">
+                        <div class="md:col-span-4">
+                            <label class="block text-sm font-semibold text-slate-700">Catatan Override (opsional)</label>
+                            <input name="score_override_note"
+                                value="{{ old('score_override_note', $editUser->score_override_note ?? '') }}"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
+                                placeholder="Contoh: penugasan khusus / dispensasi">
+                        </div>
                     </div>
 
                     <div class="md:col-span-4">
@@ -226,5 +229,41 @@
         </section>
 
     </div>
+
+    <script>
+        (function() {
+            const roleSelect = document.getElementById('userRoleSelect');
+            const roleHidden = document.querySelector('input[name="role"]');
+            const dinasFields = document.getElementById('userDinasFields');
+            const dinasSelect = document.getElementById('userDinasSelect');
+            const internFields = document.getElementById('userInternFields');
+
+            const getRole = () => {
+                return (roleSelect?.value || roleHidden?.value || 'intern');
+            };
+
+            const setSection = (section, visible) => {
+                if (!section) return;
+                section.classList.toggle('hidden', !visible);
+
+                section.querySelectorAll('input, select, textarea').forEach((el) => {
+                    el.disabled = !visible;
+                });
+            };
+
+            const sync = () => {
+                const role = getRole();
+                setSection(dinasFields, role === 'admin_dinas');
+                setSection(internFields, role === 'intern');
+
+                if (dinasSelect) {
+                    dinasSelect.required = (role === 'admin_dinas');
+                }
+            };
+
+            roleSelect?.addEventListener('change', sync);
+            sync();
+        })();
+    </script>
 
 @endsection

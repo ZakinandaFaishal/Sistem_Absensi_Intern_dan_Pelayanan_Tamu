@@ -9,6 +9,7 @@ class AttendanceRule extends Model
 {
     protected $fillable = [
         'dinas_id',
+        'location_id',
         'office_lat',
         'office_lng',
         'radius_m',
@@ -29,5 +30,10 @@ class AttendanceRule extends Model
     public function dinas(): BelongsTo
     {
         return $this->belongsTo(Dinas::class);
+    }
+
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
     }
 }

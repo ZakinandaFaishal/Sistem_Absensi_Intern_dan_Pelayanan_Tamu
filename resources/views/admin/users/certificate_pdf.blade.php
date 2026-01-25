@@ -1,324 +1,319 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <title>Sertifikat Magang</title>
 
     <style>
-        /* ===== PAGE ===== */
-        @page { size: A4 landscape; margin: 14mm; }
+        /* ===== PAGE (Dompdf friendly, force 1 page) ===== */
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
 
-        html, body { height: 100%; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html,
+        body {
+            width: 297mm;
+            height: 210mm;
+        }
 
         body {
             font-family: "DejaVu Sans", Arial, sans-serif;
             color: #0f172a;
             background: #ffffff;
-            text-rendering: geometricPrecision;
             -webkit-print-color-adjust: exact;
         }
 
-        /* ===== COLORS ===== */
-        :root{
+        :root {
             --gold: #caa24a;
-            --gold2:#b88a2a;
-            --dark: #0b1324;
-            --ink:  #0f172a;
-            --muted:#475569;
+            --ink: #0f172a;
+            --muted: #475569;
         }
 
-        /* ===== OUTER FRAME ===== */
-        .certificate-outer{
-            height: 100%;
-            border: 2px solid var(--gold);
-            padding: 6mm;
-        }
-
-        .certificate-inner{
+        .page {
+            width: 297mm;
+            height: 210mm;
             position: relative;
-            height: 100%;
-            border: 1.5px solid var(--gold);
-            padding: 12mm 14mm;
             overflow: hidden;
+            background: #ffffff;
+            page-break-inside: avoid;
+            page-break-after: avoid;
         }
 
-        /* inner inset line like formal certificate */
-        .certificate-inner:before{
-            content:"";
-            position:absolute;
-            inset: 6mm;
-            border: 1px solid rgba(202,162,74,.55);
-            pointer-events:none;
-            z-index:1;
+        /* Border ala contoh (absolute inset) */
+        .border-frame {
+            position: absolute;
+            top: 6mm;
+            right: 6mm;
+            bottom: 6mm;
+            left: 6mm;
+            border: 3px solid var(--ink);
+            z-index: 2;
+            pointer-events: none;
         }
 
-        /* ===== DIAGONAL ACCENT (TOP-RIGHT) ===== */
-        .diag-top{
-            position:absolute;
-            top:-1px;
-            right:-1px;
-            width: 56mm;
-            height: 56mm;
-            z-index:2;
-            pointer-events:none;
-            background:
-                linear-gradient(135deg, rgba(0,0,0,0) 52%, var(--dark) 52% 100%),
-                linear-gradient(135deg, rgba(0,0,0,0) 60%, var(--gold) 60% 78%, rgba(0,0,0,0) 78% 100%);
-            opacity: .95;
+        /* Isi page (mirip p-16) */
+        .inner {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 3;
+            padding: 14mm 18mm;
         }
 
-        /* ===== WATERMARK (LEFT) ===== */
-        .watermark{
-            position:absolute;
-            left: -12mm;
-            top: 8mm;
-            width: 155mm;
+        /* Watermark (opsional) */
+        .watermark {
+            position: absolute;
+            left: 14mm;
+            top: 24mm;
+            width: 120mm;
             height: auto;
             opacity: .06;
-            z-index:0;
-            pointer-events:none;
+            z-index: 1;
+            pointer-events: none;
         }
 
-        /* ===== CONTENT LAYER ===== */
-        .content{
-            position:relative;
-            z-index:3;
-            height: 100%;
+        /* Header */
+        .header {
+            text-align: center;
+            margin-top: 6mm;
         }
 
-        /* ===== HEADER ===== */
-        .header{
-            text-align:center;
-            margin-top: 0mm;
-        }
-
-        .header__logo{
+        .header__logo {
             width: 18mm;
             height: auto;
-            display:block;
-            margin: 0 auto 4mm;
+            display: inline-block;
+            margin-bottom: 3mm;
         }
 
-        .header__org{
+        .header__org {
+            font-size: 12px;
             font-weight: 900;
-            letter-spacing: .9px;
+            letter-spacing: 1.1px;
             text-transform: uppercase;
-            font-size: 15px;
-        }
-
-        .header__dept{
-            font-weight: 700;
-            letter-spacing: .6px;
-            text-transform: uppercase;
-            font-size: 11px;
-            color: var(--ink);
-            margin-top: 1mm;
-        }
-
-        /* ===== TITLE ===== */
-        .title{
-            text-align:center;
-            margin-top: 6mm; /* lebih rapi tanpa bulatan */
-        }
-
-        .title__main{
-            font-family: "DejaVu Serif", "Times New Roman", serif;
-            font-weight: 900;
-            font-size: 36px;
-            letter-spacing: 3px;
-            color: var(--gold2);
-            text-transform: uppercase;
-            line-height: 1.05;
-        }
-
-        .title__no{
-            margin-top: 3mm;
-            font-size: 11px;
-            font-weight: 700;
             color: var(--ink);
         }
 
-        .title__no span{ font-weight: 800; }
+        .header__dept {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .7px;
+            text-transform: uppercase;
+            color: var(--ink);
+            margin-top: 1.5mm;
+        }
 
-        /* ===== BODY ===== */
-        .body{
-            text-align:center;
+        /* Title */
+        .title {
+            text-align: center;
             margin-top: 7mm;
+        }
+
+        .title__main {
+            font-family: "DejaVu Serif", "Times New Roman", serif;
+            font-size: 34px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #111827;
+        }
+
+        .title__sub {
+            margin-top: 2mm;
+            font-size: 12px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        /* Content */
+        .content {
+            text-align: center;
+            margin-top: 14mm;
             padding: 0 18mm;
         }
 
-        .body__label{
+        .content__label {
             font-size: 12px;
             color: var(--muted);
-            margin-bottom: 2.5mm;
         }
 
-        .body__name{
+        .content__name {
+            margin-top: 5mm;
             font-family: "DejaVu Serif", "Times New Roman", serif;
+            font-size: 28px;
             font-weight: 900;
-            font-size: 31px;
-            color: var(--ink);
-            line-height: 1.12;
+            text-transform: uppercase;
+            color: #111827;
             word-break: break-word;
         }
 
-        .body__line{
-            width: 140mm;
-            margin: 3mm auto 3mm;
-            border-top: 2px solid var(--ink);
-            opacity: .9;
+        .content__line {
+            width: 170mm;
+            margin: 5mm auto 0;
+            border-top: 2px solid #111827;
         }
 
-        .body__inst{
+        .content__desc {
+            margin-top: 8mm;
+            font-size: 12px;
+            line-height: 1.7;
+            color: #111827;
+        }
+
+        .content__desc strong {
+            font-weight: 900;
+        }
+
+        /* Footer (dua kolom ala contoh) */
+        .footer {
+            position: absolute;
+            left: 18mm;
+            right: 18mm;
+            bottom: 16mm;
+            height: 55mm;
+        }
+
+        .footer__col {
+            position: absolute;
+            bottom: 0;
+            width: 48%;
+            text-align: center;
+        }
+
+        .footer__col--left {
+            left: 0;
+        }
+
+        .footer__col--right {
+            right: 0;
+        }
+
+        .footer__text {
+            font-size: 11px;
+            color: #111827;
+        }
+
+        .footer__role {
+            margin-top: 2mm;
             font-size: 11px;
             font-weight: 700;
-            color: var(--ink);
-            margin-bottom: 5mm;
+            color: #111827;
         }
 
-        .body__desc{
+        .footer__space {
+            height: 18mm;
+        }
+
+        .footer__name {
             font-size: 11px;
-            line-height: 1.65;
-            color: var(--ink);
-            max-width: 210mm;
-            margin: 0 auto;
-        }
-
-        .body__desc strong{ font-weight: 800; }
-
-        /* ===== SIGNATURE BLOCK (RIGHT-BOTTOM, NO OVERLAP) ===== */
-        .signature{
-            position:absolute;
-            right: 16mm;
-            bottom: 14mm;     /* sedikit dinaikkan biar lebih rapi */
-            width: 92mm;
-            text-align:center;
-        }
-
-        .signature__role{
-            font-size: 9.5px;
-            font-weight: 800;
-            text-transform: uppercase;
-            line-height: 1.35;
-            color: var(--ink);
-        }
-
-        .signature__space{ height: 18mm; }
-
-        .signature__name{
-            font-size: 12px;
             font-weight: 900;
-            font-family: "DejaVu Serif", "Times New Roman", serif;
             text-transform: uppercase;
             text-decoration: underline;
             text-underline-offset: 2px;
+            color: #111827;
         }
 
-        .signature__meta{
+        .footer__meta {
             margin-top: 1.5mm;
-            font-size: 9px;
+            font-size: 10px;
             color: var(--muted);
             line-height: 1.35;
-        }
-
-        /* ===== SAFE SPACE (prevents overlap with signature) ===== */
-        .bottom-safe{
-            height: 32mm; /* pas untuk blok tanda tangan */
         }
     </style>
 </head>
 
 <body>
-@php
-    // ===== LOGO BASE64 (AMANKAN UNTUK DOMPDF) =====
-    $logoPath = public_path('img/logo_kab_mgl.png');
-    $logoBase64 = '';
-    if (file_exists($logoPath)) {
-        $ext  = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
-        $mime = in_array($ext, ['jpg','jpeg']) ? 'image/jpeg' : 'image/png';
-        $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($logoPath));
-    }
+    @php
+        // ===== LOGO BASE64 (AMANKAN UNTUK DOMPDF) =====
+        $logoPath = public_path('img/logo_kab_mgl.png');
+        $logoBase64 = '';
+        if (file_exists($logoPath)) {
+            $ext = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
+            $mime = in_array($ext, ['jpg', 'jpeg']) ? 'image/jpeg' : 'image/png';
+            $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($logoPath));
+        }
 
-    // ===== TANGGAL MAGANG =====
-    $start = $user->internship_start_date ? \Carbon\Carbon::parse($user->internship_start_date) : null;
-    $end   = $user->internship_end_date ? \Carbon\Carbon::parse($user->internship_end_date) : null;
-    $days  = ($start && $end) ? $start->diffInDays($end) + 1 : null;
-@endphp
+        // ===== TANGGAL MAGANG =====
+        $start = $user->internship_start_date ? \Carbon\Carbon::parse($user->internship_start_date) : null;
+        $end = $user->internship_end_date ? \Carbon\Carbon::parse($user->internship_end_date) : null;
+        $days = $start && $end ? $start->diffInDays($end) + 1 : null;
 
-<div class="certificate-outer">
-    <div class="certificate-inner">
+        $printDate = now()->translatedFormat('d F Y');
+    @endphp
 
-        <!-- diagonal accent -->
-        <div class="diag-top"></div>
+    <div class="page">
+        <div class="border-frame"></div>
 
-        <!-- watermark kiri -->
-        @if($logoBase64)
-            <img class="watermark" src="{{ $logoBase64 }}" alt="Watermark">
+        @if ($logoBase64)
+            <img class="watermark" src="{{ $logoBase64 }}" alt="">
         @endif
 
-        <div class="content">
-
-            <!-- header -->
+        <div class="inner">
             <div class="header">
-                @if($logoBase64)
+                @if ($logoBase64)
                     <img class="header__logo" src="{{ $logoBase64 }}" alt="Logo">
                 @endif
-                <div class="header__org">Pemerintah Kabupaten Magelang</div>
-                <div class="header__dept">Dinas Komunikasi dan Informatika</div>
+                <div class="header__org">PEMERINTAH KABUPATEN MAGELANG</div>
+                <div class="header__dept">DINAS KOMUNIKASI DAN INFORMATIKA</div>
             </div>
 
-            <!-- title -->
             <div class="title">
-                <div class="title__main">Sertifikat</div>
-                <div class="title__no">Nomor: <span>{{ $certificateNo }}</span></div>
+                <div class="title__main">SERTIFIKAT MAGANG</div>
+                <div class="title__sub">Nomor: {{ $certificateNo }}</div>
             </div>
 
-            <!-- body -->
-            <div class="body">
-                <div class="body__label">Diberikan kepada:</div>
-                <div class="body__name">{{ $user->name }}</div>
-                <div class="body__line"></div>
+            <div class="content">
+                <div class="content__label">Diberikan kepada:</div>
+                <div class="content__name">{{ $user->name }}</div>
+                <div class="content__line"></div>
 
-                <div class="body__inst">
-                    {{ $user->institution ?? 'Mahasiswa / Peserta Magang' }}
-                </div>
-
-                <div class="body__desc">
-                    Telah menyelesaikan kegiatan Magang di
+                <div class="content__desc">
+                    Telah melaksanakan kegiatan <strong>Program Magang</strong> di
                     <strong>Dinas Komunikasi dan Informatika Kabupaten Magelang</strong>
                     @if ($start && $end)
-                        selama <strong>{{ $days }} hari</strong>,
-                        terhitung sejak <strong>{{ $start->translatedFormat('d F Y') }}</strong>
-                        sampai dengan <strong>{{ $end->translatedFormat('d F Y') }}</strong>.
+                        selama <strong>{{ $days }} hari</strong>, terhitung sejak
+                        <strong>{{ $start->translatedFormat('d F Y') }}</strong>
+                        sampai dengan
+                        <strong>{{ $end->translatedFormat('d F Y') }}</strong>.
                     @else
                         sesuai dengan periode yang berlaku.
                     @endif
                 </div>
-
-                <!-- spacer supaya signature tidak overlap -->
-                <div class="bottom-safe"></div>
             </div>
 
-            <!-- signature -->
-            <div class="signature">
-                <div class="signature__role">
-                    Kepala Dinas Komunikasi dan Informatika<br>
-                    Kabupaten Magelang
+            <div class="footer">
+                <div class="footer__col footer__col--left">
+                    <div class="footer__text">Mengetahui,</div>
+                    <div class="footer__role">Pembimbing Magang</div>
+                    <div class="footer__space"></div>
+                    <div class="footer__name">(........................)</div>
                 </div>
 
-                <div class="signature__space"></div>
-
-                <div class="signature__name">{{ $signatoryName }}</div>
-                <div class="signature__meta">
-                    {{ $signatoryRank ?? 'Pembina Tingkat I' }}<br>
-                    NIP. {{ $signatoryNip ?? '-' }}
+                <div class="footer__col footer__col--right">
+                    <div class="footer__text">Magelang, {{ $printDate }}</div>
+                    <div class="footer__role">
+                        Kepala Dinas Komunikasi dan Informatika<br>
+                        Kabupaten Magelang
+                    </div>
+                    <div class="footer__space"></div>
+                    <div class="footer__name">{{ $signatoryName }}</div>
+                    <div class="footer__meta">
+                        {{ $signatoryRank ?? 'Pembina Tingkat I' }}<br>
+                        NIP. {{ $signatoryNip ?? '-' }}
+                    </div>
                 </div>
             </div>
-
         </div>
     </div>
-</div>
 </body>
+
 </html>
