@@ -6,7 +6,9 @@
                 Portal Layanan
             </div>
             <h1 class="mt-4 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
-                {{ config('app.name', 'Laravel') }}
+                <span class="block">SIMANTA</span>
+                <span class="block mt-1 text-base sm:text-lg font-semibold text-gray-700">Sistem Informasi Manajemen
+                    Magang &amp; Tamu</span>
             </h1>
             <p class="mt-2 text-sm sm:text-base text-gray-600">
                 Absensi internal dan pelayanan tamu dalam satu sistem.

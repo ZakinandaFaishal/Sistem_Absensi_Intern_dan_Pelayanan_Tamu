@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Dinas Komunikasi & Informatika Kabupaten Magelang</title>
+    <title>{{ 'SIMANTA' }}</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -46,20 +46,15 @@
     <main class="relative min-h-screen w-full overflow-hidden">
         {{-- Background --}}
         <div id="kiosk-bg" class="absolute inset-0">
-            <video
-                class="h-full w-full object-cover scale-[1.03]"
-                autoplay
-                muted
-                loop
-                playsinline
-                preload="auto"
-            >
+            <video class="h-full w-full object-cover scale-[1.03]" autoplay muted loop playsinline preload="auto">
                 <source src="{{ asset('img/vid_bg_kab.mp4') }}" type="video/mp4">
             </video>
 
             {{-- overlays --}}
             <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/70"></div>
-            <div class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.55)_70%,rgba(0,0,0,0.8)_100%)]"></div>
+            <div
+                class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.55)_70%,rgba(0,0,0,0.8)_100%)]">
+            </div>
         </div>
 
         {{-- Header --}}

@@ -25,8 +25,29 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class UserController extends Controller
 {
+    private function ensureCanManageUser(Request $request, User $target): void
+    {
+        $actor = $request->user();
+        if (($actor?->role ?? null) !== 'admin_dinas') {
+            return;
+        }
+
+        $actorDinasId = (int) ($actor->dinas_id ?? 0);
+        $targetDinasId = (int) ($target->dinas_id ?? 0);
+
+        if (($target->role ?? null) !== 'intern') {
+            abort(403, 'Admin dinas hanya bisa mengelola user intern.');
+        }
+
+        if ($actorDinasId <= 0 || $targetDinasId !== $actorDinasId) {
+            abort(403, 'Anda tidak memiliki akses ke user ini.');
+        }
+    }
+
     public function index(Request $request)
     {
+        $actor = $request->user();
+
         // ===== Filters (sesuai blade) =====
         $q      = trim((string) $request->query('q', ''));
         $role   = (string) $request->query('role', '');
@@ -62,6 +83,18 @@ class UserController extends Controller
                 },
             ]);
 
+        // admin_dinas hanya melihat intern di dinasnya.
+        if (($actor?->role ?? null) === 'admin_dinas') {
+            $actorDinasId = (int) ($actor->dinas_id ?? 0);
+            if ($actorDinasId > 0) {
+                $usersQuery
+                    ->where('role', 'intern')
+                    ->where('dinas_id', $actorDinasId);
+            } else {
+                $usersQuery->whereRaw('1=0');
+            }
+        }
+
         // ===== Apply search =====
         if ($q !== '') {
             $usersQuery->where(function ($w) use ($q) {
@@ -74,8 +107,10 @@ class UserController extends Controller
         }
 
         // ===== Apply role filter =====
-        if ($role !== '' && in_array($role, ['intern', 'admin_dinas'], true)) {
-            $usersQuery->where('role', $role);
+        if (($actor?->role ?? null) !== 'admin_dinas') {
+            if ($role !== '' && in_array($role, ['intern', 'admin_dinas'], true)) {
+                $usersQuery->where('role', $role);
+            }
         }
 
         // ===== Apply sorting =====
@@ -168,6 +203,8 @@ class UserController extends Controller
 
     public function edit(Request $request, User $user)
     {
+        $this->ensureCanManageUser($request, $user);
+
         $locations = Location::query()->orderBy('name')->get();
         $dinasOptions = Dinas::query()->orderBy('name')->get();
 
@@ -198,6 +235,8 @@ class UserController extends Controller
 
     public function completeInternship(Request $request, User $user)
     {
+        $this->ensureCanManageUser($request, $user);
+
         if (($user->role ?? 'intern') !== 'intern') {
             return back()->withErrors(['action' => 'Hanya user role intern yang bisa diselesaikan magangnya.']);
         }
@@ -283,6 +322,8 @@ class UserController extends Controller
 
     public function certificatePdf(Request $request, User $user)
     {
+        $this->ensureCanManageUser($request, $user);
+
         if (($user->role ?? 'intern') !== 'intern') {
             abort(404);
         }
@@ -560,6 +601,8 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        $this->ensureCanManageUser($request, $user);
+
         $isEditingSuperAdmin = (($user->role ?? 'intern') === 'super_admin');
 
         $validated = $request->validate([
