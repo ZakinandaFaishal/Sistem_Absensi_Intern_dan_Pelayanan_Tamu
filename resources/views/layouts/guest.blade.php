@@ -44,7 +44,8 @@
 
                 <div class="hidden sm:block text-left">
                     <div class="text-sm font-semibold text-white drop-shadow leading-tight">SIMANTA</div>
-                    <div class="text-[11px] text-white/75 leading-tight">Sistem Informasi Manajemen Magang &amp; Tamu</div>
+                    <div class="text-[11px] text-white/75 leading-tight">Sistem Informasi Manajemen Magang &amp; Tamu
+                    </div>
                     <div class="text-xs text-white/75">Kabupaten Magelang</div>
                 </div>
             </a>

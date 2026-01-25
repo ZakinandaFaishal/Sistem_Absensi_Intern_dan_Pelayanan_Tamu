@@ -55,10 +55,34 @@
     >
         <div class="flex h-full flex-col">
 
+<<<<<<< HEAD
             {{-- Brand --}}
             <div class="relative h-16 shrink-0 px-5 flex items-center gap-3 border-b border-white/15">
                 <div class="h-9 w-9 rounded-2xl bg-white/20 border border-white/10 flex items-center justify-center overflow-hidden">
                     <img src="{{ asset('img/logo_kab_mgl.png') }}" class="h-6 w-6 object-contain" alt="Logo">
+=======
+                {{-- Brand --}}
+                <div class="h-16 px-5 flex items-center gap-3 border-b border-white/15 shrink-0 relative">
+                    <div class="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden">
+                        <img src="{{ asset('img/logo_kab_mgl.png') }}" class="h-6 w-6 object-contain" alt="Logo">
+                    </div>
+                    <div class="leading-tight">
+                        <p class="text-sm font-bold leading-tight">SIMANTA</p>
+                        <p class="text-[11px] text-white/70 leading-tight">Sistem Informasi Manajemen Magang &amp; Tamu
+                        </p>
+                        <p class="text-xs text-white/60">
+                            {{ $user && ($user->role ?? null) === 'admin_dinas' ? $user->dinas?->name ?? '—' : 'User Panel' }}
+                        </p>
+                    </div>
+
+                    {{-- Close button (mobile) --}}
+                    <button @click="sidebarOpen = false"
+                        class="sm:hidden absolute right-4 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl
+                           bg-white/15 hover:bg-white/25 transition"
+                        aria-label="Tutup sidebar" type="button">
+                        <x-icon name="x-mark" class="h-6 w-6" />
+                    </button>
+>>>>>>> dbb2594 (fix: adjust line breaks for better readability in multiple layout files)
                 </div>
 
                 <div class="leading-tight min-w-0">

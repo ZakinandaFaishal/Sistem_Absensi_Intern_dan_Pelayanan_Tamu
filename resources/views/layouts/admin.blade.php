@@ -39,7 +39,8 @@
 
                     <div class="leading-tight">
                         <p class="text-sm font-semibold leading-tight">SIMANTA</p>
-                        <p class="text-[11px] text-white/70 leading-tight">Sistem Informasi Manajemen Magang &amp; Tamu</p>
+                        <p class="text-[11px] text-white/70 leading-tight">Sistem Informasi Manajemen Magang &amp; Tamu
+                        </p>
                         <p class="text-xs text-white/60">
                             {{ $user && ($user->role ?? null) === 'admin_dinas' ? $user->dinas?->name ?? '—' : 'Kabupaten Magelang' }}
                         </p>
