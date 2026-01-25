@@ -88,7 +88,7 @@
                     </span>
                     <div>
                         <p class="text-sm font-semibold text-slate-900">Daftar Survey</p>
-                        <p class="text-xs text-slate-500">Menampilkan data terbaru (paginasi).</p>
+                        <p class="text-xs text-slate-500">Menampilkan data terbaru.</p>
                     </div>
                 </div>
 
@@ -143,15 +143,13 @@
                             @if ($activeFilter)
                                 <span class="font-semibold text-slate-600">Filter aktif</span>
                             @else
-                                Menampilkan data terbaru (paginasi).
+                                Menampilkan data terbaru.
                             @endif
                         </div>
 
                         <div class="flex items-center gap-2">
                             <input type="hidden" name="sort" value="{{ $sort }}">
                             <input type="hidden" name="dir" value="{{ $dir }}">
-
-                            <div class="text-xs text-slate-500">Filter diterapkan otomatis.</div>
                         </div>
                     </div>
                 </form>

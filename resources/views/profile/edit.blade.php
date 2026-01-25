@@ -9,7 +9,6 @@
 @endphp
 
 <div class="max-w-6xl mx-auto space-y-6">
-    {{-- Grid biar enak: kiri (profile+password), kanan (delete) --}}
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         <div class="lg:col-span-7 space-y-6">

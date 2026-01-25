@@ -159,8 +159,6 @@
                                 Menampilkan data terbaru.
                             @endif
                         </div>
-
-                        <div class="text-xs text-slate-500">Filter diterapkan otomatis.</div>
                     </div>
                 </form>
             </div>

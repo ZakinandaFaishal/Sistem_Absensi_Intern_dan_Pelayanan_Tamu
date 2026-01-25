@@ -200,8 +200,6 @@
                                 <th class="py-3 pr-4 font-semibold">NIK</th>
                                 <th class="py-3 pr-4 font-semibold">No. Telepon</th>
                                 <th class="py-3 pr-4 font-semibold">Email</th>
-                                <th class="py-3 pr-4 font-semibold">Role</th>
-                                <th class="py-3 pr-4 font-semibold">Dinas</th>
                                 <th class="py-3 pr-4 font-semibold">Status</th>
                                 <th class="py-3 pr-4 font-semibold">Nilai</th>
                                 <th class="py-3 pr-0 font-semibold text-right">Aksi</th>
