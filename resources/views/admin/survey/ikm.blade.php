@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Ringkasan IKM - Diskominfo Kab. Magelang')
+@section('title', 'Ringkasan IKM')
 @section('page_title', 'Ringkasan IKM')
 
 @section('content')

@@ -75,11 +75,6 @@ Route::get('/admin', function () {
     return redirect()->route('admin.dashboard');
 })->middleware(['auth', 'verified'])->name('admin.home');
 
-Route::middleware(['auth', 'verified', 'admin'])->group(function () {
-    Route::get('/admin/tamu', [GuestVisitController::class, 'index'])->name('admin.guest.index');
-    Route::post('/admin/tamu/{visit}/complete', [GuestVisitController::class, 'complete'])->name('admin.guest.complete');
-});
-
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
@@ -89,10 +84,24 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_dinas', 'admin_di
     ->name('admin.')
     ->group(function () {
 
+        // Buku tamu admin (super_admin + admin_dinas, tetapi data dibatasi per dinas di controller)
+        Route::get('/tamu', [GuestVisitController::class, 'index'])->name('guest.index');
+        Route::post('/tamu/{visit}/complete', [GuestVisitController::class, 'complete'])->name('guest.complete');
+
         // Shared admin area (super_admin + admin_dinas): only scoped resources
         Route::get('/presensi/pengaturan', [AdminAttendanceController::class, 'manage'])->name('attendance.manage');
         Route::get('/presensi/aturan', [AdminAttendanceController::class, 'rules'])->name('attendance.rules');
         Route::post('/presensi/settings', [AdminAttendanceController::class, 'updateSettings'])->name('attendance.settings');
+
+        // Survey & Users (super_admin + admin_dinas; data & akses dibatasi di controller)
+        Route::get('/survey', [AdminSurveyController::class, 'index'])->name('survey.index');
+        Route::get('/survey/ikm', [AdminSurveyController::class, 'ikm'])->name('survey.ikm');
+
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
+        Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::post('/users/{user}/complete-internship', [AdminUserController::class, 'completeInternship'])->name('users.complete-internship');
+        Route::get('/users/{user}/certificate.pdf', [AdminUserController::class, 'certificatePdf'])->name('users.certificate.pdf');
 
         // super_admin-only area
         Route::middleware(['role:super_admin'])->group(function () {
@@ -164,20 +173,12 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_dinas', 'admin_di
             // ======================================================
             Route::get('/presensi', [AdminAttendanceController::class, 'index'])->name('attendance.index');
 
-            Route::get('/survey', [AdminSurveyController::class, 'index'])->name('survey.index');
-            Route::get('/survey/ikm', [AdminSurveyController::class, 'ikm'])->name('survey.ikm');
-            Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
-
             Route::get('/users/keamanan-registrasi', [AdminUserController::class, 'security'])->name('users.security');
             Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
-            Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
 
             Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
             Route::post('/users/registration-security', [AdminUserController::class, 'updateRegistrationSecurity'])->name('users.registration-security');
             Route::delete('/users/registration-security', [AdminUserController::class, 'disableRegistrationSecurity'])->name('users.registration-security.disable');
-            Route::post('/users/{user}/complete-internship', [AdminUserController::class, 'completeInternship'])->name('users.complete-internship');
-            Route::get('/users/{user}/certificate.pdf', [AdminUserController::class, 'certificatePdf'])->name('users.certificate.pdf');
-            Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
             Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
             Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.role');
         });

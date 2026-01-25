@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Aturan Presensi - Diskominfo Kab. Magelang')
+@section('title', 'Aturan Presensi')
 @section('page_title', 'Aturan Presensi')
 
 @section('content')

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Aturan Penilaian - Diskominfo Kab. Magelang')
+@section('title', 'Aturan Penilaian')
 @section('page_title', 'Aturan Penilaian')
 
 @section('content')

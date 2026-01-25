@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Log Presensi - Diskominfo Kab. Magelang')
+@section('title', 'Log Presensi')
 @section('page_title', 'Log Presensi')
 
 @section('content')

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'User Management - Diskominfo Kab. Magelang')
+@section('title', 'User Management')
 @section('page_title', 'User Management')
 
 @section('content')
@@ -13,7 +13,7 @@
         $dir = request('dir', 'desc');
 
         $dinasNameById = [];
-        foreach (($dinasOptions ?? []) as $d) {
+        foreach ($dinasOptions ?? [] as $d) {
             $dinasNameById[(string) $d->id] = $d->name;
         }
 
@@ -142,15 +142,18 @@
 
                     <a href="{{ $sortUrl('created_at') }}"
                         class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition {{ $sort === 'created_at' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50' }}">
-                        Dibuat <span class="{{ $sort === 'created_at' ? 'text-white/80' : 'text-slate-400' }}">{{ $sortIcon('created_at') }}</span>
+                        Dibuat <span
+                            class="{{ $sort === 'created_at' ? 'text-white/80' : 'text-slate-400' }}">{{ $sortIcon('created_at') }}</span>
                     </a>
                     <a href="{{ $sortUrl('name') }}"
                         class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition {{ $sort === 'name' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50' }}">
-                        Nama <span class="{{ $sort === 'name' ? 'text-white/80' : 'text-slate-400' }}">{{ $sortIcon('name') }}</span>
+                        Nama <span
+                            class="{{ $sort === 'name' ? 'text-white/80' : 'text-slate-400' }}">{{ $sortIcon('name') }}</span>
                     </a>
                     <a href="{{ $sortUrl('attended_days') }}"
                         class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition {{ $sort === 'attended_days' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50' }}">
-                        Presensi <span class="{{ $sort === 'attended_days' ? 'text-white/80' : 'text-slate-400' }}">{{ $sortIcon('attended_days') }}</span>
+                        Presensi <span
+                            class="{{ $sort === 'attended_days' ? 'text-white/80' : 'text-slate-400' }}">{{ $sortIcon('attended_days') }}</span>
                     </a>
                 </div>
             </div>
@@ -229,16 +232,20 @@
                                                     : ($uRole === 'admin_dinas'
                                                         ? 'bg-indigo-100 text-indigo-800'
                                                         : 'bg-emerald-100 text-emerald-800');
-                                            $dinasName = $user->dinas_id !== null ? ($dinasNameById[(string) $user->dinas_id] ?? null) : null;
+                                            $dinasName =
+                                                $user->dinas_id !== null
+                                                    ? $dinasNameById[(string) $user->dinas_id] ?? null
+                                                    : null;
                                         @endphp
 
-                                        <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $rolePill }}">
+                                        <span
+                                            class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $rolePill }}">
                                             {{ $uRole }}
                                         </span>
                                     </td>
 
                                     <td class="py-3 pr-4 whitespace-nowrap text-slate-700">
-                                        {{ $uRole === 'admin_dinas' ? ($dinasName ?? '—') : '—' }}
+                                        {{ $uRole === 'admin_dinas' ? $dinasName ?? '—' : '—' }}
                                     </td>
 
                                     <td class="py-3 pr-4 whitespace-nowrap">

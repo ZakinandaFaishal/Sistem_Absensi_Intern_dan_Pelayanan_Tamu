@@ -7,6 +7,7 @@ use Carbon\CarbonImmutable;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -35,10 +36,10 @@ class GuestVisitController extends Controller
             'jabatan' => ['nullable', 'string', 'max:120'],
             'service_type' => ['required', 'string', Rule::in(['layanan', 'koordinasi', 'berkas', 'lainnya'])],
             'purpose_detail' => ['required', 'string', 'max:500'],
-            'visit_type' => ['required', Rule::in(['single','group'])],
-            'group_count' => ['nullable','integer','min:2','max:50','required_if:visit_type,group'],
-            'group_names' => ['nullable','array','required_if:visit_type,group'],
-            'group_names.*' => ['nullable','string','max:100','required_if:visit_type,group'],
+            'visit_type' => ['required', Rule::in(['single', 'group'])],
+            'group_count' => ['nullable', 'integer', 'min:2', 'max:50', 'required_if:visit_type,group'],
+            'group_names' => ['nullable', 'array', 'required_if:visit_type,group'],
+            'group_names.*' => ['nullable', 'string', 'max:100', 'required_if:visit_type,group'],
         ]);
 
         $purpose = '[' . $validated['service_type'] . '] ' . trim($validated['purpose_detail']);
@@ -56,6 +57,13 @@ class GuestVisitController extends Controller
         $purpose = Str::of($purpose)->limit(255, '')->toString();
 
         $visit = GuestVisit::query()->create([
+            'dinas_id' => (function () {
+                $user = Auth::user();
+                if (($user?->role ?? null) === 'admin_dinas' && !empty($user?->dinas_id)) {
+                    return (int) $user->dinas_id;
+                }
+                return null;
+            })(),
             'name' => $validated['name'],
             'gender' => $validated['gender'],
             'email' => $validated['email'],
@@ -80,6 +88,8 @@ class GuestVisitController extends Controller
 
     public function index(Request $request)
     {
+        $user = $request->user();
+
         $q         = trim((string) $request->query('q', ''));
         $status    = (string) $request->query('status', '');
         $visitType = (string) $request->query('visit_type', '');
@@ -97,12 +107,23 @@ class GuestVisitController extends Controller
 
         $visitsQuery = GuestVisit::query();
 
+        // admin_dinas hanya melihat buku tamu untuk dinasnya.
+        if (($user?->role ?? null) === 'admin_dinas') {
+            $dinasId = (int) ($user->dinas_id ?? 0);
+            if ($dinasId > 0) {
+                $visitsQuery->where('dinas_id', $dinasId);
+            } else {
+                // Jika tidak ada dinas_id, jangan tampilkan data lintas dinas.
+                $visitsQuery->whereRaw('1=0');
+            }
+        }
+
         if ($q !== '') {
             $visitsQuery->where(function ($qb) use ($q) {
                 $qb->where('name', 'like', "%{$q}%")
-                ->orWhere('purpose', 'like', "%{$q}%")
-                ->orWhere('institution', 'like', "%{$q}%")
-                ->orWhere('email', 'like', "%{$q}%");
+                    ->orWhere('purpose', 'like', "%{$q}%")
+                    ->orWhere('institution', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
             });
         }
 
@@ -184,7 +205,7 @@ class GuestVisitController extends Controller
         }
         $dir = $dir === 'asc' ? 'asc' : 'desc';
 
-        $visitsQuery = GuestVisit::query()->with(['handler'])->withExists('survey');
+        $visitsQuery = GuestVisit::query()->with(['dinas'])->withExists('survey');
 
         if ($q !== '') {
             $visitsQuery->where(function ($qb) use ($q) {
@@ -264,7 +285,7 @@ class GuestVisitController extends Controller
         }
         $dir = $dir === 'asc' ? 'asc' : 'desc';
 
-        $visitsQuery = GuestVisit::query()->with(['handler'])->withExists('survey');
+        $visitsQuery = GuestVisit::query()->with(['dinas'])->withExists('survey');
 
         if ($q !== '') {
             $visitsQuery->where(function ($qb) use ($q) {
@@ -310,7 +331,7 @@ class GuestVisitController extends Controller
             ['Filter from', $from],
             ['Filter to', $to],
             [],
-            ['Arrived At', 'Nama', 'Email', 'Instansi', 'Layanan', 'Keperluan', 'Status', 'Survey', 'Petugas', 'Completed At'],
+            ['Arrived At', 'Nama', 'Email', 'Instansi', 'Layanan', 'Keperluan', 'Status', 'Survey', 'Lokasi/Dinas', 'Completed At'],
         ]);
 
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
@@ -347,7 +368,7 @@ class GuestVisitController extends Controller
                 (string) ($v->purpose ?? ''),
                 $done ? 'Selesai' : 'Pending',
                 ((bool) ($v->survey_exists ?? false)) ? 'Sudah' : 'Belum',
-                (string) ($v->handler?->name ?? ''),
+                (string) ($v->dinas?->name ?? ''),
                 $completedVal,
             ], null, "A{$row}");
             $row++;
@@ -435,9 +456,9 @@ class GuestVisitController extends Controller
         if ($q !== '') {
             $query->where(function ($qb) use ($q) {
                 $qb->where('name', 'like', "%{$q}%")
-                ->orWhere('purpose', 'like', "%{$q}%")
-                ->orWhere('institution', 'like', "%{$q}%")
-                ->orWhere('email', 'like', "%{$q}%");
+                    ->orWhere('purpose', 'like', "%{$q}%")
+                    ->orWhere('institution', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
             });
         }
 
@@ -468,5 +489,4 @@ class GuestVisitController extends Controller
 
         return compact('q', 'status', 'visitType', 'from', 'to', 'sort', 'dir');
     }
-
 }

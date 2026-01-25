@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Presensi - Diskominfo Kab. Magelang')
+@section('title', 'Presensi')
 @section('page_title', 'Presensi')
 
 @section('content')
@@ -13,23 +13,9 @@
 
         <div class="flex flex-wrap items-center gap-2">
             @if ($isSuperAdmin)
-                <form id="dinas-switch" method="GET" action="{{ route('admin.attendance.manage') }}"
-                    class="flex items-center gap-2">
-                    <select name="dinas_id"
-                        class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
-                        @foreach ($dinasOptions as $d)
-                            <option value="{{ $d->id }}" @selected((int) $activeDinasId === (int) $d->id)>
-                                {{ $d->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <noscript>
-                        <button type="submit"
-                            class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
-                            Terapkan
-                        </button>
-                    </noscript>
-                </form>
+                <div class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                    Scope: <span class="font-semibold">Semua Dinas</span>
+                </div>
             @else
                 <div class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
                     Dinas: <span class="font-semibold">{{ $activeDinas?->name ?? '—' }}</span>
@@ -48,7 +34,7 @@
             <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
                 <div class="font-semibold">Belum ada data dinas</div>
                 <div class="mt-1 text-amber-800">
-                    Tambahkan minimal 1 dinas dulu supaya pengaturan presensi bisa dipilih per dinas.
+                    Tambahkan minimal 1 dinas dulu supaya pengaturan presensi bisa digunakan.
                     Cara cepat: jalankan <span class="font-semibold">php artisan db:seed</span>.
                 </div>
             </div>
@@ -195,40 +181,106 @@
 
                         <input type="hidden" name="_redirect" value="manage">
 
-                        @if ($isSuperAdmin)
-                            <input type="hidden" name="dinas_id" value="{{ (int) $activeDinasId }}">
-                        @endif
+                        <div class="md:col-span-4">
+                            <label class="text-xs font-semibold text-slate-700">Dinas</label>
+                            <select name="dinas_id"
+                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" required>
+                                <option value="" disabled {{ old('dinas_id') ? '' : 'selected' }}>Pilih dinas
+                                </option>
+                                @foreach ($dinasOptions as $d)
+                                    <option value="{{ $d->id }}" @selected((string) old('dinas_id') === (string) $d->id)>
+                                        {{ $d->name }}{{ $d->code ? ' (' . $d->code . ')' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                        <div class="md:col-span-3">
-                            <label class="text-xs font-semibold text-slate-700">Nama</label>
+                        <div class="md:col-span-4">
+                            <label class="text-xs font-semibold text-slate-700">Nama Lokasi</label>
                             <input name="name" value="{{ old('name') }}"
                                 class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
                                 placeholder="Contoh: Diskominfo" required>
                         </div>
-                        <div class="md:col-span-2">
+
+                        <div class="md:col-span-4">
                             <label class="text-xs font-semibold text-slate-700">Kode (opsional)</label>
                             <input name="code" value="{{ old('code') }}"
                                 class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
                                 placeholder="KOMINFO">
                         </div>
-                        <div class="md:col-span-2">
+
+                        <div class="md:col-span-3">
                             <label class="text-xs font-semibold text-slate-700">Latitude</label>
                             <input name="lat" value="{{ old('lat') }}"
                                 class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
                                 placeholder="-7.59..." required>
                         </div>
-                        <div class="md:col-span-2">
+
+                        <div class="md:col-span-3">
                             <label class="text-xs font-semibold text-slate-700">Longitude</label>
                             <input name="lng" value="{{ old('lng') }}"
                                 class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
                                 placeholder="110.21..." required>
                         </div>
-                        <div class="md:col-span-3">
+
+                        <div class="md:col-span-6">
                             <label class="text-xs font-semibold text-slate-700">Alamat (opsional)</label>
                             <input name="address" value="{{ old('address') }}"
                                 class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
                                 placeholder="Alamat singkat">
                         </div>
+                        <div class="md:col-span-12">
+                            <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50/40 px-4 py-4">
+                                <div class="text-xs font-semibold text-slate-700">Aturan Presensi (wajib)</div>
+                                <div class="mt-3 grid grid-cols-1 md:grid-cols-12 gap-3">
+                                    <div class="md:col-span-3">
+                                        <label class="text-xs font-semibold text-slate-700">Radius (meter)</label>
+                                        <input type="number" name="radius_m" min="1" max="5000"
+                                            value="{{ old('radius_m', 50) }}"
+                                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                            required>
+                                    </div>
+                                    <div class="md:col-span-3">
+                                        <label class="text-xs font-semibold text-slate-700">Maks Akurasi (meter)</label>
+                                        <input type="number" name="max_accuracy_m" min="1" max="5000"
+                                            value="{{ old('max_accuracy_m', 50) }}"
+                                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                            required>
+                                    </div>
+
+                                    <div class="md:col-span-3">
+                                        <label class="text-xs font-semibold text-slate-700">Check-in Mulai</label>
+                                        <input type="time" name="checkin_start"
+                                            value="{{ old('checkin_start', '08:00') }}"
+                                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                            required>
+                                    </div>
+                                    <div class="md:col-span-3">
+                                        <label class="text-xs font-semibold text-slate-700">Check-in Selesai</label>
+                                        <input type="time" name="checkin_end"
+                                            value="{{ old('checkin_end', '12:00') }}"
+                                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                            required>
+                                    </div>
+
+                                    <div class="md:col-span-3">
+                                        <label class="text-xs font-semibold text-slate-700">Check-out Mulai</label>
+                                        <input type="time" name="checkout_start"
+                                            value="{{ old('checkout_start', '13:00') }}"
+                                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                            required>
+                                    </div>
+                                    <div class="md:col-span-3">
+                                        <label class="text-xs font-semibold text-slate-700">Check-out Selesai</label>
+                                        <input type="time" name="checkout_end"
+                                            value="{{ old('checkout_end', '16:30') }}"
+                                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="md:col-span-12 flex justify-end">
                             <button type="submit" @disabled(($noDinas ?? false) === true)
                                 class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
@@ -241,10 +293,7 @@
                         <table class="min-w-[1100px] w-full text-sm table-fixed">
                             <thead>
                                 <tr class="text-left text-slate-600 border-b border-slate-200">
-                                    @if ($isSuperAdmin)
-                                        <th class="px-3 py-3 font-semibold w-52">Dinas</th>
-                                    @endif
-                                    <th class="px-3 py-3 font-semibold w-48">Nama</th>
+                                    <th class="px-3 py-3 font-semibold w-72">Dinas</th>
                                     <th class="px-3 py-3 font-semibold w-28">Kode</th>
                                     <th class="px-3 py-3 font-semibold w-28">Lat</th>
                                     <th class="px-3 py-3 font-semibold w-28">Lng</th>
@@ -267,13 +316,14 @@
                                         $checkoutEnd = (string) ($rule?->checkout_end ?? '16:30');
                                     @endphp
                                     <tr class="hover:bg-slate-50/70">
-                                        @if ($isSuperAdmin)
-                                            <td class="px-3 py-3 whitespace-nowrap text-slate-700">
+                                        <td class="px-3 py-3 text-slate-900 font-semibold">
+                                            <div class="truncate" title="{{ $loc->dinas?->name ?? '' }}">
                                                 {{ $loc->dinas?->name ?? '—' }}
-                                            </td>
-                                        @endif
-                                        <td class="px-3 py-3 whitespace-nowrap text-slate-900 font-semibold">
-                                            {{ $loc->name }}
+                                            </div>
+                                            <div class="truncate text-[11px] font-normal text-slate-500"
+                                                title="{{ $loc->name }}">
+                                                {{ $loc->name }}
+                                            </div>
                                         </td>
                                         <td class="px-3 py-3 whitespace-nowrap text-slate-700">
                                             {{ $loc->code ?? '—' }}
@@ -284,8 +334,10 @@
                                         <td class="px-3 py-3 whitespace-nowrap text-slate-700">
                                             {{ $loc->lng ?? '—' }}
                                         </td>
-                                        <td class="px-3 py-3 text-slate-700 truncate" title="{{ $loc->address ?? '' }}">
-                                            {{ $loc->address ?? '—' }}
+                                        <td class="px-3 py-3 text-slate-700">
+                                            <div class="truncate" title="{{ $loc->address ?? '' }}">
+                                                {{ $loc->address ?? '—' }}
+                                            </div>
                                         </td>
                                         <td class="px-3 py-3 whitespace-nowrap text-slate-700">
                                             {{ $radiusM }} m
@@ -300,7 +352,7 @@
                                         </td>
                                         <td class="px-3 py-3 whitespace-nowrap text-right">
                                             <div class="inline-flex items-center justify-end gap-2">
-                                                <a href="{{ route('admin.attendance.locations.edit', ['location' => $loc, 'dinas_id' => (int) $activeDinasId, 'back' => 'manage']) }}"
+                                                <a href="{{ route('admin.attendance.locations.edit', ['location' => $loc, 'back' => 'manage']) }}"
                                                     class="h-9 inline-flex items-center rounded-lg bg-slate-900 px-3 text-xs font-semibold text-white hover:bg-slate-800 transition">
                                                     Pengaturan
                                                 </a>
@@ -321,8 +373,8 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ $isSuperAdmin ? 7 : 6 }}"
-                                            class="px-3 py-10 text-center text-slate-600">Belum ada lokasi.</td>
+                                        <td colspan="9" class="px-3 py-10 text-center text-slate-600">Belum ada lokasi.
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -336,16 +388,6 @@
 
     <script>
         (function() {
-            var dinasSwitch = document.getElementById('dinas-switch');
-            if (dinasSwitch) {
-                var select = dinasSwitch.querySelector('select[name="dinas_id"]');
-                if (select) {
-                    select.addEventListener('change', function() {
-                        dinasSwitch.submit();
-                    });
-                }
-            }
-
             var officeSelect = document.getElementById('officeFromLocation');
             if (officeSelect) {
                 officeSelect.addEventListener('change', function() {

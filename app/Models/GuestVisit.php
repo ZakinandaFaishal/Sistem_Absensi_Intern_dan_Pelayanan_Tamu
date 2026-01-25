@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Dinas;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class GuestVisit extends Model
 {
     protected $fillable = [
+        'dinas_id',
         'name',
         'gender',
         'email',
@@ -42,5 +44,10 @@ class GuestVisit extends Model
     public function handler(): BelongsTo
     {
         return $this->belongsTo(User::class, 'handled_by');
+    }
+
+    public function dinas(): BelongsTo
+    {
+        return $this->belongsTo(Dinas::class);
     }
 }
