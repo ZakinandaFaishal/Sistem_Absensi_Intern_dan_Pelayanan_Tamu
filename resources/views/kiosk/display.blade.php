@@ -1,20 +1,41 @@
 @extends('layouts.kiosk_mode')
 
-@section('title', 'Mode Kiosk')
+@section('title', 'Resepsionis')
 
 @section('content')
-    <main id="kiosk-root" class="relative min-h-screen w-full overflow-hidden">
-        {{-- BACKGROUND VIDEO --}}
-        <div id="kiosk-bg" class="absolute inset-0">
-            <video class="h-full w-full object-cover scale-[1.03]" autoplay muted loop playsinline preload="auto"
-                poster="{{ asset('img/background.png') }}">
-                <source src="{{ asset('img/vid_bg_kab.mp4') }}" type="video/mp4">
-            </video>
+<main id="kiosk-root" class="relative min-h-screen w-full overflow-hidden">
+    {{-- BACKGROUND VIDEO --}}
+    <div id="kiosk-bg" class="absolute inset-0">
+        <video
+            class="h-full w-full object-cover scale-[1.03]"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto"
+            poster="{{ asset('img/background.png') }}"
+        >
+            <source src="{{ asset('img/vid_bg_kab.mp4') }}" type="video/mp4">
+        </video>
 
-            {{-- overlays --}}
-            <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/70"></div>
-            <div
-                class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.55)_70%,rgba(0,0,0,0.8)_100%)]">
+        {{-- overlays (sedikit ditingkatkan biar glass dark lebih “nyatu”) --}}
+        <div class="absolute inset-0 bg-gradient-to-b from-black/65 via-black/40 to-black/75"></div>
+        <div class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(20,184,166,0.08)_0%,rgba(0,0,0,0.55)_65%,rgba(0,0,0,0.86)_100%)]"></div>
+    </div>
+
+    {{-- HEADER --}}
+    <header class="relative z-10 flex items-center justify-between px-4 py-4 sm:px-10 sm:py-5">
+        <div class="flex items-center gap-3">
+            <div class="rounded-2xl border border-white/15 bg-slate-950/35 p-2 backdrop-blur-md shadow-lg">
+                <img
+                    src="{{ asset('img/logo_kab_mgl.png') }}"
+                    alt="Logo Kabupaten Magelang"
+                    class="h-11 w-11 object-contain sm:h-14 sm:w-14"
+                >
+            </div>
+            <div class="hidden sm:block text-left">
+                <div class="text-white font-semibold">Diskominfo</div>
+                <div class="text-white/70 text-sm">Kabupaten Magelang</div>
             </div>
         </div>
 
@@ -50,40 +71,43 @@
                     Silakan pilih layanan
                 </p>
 
-                <div class="mt-6 h-[2px] w-24 rounded-full bg-white/40"></div>
+            <div class="mt-6 h-[2px] w-24 rounded-full bg-white/30"></div>
 
-                @php
-                    $btnBase = 'w-full sm:w-72 max-w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-white/15 px-6 py-5 text-base font-semibold text-white
-                            backdrop-blur-md border border-white/25 shadow-xl
-                            hover:bg-white/25 hover:-translate-y-0.5 hover:shadow-2xl
-                            focus:outline-none focus:ring-2 focus:ring-white/50
+            @php
+                // Dark glass base (lebih modern & selaras)
+                $btnBase = 'w-full sm:w-72 max-w-full inline-flex items-center justify-center gap-3 rounded-2xl
+                            bg-slate-950/30 px-6 py-5 text-base font-semibold text-white
+                            backdrop-blur-md border border-white/18 shadow-xl
+                            hover:bg-slate-950/40 hover:-translate-y-0.5 hover:shadow-2xl
+                            focus:outline-none focus:ring-2 focus:ring-white/35
                             transition duration-200';
-                @endphp
+            @endphp
 
-                <div class="mt-10 w-full flex flex-col items-center gap-4 sm:gap-6">
-                    <a href="{{ route('kiosk.absensi') }}" class="{{ $btnBase }}">
-                        <x-icon name="map-pin" class="h-7 w-7 shrink-0" />
-                        <span class="leading-none">Absensi Magang</span>
-                    </a>
+            <div class="mt-10 w-full flex flex-col items-center gap-4 sm:gap-6">
+                <a href="{{ route('kiosk.absensi') }}" class="{{ $btnBase }}">
+                    <x-icon name="map-pin" class="h-7 w-7 shrink-0" />
+                    <span class="leading-none">Absensi Magang</span>
+                </a>
 
-                    <a href="{{ route('guest.create') }}" class="{{ $btnBase }}">
-                        <x-icon name="clipboard-document" class="h-7 w-7 shrink-0" />
-                        <span class="leading-none">Buku Tamu</span>
-                    </a>
-                </div>
+                <a href="{{ route('guest.create') }}" class="{{ $btnBase }}">
+                    <x-icon name="book-open" class="h-7 w-7 shrink-0" />
+                    <span class="leading-none">Buku Tamu</span>
+                </a>
             </div>
-        </section>
+        </div>
+    </section>
 
-        {{-- FLOATING PANEL --}}
-        <section id="kiosk-active-guests"
-            class="anim fixed bottom-3 left-3 right-3 z-20 sm:left-4 sm:right-auto sm:bottom-4 sm:w-[360px] sm:max-w-[calc(100vw-32px)]">
-            <div class="overflow-hidden rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl">
-                <div class="flex items-center justify-between gap-3 border-b border-white/15 px-4 py-3">
-                    <div class="flex items-center gap-2 min-w-0">
-                        <div
-                            class="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/15 bg-white/10">
-                            <x-icon name="clipboard-document" class="h-5 w-5 text-white" />
-                        </div>
+    {{-- FLOATING PANEL --}}
+    <section
+        id="kiosk-active-guests"
+        class="anim fixed bottom-3 left-3 right-3 z-20 sm:left-4 sm:right-auto sm:bottom-4 sm:w-[360px] sm:max-w-[calc(100vw-32px)]"
+    >
+        <div class="overflow-hidden rounded-3xl border border-white/15 bg-slate-950/30 backdrop-blur-xl shadow-2xl">
+            <div class="flex items-center justify-between gap-3 border-b border-white/12 px-4 py-3">
+                <div class="flex items-center gap-2 min-w-0">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/12 bg-slate-950/30">
+                        <x-icon name="book-open" class="h-5 w-5 text-white" />
+                    </div>
 
                         <div class="min-w-0">
                             <div class="truncate text-sm font-extrabold text-white">Tamu Sedang Hadir</div>
@@ -93,11 +117,23 @@
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <button id="kioskBtnToggleGuest" type="button"
-                        class="rounded-xl border border-white/15 bg-white/10 px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/15 transition">
-                        <span id="kioskGuestChevron" class="inline-block transition">▾</span>
-                    </button>
+                <button
+                    id="kioskBtnToggleGuest"
+                    type="button"
+                    class="rounded-xl border border-white/12 bg-slate-950/30 px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-slate-950/40 transition"
+                >
+                    <span id="kioskGuestChevron" class="inline-block transition">▾</span>
+                </button>
+            </div>
+
+            <div id="kioskGuestBody" class="p-3">
+                <div
+                    id="kioskActiveGuestLoading"
+                    class="rounded-2xl border border-white/12 bg-slate-950/20 px-3 py-3 text-sm text-white/80"
+                >
+                    Memuat daftar tamu...
                 </div>
 
                 <div id="kioskGuestBody" class="p-3">
@@ -323,7 +359,7 @@
                 <button type="button"
                     data-action="complete"
                     data-id="${id}"
-                    class="inline-flex items-center justify-center rounded-xl bg-white/10 border border-white/15 px-3 py-2 text-[11px] font-semibold text-white/90 hover:bg-white/15 transition active:scale-[0.98]">
+                    class="inline-flex items-center justify-center rounded-xl bg-slate-950/30 border border-white/12 px-3 py-2 text-[11px] font-semibold text-white/90 hover:bg-slate-950/40 transition active:scale-[0.98]">
                     Selesai
                 </button>
             `;
@@ -334,8 +370,8 @@
                     `<div class="mt-0.5 text-[11px] text-white/60">Datang: <span class="font-semibold text-white/75">${escapeHtml(item.arrived_at)}</span></div>` :
                     '';
 
-                return `
-                <li data-id="${item.id}" class="pop-in rounded-2xl border border-white/15 bg-white/5 px-3 py-2.5 hover:bg-white/10 transition">
+            return `
+                <li data-id="${item.id}" class="pop-in rounded-2xl border border-white/12 bg-slate-950/20 px-3 py-2.5 hover:bg-slate-950/28 transition">
                     <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0">
                             <div class="truncate text-sm font-semibold text-white">${escapeHtml(item.name || 'Tamu')}</div>

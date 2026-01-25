@@ -134,21 +134,21 @@
                                 <button type="button" @click="open = !open"
                                     class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold transition
                                     {{ request()->routeIs('admin.guest.*') ? 'bg-white/10 text-white' : 'text-white/85 hover:bg-white/10 hover:text-white' }}">
-                                    <span class="flex items-center gap-3">
-                                        <x-icon name="clipboard-document" class="h-5 w-5" />
-                                        Buku Tamu
-                                    </span>
+                                <span class="flex items-center gap-3">
+                                    <x-icon name="book-open" class="h-5 w-5" />
+                                    Buku Tamu
+                                </span>
 
-                                    <span class="inline-flex items-center gap-2 text-[11px] text-white/55">
-                                        <span>Menu</span>
-                                        <span class="transition"
-                                            :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">▾</span>
-                                    </span>
-                                </button>
+                                <span class="inline-flex items-center gap-2 text-[11px] text-white/55">
+                                    <span>Menu</span>
+                                    <span class="transition"
+                                          :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">▾</span>
+                                </span>
+                            </button>
 
-                                <div x-show="open" x-transition.opacity class="px-2 pb-2" style="display:none;">
-                                    <a href="{{ route('admin.guest.index') }}"
-                                        class="mt-1 flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition
+                            <div x-show="open" x-transition.opacity class="px-2 pb-2" style="display:none;">
+                                <a href="{{ route('admin.guest.index') }}"
+                                   class="mt-1 flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition
                                    {{ request()->routeIs('admin.guest.index') ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white' }}">
                                         <span>Log Buku Tamu</span>
                                         <span class="text-white/45">/admin/tamu</span>
