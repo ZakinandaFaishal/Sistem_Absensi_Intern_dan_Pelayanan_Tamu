@@ -48,7 +48,7 @@
             </div>
             <div>
                 <h2 class="text-base font-extrabold text-white">
-                    {{ __('Profile Information') }}
+                    {{ __('Update Profile') }}
                 </h2>
                 <p class="mt-1 text-sm text-white/70">
                     {{ __("Update your account's profile information and email address.") }}

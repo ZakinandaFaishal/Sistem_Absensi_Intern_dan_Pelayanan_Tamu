@@ -333,7 +333,7 @@
                         </span>
                         <div>
                             <p class="text-sm font-semibold text-slate-900">Daftar Presensi</p>
-                            <p class="text-xs text-slate-500">Menampilkan data terbaru (paginasi).</p>
+                            <p class="text-xs text-slate-500">Menampilkan data terbaru.</p>
                         </div>
                     </div>
 
@@ -412,7 +412,6 @@
                         </div>
 
                         <div class="md:col-span-12 flex items-center justify-end">
-                            <div class="text-xs text-slate-500">Filter diterapkan otomatis.</div>
                         </div>
                     </form>
 

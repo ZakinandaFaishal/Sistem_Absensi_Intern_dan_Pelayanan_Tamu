@@ -80,7 +80,7 @@
                         </div>
                         <div>
                             <p class="text-sm font-semibold text-white">Daftar Presensi</p>
-                            <p class="text-xs text-white/60">Menampilkan data terbaru (paginasi).</p>
+                            <p class="text-xs text-white/60">Menampilkan data terbaru.</p>
                         </div>
                     </div>
 

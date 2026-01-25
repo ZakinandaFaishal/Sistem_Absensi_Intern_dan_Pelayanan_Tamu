@@ -346,61 +346,6 @@
                 <h3 class="text-base font-extrabold tracking-tight text-slate-900">Ringkasan Data</h3>
                 <p class="text-sm text-slate-500">Akses cepat modul admin.</p>
             </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-
-                {{-- EXPORT (READY + WORKING UI) --}}
-                <div class="relative">
-                    <button type="button" id="btnExportMenu"
-                        class="soft-ring btn-shine inline-flex items-center gap-2 rounded-xl bg-slate-900 text-white px-4 py-2 text-sm font-semibold
-                               transition duration-200 hover:bg-slate-800 active:scale-[0.98]">
-                        <span>Export</span>
-                        <span class="inline-block transition" id="exportChevron">▾</span>
-                    </button>
-
-                    <div id="exportMenu"
-                        class="hidden absolute right-0 mt-2 w-52 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-50">
-                        <button type="button"
-                            class="export-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
-                            data-url="{{ route('admin.export.excel') }}" data-label="Excel">
-                            <span>Export Excel</span>
-                            <span class="text-xs text-slate-400">.xlsx</span>
-                        </button>
-
-                        <button type="button"
-                            class="export-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
-                            data-url="{{ route('admin.export.pdf') }}" data-label="PDF">
-                            <span>Export PDF</span>
-                            <span class="text-xs text-slate-400">.pdf</span>
-                        </button>
-                    </div>
-                </div>
-
-                {{-- Hidden iframe: download tanpa pindah halaman --}}
-                <iframe id="dlFrame" class="hidden"></iframe>
-
-                {{-- QUICK ACCESS --}}
-                <a href="{{ route('admin.attendance.index') }}"
-                    class="soft-ring btn-shine rounded-xl bg-slate-900 text-white px-4 py-2 text-sm font-semibold
-                      transition duration-200 hover:bg-slate-800 active:scale-[0.98]">
-                    Presensi
-                </a>
-                <a href="{{ route('admin.guest.index') }}"
-                    class="soft-ring btn-shine rounded-xl bg-white border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700
-                      transition duration-200 hover:bg-slate-50 active:scale-[0.98]">
-                    Buku Tamu
-                </a>
-                <a href="{{ route('admin.survey.index') }}"
-                    class="soft-ring btn-shine rounded-xl bg-white border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700
-                      transition duration-200 hover:bg-slate-50 active:scale-[0.98]">
-                    Survey
-                </a>
-                <a href="{{ route('admin.users.index') }}"
-                    class="soft-ring btn-shine rounded-xl bg-white border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700
-                      transition duration-200 hover:bg-slate-50 active:scale-[0.98]">
-                    Users
-                </a>
-            </div>
         </div>
 
         <div class="relative overflow-x-auto">

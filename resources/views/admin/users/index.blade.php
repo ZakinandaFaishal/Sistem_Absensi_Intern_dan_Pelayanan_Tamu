@@ -353,7 +353,7 @@
                     <p class="text-sm text-slate-500">Kelola role, status, dan aksi akun.</p>
                 </div>
                 <div class="text-xs text-slate-500">
-                    Menampilkan data (paginasi).
+                    Menampilkan data.
                 </div>
             </div>
 
