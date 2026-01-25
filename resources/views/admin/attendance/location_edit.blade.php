@@ -160,12 +160,14 @@
                                     class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
                                     <option value="">— Pilih lokasi —</option>
                                     @foreach ($locationsForDinas as $loc)
-                                        <option value="{{ $loc->id }}" data-lat="{{ $loc->lat }}" data-lng="{{ $loc->lng }}">
+                                        <option value="{{ $loc->id }}" data-lat="{{ $loc->lat }}"
+                                            data-lng="{{ $loc->lng }}">
                                             {{ $loc->name }}
                                         </option>
                                     @endforeach
                                 </select>
-                                <p class="mt-1 text-xs text-slate-500">Memasukkan lat/lng otomatis (tidak langsung menyimpan).</p>
+                                <p class="mt-1 text-xs text-slate-500">Memasukkan lat/lng otomatis (tidak langsung
+                                    menyimpan).</p>
                             </div>
                         </div>
                     </div>
@@ -247,8 +249,7 @@
         </div>
 
         <form method="POST" action="{{ route('admin.attendance.locations.destroy', $location) }}"
-            onsubmit="return confirm('Hapus lokasi ini?');"
-            class="flex justify-end">
+            onsubmit="return confirm('Hapus lokasi ini?');" class="flex justify-end">
             @csrf
             @method('DELETE')
             <input type="hidden" name="_redirect" value="{{ $backKey ?? 'manage' }}" />

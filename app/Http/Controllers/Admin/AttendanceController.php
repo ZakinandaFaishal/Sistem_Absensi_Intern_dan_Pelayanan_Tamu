@@ -426,10 +426,12 @@ class AttendanceController extends Controller
                 $rule->office_lat = (string) $location->lat;
                 $rule->office_lng = (string) $location->lng;
                 $rule->save();
-            } elseif ($oldLat !== null && $oldLng !== null
+            } elseif (
+                $oldLat !== null && $oldLng !== null
                 && $rule->office_lat !== null && $rule->office_lng !== null
                 && $norm($rule->office_lat) === $norm($oldLat)
-                && $norm($rule->office_lng) === $norm($oldLng)) {
+                && $norm($rule->office_lng) === $norm($oldLng)
+            ) {
                 $rule->office_lat = (string) $location->lat;
                 $rule->office_lng = (string) $location->lng;
                 $rule->save();

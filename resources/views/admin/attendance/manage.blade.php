@@ -13,7 +13,8 @@
 
         <div class="flex flex-wrap items-center gap-2">
             @if ($isSuperAdmin)
-                <form id="dinas-switch" method="GET" action="{{ route('admin.attendance.manage') }}" class="flex items-center gap-2">
+                <form id="dinas-switch" method="GET" action="{{ route('admin.attendance.manage') }}"
+                    class="flex items-center gap-2">
                     <select name="dinas_id"
                         class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
                         @foreach ($dinasOptions as $d)
@@ -103,11 +104,15 @@
                                     <div class="text-xs font-semibold text-slate-700">Scope Lokasi</div>
                                     <div class="text-sm text-slate-600">Aturan presensi disimpan per lokasi.</div>
                                 </div>
-                                <form id="location-switch" method="GET" action="{{ route('admin.attendance.manage') }}" class="flex items-center gap-2">
-                                    <select name="location_id" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" required>
-                                        <option value="" disabled {{ empty($activeLocationId ?? 0) ? 'selected' : '' }}>Pilih lokasi</option>
-                                        @foreach (($locationsForDinas ?? []) as $loc)
-                                            <option value="{{ $loc->id }}" {{ (int) ($activeLocationId ?? 0) === (int) $loc->id ? 'selected' : '' }}>
+                                <form id="location-switch" method="GET" action="{{ route('admin.attendance.manage') }}"
+                                    class="flex items-center gap-2">
+                                    <select name="location_id"
+                                        class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" required>
+                                        <option value="" disabled
+                                            {{ empty($activeLocationId ?? 0) ? 'selected' : '' }}>Pilih lokasi</option>
+                                        @foreach ($locationsForDinas ?? [] as $loc)
+                                            <option value="{{ $loc->id }}"
+                                                {{ (int) ($activeLocationId ?? 0) === (int) $loc->id ? 'selected' : '' }}>
                                                 {{ $loc->name }}
                                             </option>
                                         @endforeach
@@ -136,19 +141,22 @@
                             <div>
                                 <div class="text-xs text-slate-500">Radius / Akurasi</div>
                                 <div class="font-semibold">
-                                    {{ (int) ($settings['radius_m'] ?? 50) }} m / maks {{ (int) ($settings['max_accuracy_m'] ?? 100) }} m
+                                    {{ (int) ($settings['radius_m'] ?? 50) }} m / maks
+                                    {{ (int) ($settings['max_accuracy_m'] ?? 100) }} m
                                 </div>
                             </div>
                             <div>
                                 <div class="text-xs text-slate-500">Jam Check-in</div>
                                 <div class="font-semibold">
-                                    {{ (string) ($settings['checkin_start'] ?? '08:00') }} – {{ (string) ($settings['checkin_end'] ?? '12:00') }}
+                                    {{ (string) ($settings['checkin_start'] ?? '08:00') }} –
+                                    {{ (string) ($settings['checkin_end'] ?? '12:00') }}
                                 </div>
                             </div>
                             <div>
                                 <div class="text-xs text-slate-500">Jam Check-out</div>
                                 <div class="font-semibold">
-                                    {{ (string) ($settings['checkout_start'] ?? '13:00') }} – {{ (string) ($settings['checkout_end'] ?? '16:30') }}
+                                    {{ (string) ($settings['checkout_start'] ?? '13:00') }} –
+                                    {{ (string) ($settings['checkout_end'] ?? '16:30') }}
                                 </div>
                             </div>
                         </div>
@@ -281,7 +289,8 @@
                                         </td>
                                         <td class="px-3 py-3 whitespace-nowrap text-slate-700">
                                             {{ $radiusM }} m
-                                            <div class="text-[11px] text-slate-500">maks akurasi {{ $maxAccuracyM }} m</div>
+                                            <div class="text-[11px] text-slate-500">maks akurasi {{ $maxAccuracyM }} m
+                                            </div>
                                         </td>
                                         <td class="px-3 py-3 whitespace-nowrap text-slate-700">
                                             {{ $checkinStart }} – {{ $checkinEnd }}
@@ -296,7 +305,8 @@
                                                     Pengaturan
                                                 </a>
 
-                                                <form method="POST" action="{{ route('admin.attendance.locations.destroy', $loc) }}"
+                                                <form method="POST"
+                                                    action="{{ route('admin.attendance.locations.destroy', $loc) }}"
                                                     onsubmit="return confirm('Hapus lokasi ini?');">
                                                     @csrf
                                                     @method('DELETE')

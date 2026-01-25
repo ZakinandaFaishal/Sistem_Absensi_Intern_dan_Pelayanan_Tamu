@@ -76,14 +76,18 @@
                         <div class="text-xs font-semibold text-slate-700">Scope Lokasi</div>
                         <div class="text-sm text-slate-600">Aturan presensi disimpan per lokasi.</div>
                     </div>
-                    <form id="location-switch" method="GET" action="{{ route('admin.attendance.rules') }}" class="flex items-center gap-2">
+                    <form id="location-switch" method="GET" action="{{ route('admin.attendance.rules') }}"
+                        class="flex items-center gap-2">
                         @if (!empty($activeDinasId ?? 0))
                             <input type="hidden" name="dinas_id" value="{{ (int) $activeDinasId }}">
                         @endif
-                        <select name="location_id" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" required>
-                            <option value="" disabled {{ empty($activeLocationId ?? 0) ? 'selected' : '' }}>Pilih lokasi</option>
-                            @foreach (($locationsForDinas ?? []) as $loc)
-                                <option value="{{ $loc->id }}" {{ (int) ($activeLocationId ?? 0) === (int) $loc->id ? 'selected' : '' }}>
+                        <select name="location_id" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                            required>
+                            <option value="" disabled {{ empty($activeLocationId ?? 0) ? 'selected' : '' }}>Pilih
+                                lokasi</option>
+                            @foreach ($locationsForDinas ?? [] as $loc)
+                                <option value="{{ $loc->id }}"
+                                    {{ (int) ($activeLocationId ?? 0) === (int) $loc->id ? 'selected' : '' }}>
                                     {{ $loc->name }}
                                 </option>
                             @endforeach
@@ -110,17 +114,17 @@
                     <div>
                         <label class="text-xs font-semibold text-slate-700">Office Latitude</label>
 
-                <script>
-                    (function() {
-                        var form = document.getElementById('location-switch');
-                        if (!form) return;
-                        var select = form.querySelector('select[name="location_id"]');
-                        if (!select) return;
-                        select.addEventListener('change', function() {
-                            form.submit();
-                        });
-                    })();
-                </script>
+                        <script>
+                            (function() {
+                                var form = document.getElementById('location-switch');
+                                if (!form) return;
+                                var select = form.querySelector('select[name="location_id"]');
+                                if (!select) return;
+                                select.addEventListener('change', function() {
+                                    form.submit();
+                                });
+                            })();
+                        </script>
                         <input name="office_lat" value="{{ old('office_lat', $settings['office_lat'] ?? '') }}"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
                             placeholder="contoh: -7.479xxx" />
@@ -149,12 +153,14 @@
                                     class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
                                     <option value="">— Pilih lokasi —</option>
                                     @foreach ($locationsForDinas as $loc)
-                                        <option value="{{ $loc->id }}" data-lat="{{ $loc->lat }}" data-lng="{{ $loc->lng }}">
+                                        <option value="{{ $loc->id }}" data-lat="{{ $loc->lat }}"
+                                            data-lng="{{ $loc->lng }}">
                                             {{ $loc->name }}
                                         </option>
                                     @endforeach
                                 </select>
-                                <p class="mt-1 text-xs text-slate-500">Memasukkan lat/lng otomatis (tidak langsung menyimpan).</p>
+                                <p class="mt-1 text-xs text-slate-500">Memasukkan lat/lng otomatis (tidak langsung
+                                    menyimpan).</p>
                             </div>
                         </div>
                     </div>
