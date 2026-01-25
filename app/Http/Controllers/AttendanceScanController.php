@@ -54,25 +54,17 @@ class AttendanceScanController extends Controller
         $now = CarbonImmutable::now();
         $time = $now->format('H:i');
 
-        $dinasIdForRules = null;
-        if (($user?->role ?? null) === 'admin_dinas' && !empty($user?->dinas_id)) {
-            $dinasIdForRules = (int) $user->dinas_id;
-        }
-
         $rule = null;
-        if ($dinasIdForRules !== null) {
-            $rule = AttendanceRule::query()->where('dinas_id', $dinasIdForRules)->first();
-        }
 
-        $checkinStart = $rule?->checkin_start ?? AppSettings::getString(AppSettings::CHECKIN_START, '08:00');
-        $checkinEnd = $rule?->checkin_end ?? AppSettings::getString(AppSettings::CHECKIN_END, '12:00');
-        $checkoutStart = $rule?->checkout_start ?? AppSettings::getString(AppSettings::CHECKOUT_START, '13:00');
-        $checkoutEnd = $rule?->checkout_end ?? AppSettings::getString(AppSettings::CHECKOUT_END, '16:30');
+        $checkinStart = AppSettings::getString(AppSettings::CHECKIN_START, '08:00');
+        $checkinEnd = AppSettings::getString(AppSettings::CHECKIN_END, '12:00');
+        $checkoutStart = AppSettings::getString(AppSettings::CHECKOUT_START, '13:00');
+        $checkoutEnd = AppSettings::getString(AppSettings::CHECKOUT_END, '16:30');
 
         // Geofence + accuracy threshold.
         $targetName = 'kantor';
-        $targetLat = $rule?->office_lat !== null ? (float) $rule->office_lat : AppSettings::getFloat(AppSettings::OFFICE_LAT, 0.0);
-        $targetLng = $rule?->office_lng !== null ? (float) $rule->office_lng : AppSettings::getFloat(AppSettings::OFFICE_LNG, 0.0);
+        $targetLat = AppSettings::getFloat(AppSettings::OFFICE_LAT, 0.0);
+        $targetLng = AppSettings::getFloat(AppSettings::OFFICE_LNG, 0.0);
 
         $targetLocationId = null;
         if (($user?->role ?? null) === 'intern' && $user?->internship_location_id) {
@@ -83,29 +75,54 @@ class AttendanceScanController extends Controller
                 ]);
             }
 
-            if ($dinasIdForRules === null && !empty($internLocation->dinas_id)) {
-                $dinasIdForRules = (int) $internLocation->dinas_id;
-                $rule = AttendanceRule::query()->where('dinas_id', $dinasIdForRules)->first();
+            // Aturan presensi benar-benar per lokasi.
+            $rule = AttendanceRule::query()->where('location_id', (int) $internLocation->id)->first();
 
-                $checkinStart = $rule?->checkin_start ?? $checkinStart;
-                $checkinEnd = $rule?->checkin_end ?? $checkinEnd;
-                $checkoutStart = $rule?->checkout_start ?? $checkoutStart;
-                $checkoutEnd = $rule?->checkout_end ?? $checkoutEnd;
-
-                $targetLat = $rule?->office_lat !== null ? (float) $rule->office_lat : $targetLat;
-                $targetLng = $rule?->office_lng !== null ? (float) $rule->office_lng : $targetLng;
-            }
-
-            if ($internLocation->lat === null || $internLocation->lng === null) {
-                return back()->withErrors([
-                    'lat' => 'Koordinat lokasi magang belum diatur admin. Hubungi admin untuk melengkapi titik lokasi.',
-                ]);
-            }
+            $checkinStart = $rule?->checkin_start ?? $checkinStart;
+            $checkinEnd = $rule?->checkin_end ?? $checkinEnd;
+            $checkoutStart = $rule?->checkout_start ?? $checkoutStart;
+            $checkoutEnd = $rule?->checkout_end ?? $checkoutEnd;
 
             $targetName = (string) ($internLocation->name ?? 'lokasi magang');
-            $targetLat = (float) $internLocation->lat;
-            $targetLng = (float) $internLocation->lng;
+
+            // Target koordinat: prioritaskan koordinat dari rule, fallback ke koordinat Location.
+            $hasRuleCoords = $rule?->office_lat !== null && $rule?->office_lng !== null;
+            if ($hasRuleCoords) {
+                $targetLat = (float) $rule->office_lat;
+                $targetLng = (float) $rule->office_lng;
+            } else {
+                if ($internLocation->lat === null || $internLocation->lng === null) {
+                    return back()->withErrors([
+                        'lat' => 'Koordinat lokasi magang belum diatur admin. Hubungi admin untuk melengkapi titik lokasi.',
+                    ]);
+                }
+
+                $targetLat = (float) $internLocation->lat;
+                $targetLng = (float) $internLocation->lng;
+            }
             $targetLocationId = (int) $internLocation->id;
+        }
+
+        // Fallback untuk admin_dinas (mis. testing dari akun admin): pakai lokasi pertama pada dinasnya.
+        if ($rule === null && ($user?->role ?? null) === 'admin_dinas' && !empty($user?->dinas_id)) {
+            $firstLocationId = (int) Location::query()
+                ->where('dinas_id', (int) $user->dinas_id)
+                ->orderBy('name')
+                ->value('id');
+
+            if ($firstLocationId > 0) {
+                $rule = AttendanceRule::query()->where('location_id', $firstLocationId)->first();
+            }
+
+            $checkinStart = $rule?->checkin_start ?? $checkinStart;
+            $checkinEnd = $rule?->checkin_end ?? $checkinEnd;
+            $checkoutStart = $rule?->checkout_start ?? $checkoutStart;
+            $checkoutEnd = $rule?->checkout_end ?? $checkoutEnd;
+
+            if ($rule?->office_lat !== null && $rule?->office_lng !== null) {
+                $targetLat = (float) $rule->office_lat;
+                $targetLng = (float) $rule->office_lng;
+            }
         }
 
         // Enforce time windows (server time: Asia/Jakarta) after resolving per-dinas rules.

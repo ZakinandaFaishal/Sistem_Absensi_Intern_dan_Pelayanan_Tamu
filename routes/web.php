@@ -101,6 +101,7 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_dinas', 'admin_di
             // Lokasi / Dinas (super_admin only)
             Route::get('/presensi/lokasi', [AdminAttendanceController::class, 'locations'])->name('attendance.locations');
             Route::post('/presensi/locations', [AdminAttendanceController::class, 'storeLocation'])->name('attendance.locations.store');
+            Route::get('/presensi/locations/{location}/edit', [AdminAttendanceController::class, 'editLocation'])->name('attendance.locations.edit');
             Route::patch('/presensi/locations/{location}', [AdminAttendanceController::class, 'updateLocation'])->name('attendance.locations.update');
             Route::delete('/presensi/locations/{location}', [AdminAttendanceController::class, 'destroyLocation'])->name('attendance.locations.destroy');
 
