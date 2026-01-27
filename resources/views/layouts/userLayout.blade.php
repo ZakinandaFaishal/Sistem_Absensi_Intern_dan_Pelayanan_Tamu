@@ -173,9 +173,6 @@
                     <h1 class="text-sm sm:text-base font-extrabold tracking-tight truncate">
                         @yield('page_title', 'User Panel')
                     </h1>
-                    <p class="text-[11px] text-white/60 truncate">
-                        @yield('page_subtitle', 'Diskominfo Kabupaten Magelang')
-                    </p>
                 </div>
             </div>
 

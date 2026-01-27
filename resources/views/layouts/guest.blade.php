@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,41 +17,44 @@
 </head>
 
 <body class="font-sans antialiased">
+    @php
+        $user = Auth::user();
+        $user?->loadMissing('dinas');
+
+        $orgName = $user && ($user->role ?? null) === 'admin_dinas' ? $user->dinas?->name ?? 'SIMANTA' : 'SIMANTA';
+
+        $orgFooter =
+            $user && ($user->role ?? null) === 'admin_dinas'
+                ? $user->dinas?->name ?? 'Kabupaten Magelang'
+                : 'Kabupaten Magelang';
+    @endphp
     <main class="relative min-h-screen w-full overflow-hidden">
 
         {{-- Background (FIXED) --}}
         <div id="kiosk-bg" class="fixed inset-0 -z-10 overflow-hidden">
-            <video
-                class="absolute inset-0 h-full w-full object-cover object-center"
-                autoplay
-                muted
-                loop
-                playsinline
-                preload="auto"
-                poster="{{ asset('img/background.png') }}"
-            >
+            <video class="absolute inset-0 h-full w-full object-cover object-center" autoplay muted loop playsinline
+                preload="auto" poster="{{ asset('img/background.png') }}">
                 <source src="{{ asset('img/vid_bg_kab.mp4') }}" type="video/mp4">
             </video>
 
             {{-- overlays (lebih “nyatu” untuk dark glass) --}}
             <div class="absolute inset-0 bg-gradient-to-b from-black/65 via-black/40 to-black/75"></div>
-            <div class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(20,184,166,0.08)_0%,rgba(0,0,0,0.55)_65%,rgba(0,0,0,0.86)_100%)]"></div>
+            <div
+                class="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(20,184,166,0.08)_0%,rgba(0,0,0,0.55)_65%,rgba(0,0,0,0.86)_100%)]">
+            </div>
         </div>
 
         {{-- Top bar --}}
         <header class="relative z-10 flex items-start justify-between px-6 py-5 sm:px-10">
             <a href="{{ route('kiosk.index') }}" class="flex items-center gap-3">
                 <div class="rounded-2xl bg-slate-950/35 border border-white/14 backdrop-blur-md shadow-lg p-2">
-                    <img
-                        src="{{ asset('img/logo_kab_mgl.png') }}"
-                        alt="Logo Kabupaten Magelang"
-                        class="h-12 w-12 object-contain"
-                    >
+                    <img src="{{ asset('img/logo_kab_mgl.png') }}" alt="Logo Kabupaten Magelang"
+                        class="h-12 w-12 object-contain">
                 </div>
 
                 <div class="hidden sm:block text-left">
                     <div class="text-sm font-semibold text-white drop-shadow">
-                        Dinas Komunikasi &amp; Informatika
+                        {{ $orgName }}
                     </div>
                     <div class="text-xs text-white/70">
                         Kabupaten Magelang
@@ -58,12 +62,10 @@
                 </div>
             </a>
 
-            <a
-                href="{{ route('kiosk.index') }}"
+            <a href="{{ route('kiosk.index') }}"
                 class="rounded-xl bg-slate-950/35 px-5 py-2.5 text-sm font-semibold text-white
                        backdrop-blur-md border border-white/16 shadow-lg
-                       hover:bg-slate-950/45 hover:-translate-y-0.5 transition duration-200"
-            >
+                       hover:bg-slate-950/45 hover:-translate-y-0.5 transition duration-200">
                 ← Kembali
             </a>
         </header>
@@ -73,18 +75,20 @@
             <div class="w-full max-w-3xl">
 
                 {{-- Dark glass card container --}}
-                <div class="rounded-3xl border border-white/14 bg-slate-950/30 backdrop-blur-xl shadow-2xl overflow-hidden">
+                <div
+                    class="rounded-3xl border border-white/14 bg-slate-950/30 backdrop-blur-xl shadow-2xl overflow-hidden">
                     <div class="px-6 py-6 sm:px-8 sm:py-8">
                         {{ $slot }}
                     </div>
                 </div>
 
                 <p class="mt-6 text-center text-xs text-white/60">
-                    © {{ now()->year }} • Diskominfo Kabupaten Magelang
+                    © {{ now()->year }} • {{ $orgFooter }}
                 </p>
             </div>
         </div>
 
     </main>
 </body>
+
 </html>

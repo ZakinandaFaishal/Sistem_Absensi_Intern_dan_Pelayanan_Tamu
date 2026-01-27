@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 // use PhpOffice\PhpSpreadsheet\Spreadsheet;
 // use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 // use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -24,6 +25,7 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
+        $actor = Auth::user();
         $today = Carbon::today();
 
         $intern_present_today = Attendance::whereDate('created_at', $today)
@@ -55,7 +57,34 @@ class AdminDashboardController extends Controller
             ];
         });
 
-        return view('dashboard', compact('stats', 'chart'));
+        $recentGuestVisits = GuestVisit::query()
+            ->with(['dinas', 'handler'])
+            ->orderByDesc('arrived_at')
+            ->limit(6)
+            ->get();
+
+        $recentSurveys = GuestSurvey::query()
+            ->with(['visit.dinas'])
+            ->orderByDesc('submitted_at')
+            ->limit(6)
+            ->get();
+
+        $recentAttendances = Attendance::query()
+            ->with(['user', 'location'])
+            ->orderByDesc('check_in_at')
+            ->limit(6)
+            ->get();
+
+        return view('dashboard', compact(
+            'actor',
+            'stats',
+            'chart',
+            'intern_present_today',
+            'intern_open_today',
+            'recentGuestVisits',
+            'recentSurveys',
+            'recentAttendances',
+        ));
     }
 
     public function exportPdf(Request $request)

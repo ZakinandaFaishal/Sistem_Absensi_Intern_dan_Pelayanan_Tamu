@@ -602,7 +602,9 @@ class AttendanceController extends Controller
 
     public function exportPdf(Request $request)
     {
-        if (($request->user()?->role ?? null) !== 'super_admin') {
+        $actor = $request->user();
+        $role = (string) ($actor?->role ?? '');
+        if (!in_array($role, ['super_admin', 'admin_dinas'], true)) {
             abort(403);
         }
 
@@ -616,6 +618,21 @@ class AttendanceController extends Controller
         $baseQuery = Attendance::query()
             ->select('attendances.*')
             ->with(['user', 'location']);
+
+        // Scope by dinas
+        if ($role === 'admin_dinas') {
+            $actorDinasId = (int) ($actor->dinas_id ?? 0);
+            if ($actorDinasId > 0) {
+                $baseQuery->whereHas('user', fn($u) => $u->where('dinas_id', $actorDinasId));
+            } else {
+                $baseQuery->whereRaw('1=0');
+            }
+        } else {
+            $dinasId = (int) $request->query('dinas_id', 0);
+            if ($dinasId > 0) {
+                $baseQuery->whereHas('user', fn($u) => $u->where('dinas_id', $dinasId));
+            }
+        }
 
         if ($q !== '') {
             $baseQuery->whereHas('user', function ($userQuery) use ($q) {
@@ -680,7 +697,9 @@ class AttendanceController extends Controller
 
     public function exportExcel(Request $request)
     {
-        if (($request->user()?->role ?? null) !== 'super_admin') {
+        $actor = $request->user();
+        $role = (string) ($actor?->role ?? '');
+        if (!in_array($role, ['super_admin', 'admin_dinas'], true)) {
             abort(403);
         }
 
@@ -694,6 +713,21 @@ class AttendanceController extends Controller
         $baseQuery = Attendance::query()
             ->select('attendances.*')
             ->with(['user', 'location']);
+
+        // Scope by dinas
+        if ($role === 'admin_dinas') {
+            $actorDinasId = (int) ($actor->dinas_id ?? 0);
+            if ($actorDinasId > 0) {
+                $baseQuery->whereHas('user', fn($u) => $u->where('dinas_id', $actorDinasId));
+            } else {
+                $baseQuery->whereRaw('1=0');
+            }
+        } else {
+            $dinasId = (int) $request->query('dinas_id', 0);
+            if ($dinasId > 0) {
+                $baseQuery->whereHas('user', fn($u) => $u->where('dinas_id', $dinasId));
+            }
+        }
 
         if ($q !== '') {
             $baseQuery->whereHas('user', function ($userQuery) use ($q) {

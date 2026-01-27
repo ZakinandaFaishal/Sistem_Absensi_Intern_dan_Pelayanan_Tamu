@@ -75,7 +75,7 @@ class GuestVisitController extends Controller
             'service_type' => $validated['service_type'],
             'purpose_detail' => $validated['purpose_detail'],
             'purpose' => $purpose,
-            'arrived_at' => CarbonImmutable::now(),
+            'arrived_at' => CarbonImmutable::now('Asia/Jakarta'),
             'visit_type' => $validated['visit_type'],
             'group_count' => $validated['visit_type'] === 'group' ? $validated['group_count'] : null,
             'group_names' => $validated['visit_type'] === 'group' ? array_values($validated['group_names'] ?? []) : null,
@@ -177,7 +177,7 @@ class GuestVisitController extends Controller
         }
 
         $visit->fill([
-            'completed_at' => CarbonImmutable::now(),
+            'completed_at' => CarbonImmutable::now('Asia/Jakarta'),
             'handled_by' => $request->user()->id,
         ])->save();
 
@@ -192,12 +192,19 @@ class GuestVisitController extends Controller
 
     public function exportPdf(Request $request)
     {
+        $actor = $request->user();
+        $role = (string) ($actor?->role ?? '');
+        if (!in_array($role, ['super_admin', 'admin_dinas'], true)) {
+            abort(403);
+        }
+
         $q = trim((string) $request->query('q', ''));
         $status = (string) $request->query('status', '');
         $from = (string) $request->query('from', '');
         $to = (string) $request->query('to', '');
         $sort = (string) $request->query('sort', 'arrived_at');
         $dir = strtolower((string) $request->query('dir', 'desc'));
+        $dinasIdFilter = (int) $request->query('dinas_id', 0);
 
         $allowedSort = ['arrived_at', 'completed_at', 'name'];
         if (!in_array($sort, $allowedSort, true)) {
@@ -206,6 +213,17 @@ class GuestVisitController extends Controller
         $dir = $dir === 'asc' ? 'asc' : 'desc';
 
         $visitsQuery = GuestVisit::query()->with(['dinas'])->withExists('survey');
+
+        if ($role === 'admin_dinas') {
+            $actorDinasId = (int) ($actor->dinas_id ?? 0);
+            if ($actorDinasId > 0) {
+                $visitsQuery->where('dinas_id', $actorDinasId);
+            } else {
+                $visitsQuery->whereRaw('1=0');
+            }
+        } elseif ($dinasIdFilter > 0) {
+            $visitsQuery->where('dinas_id', $dinasIdFilter);
+        }
 
         if ($q !== '') {
             $visitsQuery->where(function ($qb) use ($q) {
@@ -272,12 +290,19 @@ class GuestVisitController extends Controller
 
     public function exportExcel(Request $request)
     {
+        $actor = $request->user();
+        $role = (string) ($actor?->role ?? '');
+        if (!in_array($role, ['super_admin', 'admin_dinas'], true)) {
+            abort(403);
+        }
+
         $q = trim((string) $request->query('q', ''));
         $status = (string) $request->query('status', '');
         $from = (string) $request->query('from', '');
         $to = (string) $request->query('to', '');
         $sort = (string) $request->query('sort', 'arrived_at');
         $dir = strtolower((string) $request->query('dir', 'desc'));
+        $dinasIdFilter = (int) $request->query('dinas_id', 0);
 
         $allowedSort = ['arrived_at', 'completed_at', 'name'];
         if (!in_array($sort, $allowedSort, true)) {
@@ -286,6 +311,17 @@ class GuestVisitController extends Controller
         $dir = $dir === 'asc' ? 'asc' : 'desc';
 
         $visitsQuery = GuestVisit::query()->with(['dinas'])->withExists('survey');
+
+        if ($role === 'admin_dinas') {
+            $actorDinasId = (int) ($actor->dinas_id ?? 0);
+            if ($actorDinasId > 0) {
+                $visitsQuery->where('dinas_id', $actorDinasId);
+            } else {
+                $visitsQuery->whereRaw('1=0');
+            }
+        } elseif ($dinasIdFilter > 0) {
+            $visitsQuery->where('dinas_id', $dinasIdFilter);
+        }
 
         if ($q !== '') {
             $visitsQuery->where(function ($qb) use ($q) {
@@ -415,11 +451,16 @@ class GuestVisitController extends Controller
             'data' => $visits->map(function ($v) {
                 $isLayanan = $v->service_type === 'layanan';
 
+                $arrivedAt = null;
+                if ($v->arrived_at) {
+                    $arrivedAt = $v->arrived_at->timezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB';
+                }
+
                 return [
                     'id' => $v->id,
                     'name' => $v->name,
                     'purpose' => $v->purpose,
-                    'arrived_at' => optional($v->arrived_at)->format('d M Y H:i'),
+                    'arrived_at' => $arrivedAt,
                     'status' => 'Sedang berkunjung',
 
                     'service_type'   => $v->service_type,

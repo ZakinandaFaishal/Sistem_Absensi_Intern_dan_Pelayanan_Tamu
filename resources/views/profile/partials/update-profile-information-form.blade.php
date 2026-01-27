@@ -100,6 +100,17 @@
                 @endif
             </div>
 
+            <div>
+                <x-input-label for="epikir_letter_token" value="Token Surat e-Pikir (opsional)" class="text-white/80" />
+                <x-text-input id="epikir_letter_token" name="epikir_letter_token" type="text"
+                    class="mt-1 block w-full !rounded-xl !border-white/15 !bg-white/10 !text-white placeholder:!text-white/40 focus:!border-white/30 focus:!ring-white/20"
+                    :value="old('epikir_letter_token', $user->epikir_letter_token)" placeholder="Masukkan token/nomor surat dari e-Pikir untuk validasi" />
+                <x-input-error class="mt-2 text-rose-200" :messages="$errors->get('epikir_letter_token')" />
+                <p class="mt-1 text-xs text-white/60">
+                    Isi saat diminta untuk handshake/validasi pendaftaran magang dari e-Pikir.
+                </p>
+            </div>
+
             <div class="flex flex-col sm:flex-row sm:items-center gap-3">
                 <x-primary-button
                     class="!rounded-xl !bg-white/25 !border !border-white/25 !text-white hover:!bg-white/35 focus:!ring-white/40">

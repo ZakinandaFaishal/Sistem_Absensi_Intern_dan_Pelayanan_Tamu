@@ -272,13 +272,16 @@
                                     <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
                                         <div>
                                             Datang:
-                                            <span class="font-semibold text-slate-700">{{ $visit->arrived_at }}</span>
+                                            <span class="font-semibold text-slate-700">
+                                                {{ $visit->arrived_at ? $visit->arrived_at->timezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB' : '-' }}
+                                            </span>
                                         </div>
                                         @if ($visit->completed_at)
                                             <div>
                                                 Selesai:
-                                                <span
-                                                    class="font-semibold text-slate-700">{{ $visit->completed_at }}</span>
+                                                <span class="font-semibold text-slate-700">
+                                                    {{ $visit->completed_at ? $visit->completed_at->timezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB' : '-' }}
+                                                </span>
                                             </div>
                                         @endif
 
