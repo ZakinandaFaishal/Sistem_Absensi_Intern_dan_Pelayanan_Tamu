@@ -39,6 +39,13 @@ class AuthenticatedSessionController extends Controller
 
         $isAdminAreaUser = in_array($role, ['super_admin', 'admin_dinas'], true);
 
+        if (!$isAdminAreaUser && ($user->role ?? null) === 'intern' && (bool) ($user->must_change_password ?? false)) {
+            $request->session()->forget('url.intended');
+            return redirect()
+                ->route('intern.userProfile')
+                ->with('status', 'Silakan ganti password terlebih dahulu.');
+        }
+
         // Never send non-admin users into the admin area, even if they previously visited an /admin URL.
         if (!$isAdminAreaUser && $intendedPath !== '' && str_starts_with($intendedPath, '/admin')) {
             $request->session()->forget('url.intended');

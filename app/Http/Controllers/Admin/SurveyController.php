@@ -18,6 +18,32 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class SurveyController extends Controller
 {
+    private function scopeByDinas(Request $request, $builder): void
+    {
+        $actor = $request->user();
+        $role = (string) ($actor?->role ?? '');
+
+        if ($role === 'admin_dinas') {
+            $actorDinasId = (int) ($actor->dinas_id ?? 0);
+            if ($actorDinasId > 0) {
+                $builder->whereHas('visit', fn($v) => $v->where('dinas_id', $actorDinasId));
+            } else {
+                $builder->whereRaw('1=0');
+            }
+            return;
+        }
+
+        if ($role === 'super_admin') {
+            $dinasId = (int) $request->query('dinas_id', 0);
+            if ($dinasId > 0) {
+                $builder->whereHas('visit', fn($v) => $v->where('dinas_id', $dinasId));
+            }
+            return;
+        }
+
+        abort(403);
+    }
+
     public function index(Request $request)
     {
         $user = $request->user();
@@ -324,6 +350,7 @@ class SurveyController extends Controller
         };
 
         $summaryQuery = GuestSurvey::query()->with('visit');
+        $this->scopeByDinas($request, $summaryQuery);
         $applyFilters($summaryQuery);
         $summaryQuery
             ->whereNotNull('q1')
@@ -426,6 +453,14 @@ class SurveyController extends Controller
 
     public function exportDetailCsv(Request $request)
     {
+        $actor = $request->user();
+        $role = (string) ($actor?->role ?? '');
+        $actorDinasId = (int) ($actor->dinas_id ?? 0);
+        $dinasIdFilter = (int) $request->query('dinas_id', 0);
+        if (!in_array($role, ['super_admin', 'admin_dinas'], true)) {
+            abort(403);
+        }
+
         $q = trim((string) $request->query('q', ''));
         $avgMin = (string) $request->query('avg_min', '');
         $from = (string) $request->query('from', '');
@@ -469,7 +504,7 @@ class SurveyController extends Controller
 
         $filename = 'detail-survey-' . now()->format('Ymd-His') . '.csv';
 
-        return response()->streamDownload(function () use ($applyFilters) {
+        return response()->streamDownload(function () use ($applyFilters, $role, $actorDinasId, $dinasIdFilter) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF");
 
@@ -516,6 +551,16 @@ class SurveyController extends Controller
                     'guest_visits.service_type',
                 ])
                 ->orderBy('guest_surveys.id', 'asc');
+
+            if ($role === 'admin_dinas') {
+                if ($actorDinasId > 0) {
+                    $query->where('guest_visits.dinas_id', $actorDinasId);
+                } else {
+                    $query->whereRaw('1=0');
+                }
+            } elseif ($dinasIdFilter > 0) {
+                $query->where('guest_visits.dinas_id', $dinasIdFilter);
+            }
 
             $applyFilters($query);
 
@@ -617,6 +662,7 @@ class SurveyController extends Controller
 
         // IKM summary
         $summaryQuery = GuestSurvey::query()->with('visit');
+        $this->scopeByDinas($request, $summaryQuery);
         $applyFilters($summaryQuery);
         $summaryQuery
             ->whereNotNull('q1')
@@ -667,6 +713,7 @@ class SurveyController extends Controller
         // Detail rows (limit to keep PDF size sane)
         $maxRows = 200;
         $rowsQuery = GuestSurvey::query()->with('visit')->orderBy('submitted_at', 'desc');
+        $this->scopeByDinas($request, $rowsQuery);
         $applyFilters($rowsQuery);
         $surveys = $rowsQuery->limit($maxRows)->get();
 
@@ -750,6 +797,7 @@ class SurveyController extends Controller
         };
 
         $summaryQuery = GuestSurvey::query()->with('visit');
+        $this->scopeByDinas($request, $summaryQuery);
         $applyFilters($summaryQuery);
         $summaryQuery
             ->whereNotNull('q1')
@@ -876,6 +924,7 @@ class SurveyController extends Controller
 
         $maxRows = 5000;
         $rowsQuery = GuestSurvey::query()->with('visit')->orderBy('submitted_at', 'desc');
+        $this->scopeByDinas($request, $rowsQuery);
         $applyFilters($rowsQuery);
         $surveys = $rowsQuery->limit($maxRows)->get();
 

@@ -19,6 +19,10 @@
         $isAuthed = auth()->check();
         $role = auth()->user()->role ?? null;
 
+        $actor = auth()->user();
+        $actor?->loadMissing('dinas');
+        $orgName = $actor && ($actor->role ?? null) === 'admin_dinas' ? $actor->dinas?->name ?? 'SIMANTA' : 'SIMANTA';
+
         if (!$isAuthed) {
             $absensiUrl = route('login');
             $absensiLabel = 'Login untuk Presensi';
@@ -91,7 +95,7 @@
             <div
                 class="mx-auto flex min-h-[calc(100vh-84px)] max-w-3xl flex-col items-center justify-center text-center">
                 <h1 class="font-serif text-3xl sm:text-5xl md:text-6xl text-white drop-shadow tracking-wide">
-                    Dinas Komunikasi &amp; Informatika
+                    {{ $orgName }}
                 </h1>
 
                 <p class="mt-2 text-white/90 text-sm sm:text-base tracking-wide">

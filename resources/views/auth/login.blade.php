@@ -38,19 +38,12 @@
                                 <x-icon name="user" class="h-5 w-5" />
                             </span>
 
-                            <x-text-input
-                                id="email"
-                                name="email"
-                                type="text"
-                                value="{{ old('email') }}"
-                                required
-                                autofocus
-                                autocomplete="username"
+                            <x-text-input id="email" name="email" type="text" value="{{ old('email') }}"
+                                required autofocus autocomplete="username"
                                 placeholder="email@domain.com / username / 16 digit NIK"
                                 class="block w-full pl-10 rounded-xl
                                        border-white/14 bg-slate-950/25 text-white placeholder:text-white/40
-                                       focus:border-white/25 focus:ring-white/20"
-                            />
+                                       focus:border-white/25 focus:ring-white/20" />
                         </div>
                         <x-input-error class="mt-2 text-red-200" :messages="$errors->get('email')" />
                     </div>
@@ -63,17 +56,11 @@
                                 <x-icon name="lock-closed" class="h-5 w-5" />
                             </span>
 
-                            <x-text-input
-                                id="password"
-                                name="password"
-                                type="password"
-                                required
-                                autocomplete="current-password"
-                                placeholder="••••••••"
+                            <x-text-input id="password" name="password" type="password" required
+                                autocomplete="current-password" placeholder="••••••••"
                                 class="block w-full pl-10 rounded-xl
                                        border-white/14 bg-slate-950/25 text-white placeholder:text-white/40
-                                       focus:border-white/25 focus:ring-white/20"
-                            />
+                                       focus:border-white/25 focus:ring-white/20" />
                         </div>
                         <x-input-error class="mt-2 text-red-200" :messages="$errors->get('password')" />
                     </div>
@@ -81,12 +68,8 @@
                     {{-- Remember + Forgot --}}
                     <div class="flex items-center justify-between text-sm">
                         <label for="remember_me" class="inline-flex items-center text-white/80">
-                            <input
-                                id="remember_me"
-                                type="checkbox"
-                                name="remember"
-                                class="rounded border-white/30 bg-slate-950/20 text-white focus:ring-white/40"
-                            >
+                            <input id="remember_me" type="checkbox" name="remember"
+                                class="rounded border-white/30 bg-slate-950/20 text-white focus:ring-white/40">
                             <span class="ms-2">Remember me</span>
                         </label>
 
@@ -101,26 +84,19 @@
             </section>
 
             {{-- Action --}}
-            <button
-                type="submit"
+            <button type="submit"
                 class="w-full inline-flex items-center justify-center rounded-xl
                        bg-slate-950/35 px-5 py-3 text-base font-semibold text-white
                        border border-white/16 shadow-xl backdrop-blur-md
                        hover:bg-slate-950/45 hover:-translate-y-0.5 transition duration-200
-                       focus:outline-none focus:ring-2 focus:ring-white/35"
-            >
+                       focus:outline-none focus:ring-2 focus:ring-white/35">
                 Login
             </button>
 
             {{-- Register --}}
-            @if (Route::has('register'))
-                <p class="text-center text-sm text-white/75">
-                    Belum punya akun?
-                    <a href="{{ route('register') }}" class="font-semibold text-white underline hover:text-white/90">
-                        Registrasi di sini
-                    </a>
-                </p>
-            @endif
+            <p class="text-center text-sm text-white/75">
+                Belum punya akun? Hubungi admin untuk dibuatkan akun.
+            </p>
         </form>
 
         {{-- Footer --}}

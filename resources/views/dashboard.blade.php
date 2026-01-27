@@ -336,63 +336,179 @@
         </div>
     </div>
 
-    {{-- TABLE SECTION --}}
-    <section class="fade-up mt-4 relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm">
-        <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-50 via-transparent to-transparent">
-        </div>
+    {{-- AKTIVITAS TERBARU --}}
+    @php
+        $tz = 'Asia/Jakarta';
+    @endphp
+    <section class="fade-up mt-4 grid grid-cols-1 xl:grid-cols-3 gap-4">
+        {{-- Tamu --}}
+        <div class="relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm">
+            <div
+                class="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-transparent to-transparent">
+            </div>
 
-        <div class="relative p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h3 class="text-base font-extrabold tracking-tight text-slate-900">Ringkasan Data</h3>
-                <p class="text-sm text-slate-500">Akses cepat modul admin.</p>
+            <div class="relative p-5 flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                    <h3 class="text-base font-extrabold tracking-tight text-slate-900">Tamu Terbaru</h3>
+                    <p class="text-sm text-slate-500">Update kunjungan terakhir.</p>
+                </div>
+                <a href="{{ route('admin.guest.index') }}"
+                    class="soft-ring inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    Lihat semua
+                    <x-icon name="arrow-right" class="h-4 w-4" />
+                </a>
+            </div>
+
+            <div class="relative px-5 pb-5">
+                @if (($recentGuestVisits ?? collect())->isEmpty())
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
+                        Belum ada data kunjungan.
+                    </div>
+                @else
+                    <ul class="space-y-2">
+                        @foreach ($recentGuestVisits as $visit)
+                            @php
+                                $arrived = $visit->arrived_at
+                                    ? $visit->arrived_at->timezone($tz)->format('d M Y H:i') . ' WIB'
+                                    : '-';
+                                $status = $visit->completed_at ? 'Selesai' : 'Aktif';
+                                $badge = $visit->completed_at
+                                    ? 'bg-slate-100 text-slate-700'
+                                    : 'bg-emerald-100 text-emerald-700';
+                            @endphp
+                            <li
+                                class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                <div class="min-w-0">
+                                    <div class="truncate text-sm font-semibold text-slate-900">{{ $visit->name }}</div>
+                                    <div
+                                        class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500">
+                                        <span>{{ $arrived }}</span>
+                                        <span class="opacity-50">•</span>
+                                        <span class="truncate">{{ $visit->dinas?->name ?? '—' }}</span>
+                                    </div>
+                                </div>
+                                <span
+                                    class="shrink-0 inline-flex rounded-full px-3 py-1 text-[11px] font-semibold {{ $badge }}">
+                                    {{ $status }}
+                                </span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
             </div>
         </div>
 
-        <div class="relative overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="bg-slate-50 text-slate-600">
-                    <tr class="text-left">
-                        <th class="px-5 py-3 font-semibold">No</th>
-                        <th class="px-5 py-3 font-semibold">Modul</th>
-                        <th class="px-5 py-3 font-semibold">Keterangan</th>
-                        <th class="px-5 py-3 font-semibold">Status</th>
-                        <th class="px-5 py-3 font-semibold text-right">Aksi</th>
-                    </tr>
-                </thead>
+        {{-- Survey --}}
+        <div class="relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm">
+            <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-50 via-transparent to-transparent">
+            </div>
 
-                <tbody class="divide-y divide-slate-200">
-                    @php
-                        $rows = [
-                            [1, 'Presensi', 'Lihat riwayat check-in/out', route('admin.attendance.index')],
-                            [2, 'Buku Tamu', 'Data kunjungan & keperluan', route('admin.guest.index')],
-                            [3, 'Survey', 'Rekap penilaian layanan', route('admin.survey.index')],
-                            [4, 'Users', 'Kelola akun & role', route('admin.users.index')],
-                        ];
-                    @endphp
+            <div class="relative p-5 flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                    <h3 class="text-base font-extrabold tracking-tight text-slate-900">Survey Terbaru</h3>
+                    <p class="text-sm text-slate-500">Masukan terbaru dari tamu.</p>
+                </div>
+                <a href="{{ route('admin.survey.index') }}"
+                    class="soft-ring inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    Lihat semua
+                    <x-icon name="arrow-right" class="h-4 w-4" />
+                </a>
+            </div>
 
-                    @foreach ($rows as [$no, $modul, $desc, $link])
-                        <tr class="group hover:bg-slate-50/80 transition">
-                            <td class="px-5 py-4">{{ $no }}</td>
-                            <td class="px-5 py-4 font-semibold text-slate-900">{{ $modul }}</td>
-                            <td class="px-5 py-4 text-slate-600">{{ $desc }}</td>
-                            <td class="px-5 py-4">
+            <div class="relative px-5 pb-5">
+                @if (($recentSurveys ?? collect())->isEmpty())
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
+                        Belum ada data survey.
+                    </div>
+                @else
+                    <ul class="space-y-2">
+                        @foreach ($recentSurveys as $survey)
+                            @php
+                                $submitted = $survey->submitted_at
+                                    ? $survey->submitted_at->timezone($tz)->format('d M Y H:i') . ' WIB'
+                                    : '-';
+                                $rating = (int) ($survey->rating ?? 0);
+                            @endphp
+                            <li
+                                class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                <div class="min-w-0">
+                                    <div class="truncate text-sm font-semibold text-slate-900">
+                                        {{ $survey->visit?->name ?? '—' }}
+                                    </div>
+                                    <div
+                                        class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500">
+                                        <span>{{ $submitted }}</span>
+                                        <span class="opacity-50">•</span>
+                                        <span class="truncate">{{ $survey->visit?->dinas?->name ?? '—' }}</span>
+                                    </div>
+                                </div>
                                 <span
-                                    class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                                    Aktif
+                                    class="shrink-0 inline-flex items-center gap-1 rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold text-sky-700">
+                                    <x-icon name="star" class="h-3.5 w-3.5" />
+                                    {{ $rating }}/5
                                 </span>
-                            </td>
-                            <td class="px-5 py-4 text-right">
-                                <a href="{{ $link }}"
-                                    class="soft-ring btn-shine inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white
-                                      transition duration-200 hover:bg-slate-800 active:scale-[0.98]">
-                                    <span>Buka</span>
-                                    <span class="inline-block transition group-hover:translate-x-0.5">→</span>
-                                </a>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </div>
+
+        {{-- Presensi --}}
+        <div class="relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm">
+            <div
+                class="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-50 via-transparent to-transparent">
+            </div>
+
+            <div class="relative p-5 flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                    <h3 class="text-base font-extrabold tracking-tight text-slate-900">Presensi Terbaru</h3>
+                    <p class="text-sm text-slate-500">Check-in/out terbaru.</p>
+                </div>
+                <a href="{{ route('admin.attendance.index') }}"
+                    class="soft-ring inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    Lihat semua
+                    <x-icon name="arrow-right" class="h-4 w-4" />
+                </a>
+            </div>
+
+            <div class="relative px-5 pb-5">
+                @if (($recentAttendances ?? collect())->isEmpty())
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
+                        Belum ada data presensi.
+                    </div>
+                @else
+                    <ul class="space-y-2">
+                        @foreach ($recentAttendances as $att)
+                            @php
+                                $in = $att->check_in_at ? $att->check_in_at->timezone($tz)->format('d M H:i') : '-';
+                                $out = $att->check_out_at ? $att->check_out_at->timezone($tz)->format('H:i') : null;
+                                $status = $att->check_out_at ? 'Closed' : 'Open';
+                                $badge = $att->check_out_at
+                                    ? 'bg-slate-100 text-slate-700'
+                                    : 'bg-indigo-100 text-indigo-700';
+                            @endphp
+                            <li
+                                class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                <div class="min-w-0">
+                                    <div class="truncate text-sm font-semibold text-slate-900">
+                                        {{ $att->user?->name ?? '—' }}</div>
+                                    <div
+                                        class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500">
+                                        <span>{{ $in }}{{ $out ? '–' . $out : '' }} WIB</span>
+                                        <span class="opacity-50">•</span>
+                                        <span class="truncate">{{ $att->location?->name ?? '—' }}</span>
+                                    </div>
+                                </div>
+                                <span
+                                    class="shrink-0 inline-flex rounded-full px-3 py-1 text-[11px] font-semibold {{ $badge }}">
+                                    {{ $status }}
+                                </span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
         </div>
     </section>
 

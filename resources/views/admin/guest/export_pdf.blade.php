@@ -128,7 +128,9 @@
                 @endphp
 
                 <tr>
-                    <td class="nowrap">{{ optional($v->arrived_at)->format('Y-m-d H:i') }}</td>
+                    <td class="nowrap">
+                        {{ $v->arrived_at ? $v->arrived_at->timezone('Asia/Jakarta')->format('Y-m-d H:i') . ' WIB' : '-' }}
+                    </td>
 
                     <td class="wrap">
                         <div><strong>{{ $nameLabel }}</strong></div>

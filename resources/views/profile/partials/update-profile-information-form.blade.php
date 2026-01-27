@@ -44,7 +44,7 @@
         <div class="flex items-center gap-3">
             <div
                 class="h-10 w-10 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center shadow">
-                <x-icon name="identification" class="h-5 w-5" />
+                <x-icon name="users" class="h-5 w-5" />
             </div>
             <div>
                 <h2 class="text-base font-extrabold text-white">
@@ -98,6 +98,17 @@
                         @endif
                     </div>
                 @endif
+            </div>
+
+            <div>
+                <x-input-label for="epikir_letter_token" value="Token Surat e-Pikir (opsional)" class="text-white/80" />
+                <x-text-input id="epikir_letter_token" name="epikir_letter_token" type="text"
+                    class="mt-1 block w-full !rounded-xl !border-white/15 !bg-white/10 !text-white placeholder:!text-white/40 focus:!border-white/30 focus:!ring-white/20"
+                    :value="old('epikir_letter_token', $user->epikir_letter_token)" placeholder="Masukkan token/nomor surat dari e-Pikir untuk validasi" />
+                <x-input-error class="mt-2 text-rose-200" :messages="$errors->get('epikir_letter_token')" />
+                <p class="mt-1 text-xs text-white/60">
+                    Isi saat diminta untuk handshake/validasi pendaftaran magang dari e-Pikir.
+                </p>
             </div>
 
             <div class="flex flex-col sm:flex-row sm:items-center gap-3">
