@@ -44,7 +44,7 @@
         <div class="flex items-center gap-3">
             <div
                 class="h-10 w-10 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center shadow">
-                <x-icon name="identification" class="h-5 w-5" />
+                <x-icon name="users" class="h-5 w-5" />
             </div>
             <div>
                 <h2 class="text-base font-extrabold text-white">
