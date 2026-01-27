@@ -66,12 +66,25 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        $location = Location::query()
+            ->select(['id', 'dinas_id'])
+            ->findOrFail((int) $request->internship_location_id);
+
+        if (($location->dinas_id ?? null) === null) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'internship_location_id' => 'Lokasi magang belum terhubung ke dinas. Silakan pilih lokasi lain atau hubungi admin.',
+                ]);
+        }
+
         $user = User::create([
             'name' => $request->name,
             'nik' => $request->nik,
             'phone' => $request->phone,
             'username' => Str::lower($request->username),
             'email' => $request->email,
+            'dinas_id' => (int) $location->dinas_id,
             'internship_start_date' => $request->internship_start_date,
             'internship_end_date' => $request->internship_end_date,
             'internship_location_id' => (int) $request->internship_location_id,

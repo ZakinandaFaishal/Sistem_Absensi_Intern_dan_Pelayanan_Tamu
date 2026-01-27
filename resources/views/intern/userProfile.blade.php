@@ -172,7 +172,7 @@
                     <div class="lg:col-span-5 rounded-[22px] border border-white/12 bg-white/8 p-5 sm:p-6">
                         <div class="flex items-center gap-3">
                             <div class="h-11 w-11 rounded-2xl bg-white/10 border border-white/12 flex items-center justify-center">
-                                <x-icon name="identification" class="h-5 w-5 text-white/80" />
+                                <x-icon name="users" class="h-5 w-5 text-white/80" />
                             </div>
                             <div class="min-w-0">
                                 <p class="text-sm font-extrabold text-white truncate">Identitas</p>

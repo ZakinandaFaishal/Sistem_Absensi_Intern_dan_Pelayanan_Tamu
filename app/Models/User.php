@@ -33,12 +33,14 @@ class User extends Authenticatable
         'internship_start_date',
         'internship_end_date',
         'internship_location_id',
+        'epikir_letter_token',
         'score_override',
         'score_override_note',
         'final_evaluation',
         'final_evaluation_at',
         'certificate_signatory_name',
         'certificate_signatory_title',
+        'must_change_password',
     ];
 
     /**
@@ -62,6 +64,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'active' => 'boolean',
+            'must_change_password' => 'boolean',
             'score_override' => 'integer',
             'internship_start_date' => 'date',
             'internship_end_date' => 'date',

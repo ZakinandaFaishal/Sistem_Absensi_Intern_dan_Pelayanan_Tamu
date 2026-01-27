@@ -368,15 +368,50 @@ class UserController extends Controller
 
     public function exportPdf(Request $request)
     {
-        $users = User::query()
+        $actor = $request->user();
+        $q = trim((string) $request->query('q', ''));
+        $role = (string) $request->query('role', '');
+        $dinasIdFilter = (int) $request->query('dinas_id', 0);
+
+        $usersQuery = User::query()
             ->withCount([
                 'attendances as attended_days' => function ($query) {
                     $query->where('is_fake_gps', false);
                     $query->select(DB::raw('count(distinct `date`)'));
                 },
             ])
-            ->orderBy('name')
-            ->get();
+            ->orderBy('name');
+
+        // admin_dinas hanya export intern di dinasnya.
+        if (($actor?->role ?? null) === 'admin_dinas') {
+            $actorDinasId = (int) ($actor->dinas_id ?? 0);
+            if ($actorDinasId > 0) {
+                $usersQuery->where('role', 'intern')->where('dinas_id', $actorDinasId);
+            } else {
+                $usersQuery->whereRaw('1=0');
+            }
+        } elseif (($actor?->role ?? null) === 'super_admin') {
+            if ($role !== '' && in_array($role, ['intern', 'admin_dinas', 'super_admin'], true)) {
+                $usersQuery->where('role', $role);
+            }
+            if ($dinasIdFilter > 0) {
+                $usersQuery->where('dinas_id', $dinasIdFilter);
+            }
+        } else {
+            abort(403);
+        }
+
+        if ($q !== '') {
+            $usersQuery->where(function ($w) use ($q) {
+                $w->where('name', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%")
+                    ->orWhere('username', 'like', "%{$q}%")
+                    ->orWhere('nik', 'like', "%{$q}%")
+                    ->orWhere('phone', 'like', "%{$q}%");
+            });
+        }
+
+        $users = $usersQuery->get();
 
         $users->transform(function (User $user) {
             if (($user->role ?? 'intern') !== 'intern') {
@@ -433,15 +468,49 @@ class UserController extends Controller
 
     public function exportExcel(Request $request)
     {
-        $users = User::query()
+        $actor = $request->user();
+        $q = trim((string) $request->query('q', ''));
+        $role = (string) $request->query('role', '');
+        $dinasIdFilter = (int) $request->query('dinas_id', 0);
+
+        $usersQuery = User::query()
             ->withCount([
                 'attendances as attended_days' => function ($query) {
                     $query->where('is_fake_gps', false);
                     $query->select(DB::raw('count(distinct `date`)'));
                 },
             ])
-            ->orderBy('name')
-            ->get();
+            ->orderBy('name');
+
+        if (($actor?->role ?? null) === 'admin_dinas') {
+            $actorDinasId = (int) ($actor->dinas_id ?? 0);
+            if ($actorDinasId > 0) {
+                $usersQuery->where('role', 'intern')->where('dinas_id', $actorDinasId);
+            } else {
+                $usersQuery->whereRaw('1=0');
+            }
+        } elseif (($actor?->role ?? null) === 'super_admin') {
+            if ($role !== '' && in_array($role, ['intern', 'admin_dinas', 'super_admin'], true)) {
+                $usersQuery->where('role', $role);
+            }
+            if ($dinasIdFilter > 0) {
+                $usersQuery->where('dinas_id', $dinasIdFilter);
+            }
+        } else {
+            abort(403);
+        }
+
+        if ($q !== '') {
+            $usersQuery->where(function ($w) use ($q) {
+                $w->where('name', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%")
+                    ->orWhere('username', 'like', "%{$q}%")
+                    ->orWhere('nik', 'like', "%{$q}%")
+                    ->orWhere('phone', 'like', "%{$q}%");
+            });
+        }
+
+        $users = $usersQuery->get();
 
         $users->transform(function (User $user) {
             if (($user->role ?? 'intern') !== 'intern') {
@@ -571,12 +640,31 @@ class UserController extends Controller
             'internship_location_id' => ['nullable', 'integer', 'exists:locations,id'],
             'score_override' => ['nullable', 'integer', 'min:0', 'max:100'],
             'score_override_note' => ['nullable', 'string', 'max:255'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['nullable', 'string', 'min:8'],
         ]);
+
+        $tempPassword = null;
+        $password = (string) ($validated['password'] ?? '');
+        if ($password === '') {
+            $tempPassword = Str::password(12);
+            $password = $tempPassword;
+        }
 
         $internStatus = ($validated['role'] === 'intern')
             ? ($validated['intern_status'] ?? 'aktif')
             : 'aktif';
+
+        $internLocationId = ($validated['role'] === 'intern') ? (int) ($validated['internship_location_id'] ?? 0) : 0;
+        $internDinasId = null;
+        if ($validated['role'] === 'intern' && $internLocationId > 0) {
+            $loc = Location::query()->select(['id', 'dinas_id'])->findOrFail($internLocationId);
+            if (($loc->dinas_id ?? null) === null) {
+                return back()->withErrors([
+                    'internship_location_id' => 'Lokasi magang belum terhubung ke dinas. Silakan perbaiki data lokasi dulu.',
+                ])->withInput();
+            }
+            $internDinasId = (int) $loc->dinas_id;
+        }
 
         User::query()->create([
             'name' => $validated['name'],
@@ -585,7 +673,9 @@ class UserController extends Controller
             'username' => Str::lower($validated['username']),
             'email' => $validated['email'],
             'role' => $validated['role'],
-            'dinas_id' => ($validated['role'] === 'admin_dinas') ? (int) $validated['dinas_id'] : null,
+            'dinas_id' => ($validated['role'] === 'admin_dinas')
+                ? (int) $validated['dinas_id']
+                : $internDinasId,
             'active' => (bool) ($validated['active'] ?? true),
             'intern_status' => $internStatus,
             'internship_start_date' => ($validated['role'] === 'intern') ? ($validated['internship_start_date'] ?? null) : null,
@@ -593,10 +683,16 @@ class UserController extends Controller
             'internship_location_id' => ($validated['role'] === 'intern') ? ($validated['internship_location_id'] ?? null) : null,
             'score_override' => ($validated['role'] === 'intern') ? ($validated['score_override'] ?? null) : null,
             'score_override_note' => ($validated['role'] === 'intern') ? ($validated['score_override_note'] ?? null) : null,
-            'password' => $validated['password'],
+            'must_change_password' => ($validated['role'] === 'intern'),
+            'password' => $password,
         ]);
 
-        return back()->with('status', 'User berhasil ditambahkan.');
+        $msg = 'User berhasil ditambahkan.';
+        if ($tempPassword !== null) {
+            $msg .= ' Password sementara: ' . $tempPassword;
+        }
+
+        return back()->with('status', $msg);
     }
 
     public function update(Request $request, User $user)
@@ -623,6 +719,19 @@ class UserController extends Controller
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
+        if (($validated['role'] ?? null) === 'intern') {
+            $internLocationId = (int) ($validated['internship_location_id'] ?? 0);
+            if ($internLocationId > 0) {
+                $loc = Location::query()->select(['id', 'dinas_id'])->findOrFail($internLocationId);
+                if (($loc->dinas_id ?? null) === null) {
+                    return back()->withErrors([
+                        'internship_location_id' => 'Lokasi magang belum terhubung ke dinas. Silakan perbaiki data lokasi dulu.',
+                    ])->withInput();
+                }
+                $validated['dinas_id'] = (int) $loc->dinas_id;
+            }
+        }
+
         if (($request->user()?->id === $user->id) && ($validated['role'] ?? null) !== ($user->role ?? 'intern')) {
             return back()->withErrors([
                 'role' => 'Tidak bisa mengubah role akun sendiri.',
@@ -642,7 +751,9 @@ class UserController extends Controller
             'username' => Str::lower($validated['username']),
             'email' => $validated['email'],
             'role' => $validated['role'],
-            'dinas_id' => ($validated['role'] === 'admin_dinas') ? (int) ($validated['dinas_id'] ?? 0) : null,
+            'dinas_id' => ($validated['role'] === 'admin_dinas')
+                ? (int) ($validated['dinas_id'] ?? 0)
+                : (($validated['role'] === 'intern') ? ((int) ($validated['dinas_id'] ?? 0) ?: null) : null),
         ];
 
         if (array_key_exists('active', $validated)) {
@@ -706,9 +817,23 @@ class UserController extends Controller
             'dinas_id' => ['nullable', 'integer', 'exists:dinas,id', 'required_if:role,admin_dinas'],
         ]);
 
+        $dinasId = null;
+        if (($validated['role'] ?? null) === 'admin_dinas') {
+            $dinasId = (int) ($validated['dinas_id'] ?? 0);
+        } elseif (($validated['role'] ?? null) === 'intern') {
+            $dinasId = (int) ($user->dinas_id ?? 0);
+            if ($dinasId <= 0 && !empty($user->internship_location_id)) {
+                $loc = Location::query()->select(['id', 'dinas_id'])->find((int) $user->internship_location_id);
+                if ($loc && ($loc->dinas_id ?? null) !== null) {
+                    $dinasId = (int) $loc->dinas_id;
+                }
+            }
+            $dinasId = $dinasId > 0 ? $dinasId : null;
+        }
+
         $user->forceFill([
             'role' => $validated['role'],
-            'dinas_id' => ($validated['role'] === 'admin_dinas') ? (int) ($validated['dinas_id'] ?? 0) : null,
+            'dinas_id' => $dinasId,
         ])->save();
 
         return back()->with('status', 'Role user berhasil diperbarui.');

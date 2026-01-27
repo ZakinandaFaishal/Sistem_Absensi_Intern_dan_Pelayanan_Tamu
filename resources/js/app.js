@@ -43,6 +43,25 @@ async function setupKioskQr() {
 
 setupKioskQr();
 
+async function setupStaticQrCanvases() {
+	const canvases = document.querySelectorAll('canvas[data-qr-text]');
+	if (!canvases.length) return;
+
+	for (const canvas of canvases) {
+		const text = String(canvas.dataset.qrText || '').trim();
+		if (!text) continue;
+
+		const width = Number(canvas.dataset.qrWidth || '220') || 220;
+		try {
+			await QRCode.toCanvas(canvas, text, { width, margin: 1 });
+		} catch {
+			// ignore
+		}
+	}
+}
+
+setupStaticQrCanvases();
+
 function setupAttendanceQrScanner() {
 	const container = document.getElementById('attendance-qr-reader');
 	if (!container) return;

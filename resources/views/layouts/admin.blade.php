@@ -31,17 +31,18 @@
             <div class="flex h-full flex-col">
 
                 {{-- Brand --}}
-                <div class="relative flex items-center gap-3 px-4 py-4 border-b border-white/10">
+                <div class="relative flex items-center gap-3 px-4 py-5 border-b border-white/10">
                     <div
-                        class="h-10 w-10 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center overflow-hidden">
-                        <img src="{{ asset('img/logo_kab_mgl.png') }}" alt="Logo" class="h-7 w-7 object-contain">
+                        class="h-12 w-12 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                        <img src="{{ asset('img/logo_kab_mgl.png') }}" alt="Logo" class="h-8 w-8 object-contain">
                     </div>
 
-                    <div class="leading-tight">
-                        <p class="text-sm font-semibold leading-tight">SIMANTA</p>
-                        <p class="text-[11px] text-white/70 leading-tight">Sistem Informasi Manajemen Magang &amp; Tamu
+                    <div class="min-w-0 leading-snug">
+                        <p class="text-sm font-semibold leading-snug">SIMANTA</p>
+                        <p class="mt-0.5 text-xs text-white/70 leading-snug whitespace-normal">
+                            Sistem Informasi Manajemen Magang &amp; Tamu
                         </p>
-                        <p class="text-xs text-white/60">
+                        <p class="mt-0.5 text-xs text-white/60 truncate">
                             {{ $user && ($user->role ?? null) === 'admin_dinas' ? $user->dinas?->name ?? '—' : 'Kabupaten Magelang' }}
                         </p>
                     </div>
@@ -134,21 +135,21 @@
                                 <button type="button" @click="open = !open"
                                     class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold transition
                                     {{ request()->routeIs('admin.guest.*') ? 'bg-white/10 text-white' : 'text-white/85 hover:bg-white/10 hover:text-white' }}">
-                                <span class="flex items-center gap-3">
-                                    <x-icon name="book-open" class="h-5 w-5" />
-                                    Buku Tamu
-                                </span>
+                                    <span class="flex items-center gap-3">
+                                        <x-icon name="book-open" class="h-5 w-5" />
+                                        Buku Tamu
+                                    </span>
 
-                                <span class="inline-flex items-center gap-2 text-[11px] text-white/55">
-                                    <span>Menu</span>
-                                    <span class="transition"
-                                          :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">▾</span>
-                                </span>
-                            </button>
+                                    <span class="inline-flex items-center gap-2 text-[11px] text-white/55">
+                                        <span>Menu</span>
+                                        <span class="transition"
+                                            :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">▾</span>
+                                    </span>
+                                </button>
 
-                            <div x-show="open" x-transition.opacity class="px-2 pb-2" style="display:none;">
-                                <a href="{{ route('admin.guest.index') }}"
-                                   class="mt-1 flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition
+                                <div x-show="open" x-transition.opacity class="px-2 pb-2" style="display:none;">
+                                    <a href="{{ route('admin.guest.index') }}"
+                                        class="mt-1 flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition
                                    {{ request()->routeIs('admin.guest.index') ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white' }}">
                                         <span>Log Buku Tamu</span>
                                         <span class="text-white/45">/admin/tamu</span>

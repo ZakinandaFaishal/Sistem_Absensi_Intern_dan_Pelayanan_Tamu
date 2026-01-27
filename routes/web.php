@@ -103,6 +103,43 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_dinas', 'admin_di
         Route::post('/users/{user}/complete-internship', [AdminUserController::class, 'completeInternship'])->name('users.complete-internship');
         Route::get('/users/{user}/certificate.pdf', [AdminUserController::class, 'certificatePdf'])->name('users.certificate.pdf');
 
+        // ======================================================
+        // EXPORT - USERS / SURVEY / BUKU TAMU / PRESENSI
+        // (super_admin + admin_dinas; data dibatasi per dinas di controller)
+        // ======================================================
+        Route::get('/users/export/excel', [AdminUserController::class, 'exportExcel'])
+            ->name('users.export.excel');
+
+        Route::get('/users/export/pdf', [AdminUserController::class, 'exportPdf'])
+            ->name('users.export.pdf');
+
+        Route::get('/survey/export/excel', [AdminSurveyController::class, 'exportExcel'])
+            ->name('survey.export.excel');
+
+        Route::get('/survey/export/pdf', [AdminSurveyController::class, 'exportPdf'])
+            ->name('survey.export.pdf');
+
+        Route::get('/survey/export/ikm.pdf', [AdminSurveyController::class, 'exportIkmPdf'])
+            ->name('survey.export.ikm.pdf');
+
+        Route::get('/survey/export/ikm.csv', [AdminSurveyController::class, 'exportIkmCsv'])
+            ->name('survey.export.ikm.csv');
+
+        Route::get('/survey/export/detail.csv', [AdminSurveyController::class, 'exportDetailCsv'])
+            ->name('survey.export.detail.csv');
+
+        Route::get('/tamu/export/excel', [GuestVisitController::class, 'exportExcel'])
+            ->name('guest.export.excel');
+
+        Route::get('/tamu/export/pdf', [GuestVisitController::class, 'exportPdf'])
+            ->name('guest.export.pdf');
+
+        Route::get('/presensi/export/excel', [AdminAttendanceController::class, 'exportExcel'])
+            ->name('attendance.export.excel');
+
+        Route::get('/presensi/export/pdf', [AdminAttendanceController::class, 'exportPdf'])
+            ->name('attendance.export.pdf');
+
         // super_admin-only area
         Route::middleware(['role:super_admin'])->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
@@ -122,51 +159,6 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_dinas', 'admin_di
 
             Route::get('/export/pdf', [AdminDashboardController::class, 'exportPdf'])
                 ->name('export.pdf');
-
-            // ======================================================
-            // EXPORT - USERS (LAPORAN)
-            // ======================================================
-            Route::get('/users/export/excel', [AdminUserController::class, 'exportExcel'])
-                ->name('users.export.excel');
-
-            Route::get('/users/export/pdf', [AdminUserController::class, 'exportPdf'])
-                ->name('users.export.pdf');
-
-            // ======================================================
-            // EXPORT - SURVEY (LAPORAN)
-            // ======================================================
-            Route::get('/survey/export/excel', [AdminSurveyController::class, 'exportExcel'])
-                ->name('survey.export.excel');
-
-            Route::get('/survey/export/pdf', [AdminSurveyController::class, 'exportPdf'])
-                ->name('survey.export.pdf');
-
-            Route::get('/survey/export/ikm.pdf', [AdminSurveyController::class, 'exportIkmPdf'])
-                ->name('survey.export.ikm.pdf');
-
-            Route::get('/survey/export/ikm.csv', [AdminSurveyController::class, 'exportIkmCsv'])
-                ->name('survey.export.ikm.csv');
-
-            Route::get('/survey/export/detail.csv', [AdminSurveyController::class, 'exportDetailCsv'])
-                ->name('survey.export.detail.csv');
-
-            // ======================================================
-            // EXPORT - BUKU TAMU (LAPORAN)
-            // ======================================================
-            Route::get('/tamu/export/excel', [GuestVisitController::class, 'exportExcel'])
-                ->name('guest.export.excel');
-
-            Route::get('/tamu/export/pdf', [GuestVisitController::class, 'exportPdf'])
-                ->name('guest.export.pdf');
-
-            // ======================================================
-            // EXPORT - PRESENSI (LAPORAN)
-            // ======================================================
-            Route::get('/presensi/export/excel', [AdminAttendanceController::class, 'exportExcel'])
-                ->name('attendance.export.excel');
-
-            Route::get('/presensi/export/pdf', [AdminAttendanceController::class, 'exportPdf'])
-                ->name('attendance.export.pdf');
 
             // ======================================================
             // ROUTE UTAMA ADMIN
