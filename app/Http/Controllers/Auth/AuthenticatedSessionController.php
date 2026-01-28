@@ -39,11 +39,25 @@ class AuthenticatedSessionController extends Controller
 
         $isAdminAreaUser = in_array($role, ['super_admin', 'admin_dinas'], true);
 
-        if (!$isAdminAreaUser && ($user->role ?? null) === 'intern' && (bool) ($user->must_change_password ?? false)) {
-            $request->session()->forget('url.intended');
-            return redirect()
-                ->route('intern.userProfile')
-                ->with('status', 'Silakan ganti password terlebih dahulu.');
+        if (!$isAdminAreaUser && ($user->role ?? null) === 'intern') {
+            $needsPasswordChange = (bool) ($user->must_change_password ?? false);
+            $missingToken = trim((string) ($user->epikir_letter_token ?? '')) === '';
+
+            if ($needsPasswordChange || $missingToken) {
+                $request->session()->forget('url.intended');
+
+                $parts = [];
+                if ($needsPasswordChange) {
+                    $parts[] = 'ganti password';
+                }
+                if ($missingToken) {
+                    $parts[] = 'isi token nomor surat';
+                }
+
+                return redirect()
+                    ->route('intern.userProfile')
+                    ->with('status', 'Silakan lengkapi profil: ' . implode(' dan ', $parts) . '.');
+            }
         }
 
         // Never send non-admin users into the admin area, even if they previously visited an /admin URL.
@@ -53,7 +67,7 @@ class AuthenticatedSessionController extends Controller
 
         if ($isAdminAreaUser) {
             if ($role === 'admin_dinas') {
-                return redirect()->intended(route('admin.attendance.manage', absolute: false));
+                return redirect()->intended(route('admin.dashboard', absolute: false));
             }
 
             return redirect()->intended(route('admin.dashboard', absolute: false));

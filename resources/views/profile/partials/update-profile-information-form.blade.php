@@ -1,6 +1,7 @@
 <section class="relative overflow-hidden rounded-[22px] border border-white/12 bg-white/8 p-5 sm:p-6">
     {{-- top accent --}}
-    <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-400/60 via-fuchsia-400/55 to-emerald-400/55"></div>
+    <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-400/60 via-fuchsia-400/55 to-emerald-400/55">
+    </div>
 
     {{-- HEADER --}}
     <div class="flex items-center gap-3">
@@ -15,15 +16,10 @@
 
     {{-- TOAST INLINE (biar nyatu sama layout) --}}
     @if (session('status') === 'profile-updated' || session('status') === 'verification-link-sent')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition.opacity.duration.200ms
-            x-init="setTimeout(() => show = false, 2600)"
-            class="mt-4"
-            style="display:none;"
-        >
-            <div class="rounded-2xl border border-emerald-300/25 bg-emerald-400/12 px-4 py-3 text-sm text-emerald-100 flex items-start gap-2">
+        <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms x-init="setTimeout(() => show = false, 2600)"
+            class="mt-4" style="display:none;">
+            <div
+                class="rounded-2xl border border-emerald-300/25 bg-emerald-400/12 px-4 py-3 text-sm text-emerald-100 flex items-start gap-2">
                 <x-icon name="check-circle" class="h-5 w-5 mt-0.5" />
                 <div class="leading-snug text-white/95">
                     @if (session('status') === 'profile-updated')
@@ -53,42 +49,33 @@
 
             {{-- NAME --}}
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <x-input-label for="name" :value="__('Name')" class="text-[11px] uppercase tracking-wider text-white/70" />
-                <x-text-input
-                    id="name"
-                    name="name"
-                    type="text"
+                <x-input-label for="name" :value="__('Name')"
+                    class="text-[11px] uppercase tracking-wider text-white/70" />
+                <x-text-input id="name" name="name" type="text"
                     class="mt-2 block w-full !rounded-xl !border-white/10 !bg-white/5 !text-white
                            placeholder:!text-white/40 focus:!border-sky-300/25 focus:!ring-sky-200/20"
-                    :value="old('name', $user->name)"
-                    required autofocus autocomplete="name"
-                />
+                    :value="old('name', $user->name)" required autofocus autocomplete="name" />
                 <x-input-error class="mt-2 text-rose-100" :messages="$errors->get('name')" />
             </div>
 
             {{-- EMAIL --}}
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <x-input-label for="email" :value="__('Email')" class="text-[11px] uppercase tracking-wider text-white/70" />
-                <x-text-input
-                    id="email"
-                    name="email"
-                    type="email"
+                <x-input-label for="email" :value="__('Email')"
+                    class="text-[11px] uppercase tracking-wider text-white/70" />
+                <x-text-input id="email" name="email" type="email"
                     class="mt-2 block w-full !rounded-xl !border-white/10 !bg-white/5 !text-white
                            placeholder:!text-white/40 focus:!border-sky-300/25 focus:!ring-sky-200/20"
-                    :value="old('email', $user->email)"
-                    required autocomplete="username"
-                />
+                    :value="old('email', $user->email)" required autocomplete="username" />
                 <x-input-error class="mt-2 text-rose-100" :messages="$errors->get('email')" />
 
                 @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail())
                     <div class="mt-3 rounded-2xl border border-sky-300/15 bg-sky-400/8 p-4">
                         <p class="text-xs text-white/80 leading-relaxed">
-                            <span class="font-semibold text-sky-100">{{ __('Your email address is unverified.') }}</span>
-                            <button
-                                form="send-verification"
+                            <span
+                                class="font-semibold text-sky-100">{{ __('Your email address is unverified.') }}</span>
+                            <button form="send-verification"
                                 class="ml-1 underline underline-offset-2 text-sky-100 hover:text-white
-                                       focus:outline-none focus:ring-2 focus:ring-white/20 rounded"
-                            >
+                                       focus:outline-none focus:ring-2 focus:ring-white/20 rounded">
                                 {{ __('Click here to re-send the verification email.') }}
                             </button>
                         </p>
@@ -104,20 +91,22 @@
 
             {{-- TOKEN --}}
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <x-input-label for="epikir_letter_token" value="Token Surat e-Pikir (opsional)" class="text-[11px] uppercase tracking-wider text-white/70" />
-                <x-text-input
-                    id="epikir_letter_token"
-                    name="epikir_letter_token"
-                    type="text"
+                @php($isIntern = ($user->role ?? null) === 'intern')
+                <x-input-label for="epikir_letter_token" :value="$isIntern ? 'Nomor Surat e-Pikir (wajib)' : 'Nomor Surat e-Pikir (opsional)'"
+                    class="text-[11px] uppercase tracking-wider text-white/70" />
+                <x-text-input id="epikir_letter_token" name="epikir_letter_token" type="text"
                     class="mt-2 block w-full !rounded-xl !border-white/10 !bg-white/5 !text-white
                            placeholder:!text-white/40 focus:!border-fuchsia-300/25 focus:!ring-fuchsia-200/15"
-                    :value="old('epikir_letter_token', $user->epikir_letter_token)"
-                    placeholder="Masukkan token/nomor surat dari e-Pikir untuk validasi"
-                />
+                    :value="old('epikir_letter_token', $user->epikir_letter_token)" placeholder="Contoh: 070/028/16/2026" />
 
                 <div class="mt-2 rounded-xl border border-fuchsia-300/15 bg-fuchsia-400/8 px-3 py-2">
                     <p class="text-[12px] text-white/80">
-                        Isi saat diminta untuk <span class="font-semibold text-fuchsia-100">handshake/validasi</span> pendaftaran magang dari e-Pikir.
+                        @if ($isIntern)
+                            Wajib diisi sesuai <span class="font-semibold text-fuchsia-100">Nomor Surat</span> dari
+                            e-Pikir. Format: <span class="font-semibold text-fuchsia-100">070/028/16/2026</span>.
+                        @else
+                            Diisi jika diperlukan untuk validasi pendaftaran dari e-Pikir.
+                        @endif
                     </p>
                 </div>
 
@@ -132,8 +121,7 @@
                         !border !border-emerald-300/25
                         !text-emerald-100
                         hover:!bg-emerald-400/30
-                        focus:!ring-emerald-200/25"
-                >
+                        focus:!ring-emerald-200/25">
                     {{ __('Save') }}
                 </x-primary-button>
 

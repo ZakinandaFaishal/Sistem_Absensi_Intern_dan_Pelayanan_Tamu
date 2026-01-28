@@ -75,7 +75,7 @@ Route::get('/admin', function () {
     }
 
     if ($role === 'admin_dinas') {
-        return redirect()->route('admin.attendance.manage');
+        return redirect()->route('admin.dashboard');
     }
 
     return redirect()->route('admin.dashboard');
@@ -89,6 +89,9 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_dinas', 'admin_di
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+
+        // Dashboard admin (super_admin + admin_dinas; data dibatasi per dinas di controller)
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
         // Buku tamu admin (super_admin + admin_dinas, tetapi data dibatasi per dinas di controller)
         Route::get('/tamu', [GuestVisitController::class, 'index'])->name('guest.index');
@@ -148,8 +151,6 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_dinas', 'admin_di
 
         // super_admin-only area
         Route::middleware(['role:super_admin'])->group(function () {
-            Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-
             // Lokasi / Dinas (super_admin only)
             Route::get('/presensi/lokasi', [AdminAttendanceController::class, 'locations'])->name('attendance.locations');
             Route::post('/presensi/locations', [AdminAttendanceController::class, 'storeLocation'])->name('attendance.locations.store');
@@ -172,14 +173,15 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_dinas', 'admin_di
             Route::get('/presensi', [AdminAttendanceController::class, 'index'])->name('attendance.index');
 
             Route::get('/users/keamanan-registrasi', [AdminUserController::class, 'security'])->name('users.security');
-            Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
-
-            Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
             Route::post('/users/registration-security', [AdminUserController::class, 'updateRegistrationSecurity'])->name('users.registration-security');
             Route::delete('/users/registration-security', [AdminUserController::class, 'disableRegistrationSecurity'])->name('users.registration-security.disable');
             Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
             Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.role');
         });
+
+        // Create intern accounts (super_admin + admin_dinas; admin_dinas dibatasi hanya intern dinasnya di controller)
+        Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
+        Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
     });
 
 Route::middleware(['auth', 'verified', 'role:intern'])
