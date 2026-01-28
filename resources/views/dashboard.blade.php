@@ -152,6 +152,24 @@
         }
     </style>
 
+    {{-- PAGE HEADER --}}
+    <div class="mb-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
+                    Dashboard
+                </h2>
+                <p class="mt-1 text-sm text-slate-600">
+                    Ringkasan aktivitas dan statistik sistem hari ini
+                </p>
+            </div>
+        </div>
+
+        {{-- Divider halus --}}
+        <div class="mt-3 h-px w-full bg-gradient-to-r from-slate-200 via-slate-300/40 to-transparent"></div>
+    </div>
+
+
     <div class="anim grid grid-cols-1 xl:grid-cols-3 gap-4">
 
         {{-- CHART --}}
@@ -254,6 +272,47 @@
                     </div>
                 </div>
             </div>
+            {{-- CHART FOOTER / INSIGHT --}}
+            <div class="relative mt-4 px-4 pb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+                    {{-- Insight --}}
+                    <div class="rounded-xl border border-slate-200 bg-white px-4 py-3">
+                        <p class="text-xs font-semibold text-slate-600">Insight</p>
+                        <p class="mt-1 text-sm text-slate-700">
+                            Aktivitas tertinggi terjadi pada
+                            <span class="font-semibold text-slate-900">
+                                {{ $chart->sortByDesc('guest')->first()['date'] ?? '-' }}
+                            </span>
+                        </p>
+                    </div>
+
+                    {{-- Tren --}}
+                    <div class="rounded-xl border border-slate-200 bg-white px-4 py-3">
+                        <p class="text-xs font-semibold text-slate-600">Tren Mingguan</p>
+                        <div class="mt-1 flex items-center gap-2 text-sm">
+                            <span class="inline-flex items-center gap-1 text-emerald-700 font-semibold">
+                                ↑ Stabil
+                            </span>
+                            <span class="text-slate-500 text-xs">
+                                dibanding minggu sebelumnya
+                            </span>
+                        </div>
+                    </div>
+
+                    {{-- Range --}}
+                    <div class="rounded-xl border border-slate-200 bg-white px-4 py-3">
+                        <p class="text-xs font-semibold text-slate-600">Periode Data</p>
+                        <p class="mt-1 text-sm text-slate-700">
+                            {{ $chart->first()['date'] ?? '-' }}
+                            –
+                            {{ $chart->last()['date'] ?? '-' }}
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
         </div>
 
         {{-- KPI --}}

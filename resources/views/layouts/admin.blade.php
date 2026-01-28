@@ -15,19 +15,22 @@
 
 <body x-data="{ sidebarOpen: false }" @keydown.escape.window="sidebarOpen = false"
     class="font-sans antialiased bg-slate-50 text-slate-900 overflow-hidden">
+
     @php
         $user = Auth::user();
         $user?->loadMissing('dinas');
     @endphp
 
-    <div class="h-screen overflow-hidden">
+    {{-- pakai dvh biar tidak “kepotong” di mobile browser yang punya bottom bar --}}
+    <div class="h-[100dvh] overflow-hidden">
 
         {{-- SIDEBAR --}}
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
-            class="fixed left-0 top-0 z-50 h-screen w-[280px]
+            class="fixed left-0 top-0 z-50 h-[100dvh] w-[280px]
                bg-slate-950 text-white border-r border-white/10
                transform transition-transform duration-300 ease-in-out"
             aria-label="Sidebar Admin">
+
             <div class="flex h-full flex-col">
 
                 {{-- Brand --}}
@@ -58,7 +61,8 @@
                 </div>
 
                 {{-- Menu --}}
-                <nav class="flex-1 overflow-y-auto px-4 py-5 space-y-5">
+                <nav class="flex-1 overflow-y-auto px-4 py-5 space-y-5
+                            pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
 
                     {{-- Date (sidebar) --}}
                     <div
@@ -231,7 +235,7 @@
                 </nav>
 
                 {{-- Sidebar footer --}}
-                <div class="shrink-0 px-4 pb-5">
+                <div class="shrink-0 px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
                     <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
                         <p class="text-xs text-white/60">Login sebagai</p>
                         <p class="mt-1 text-sm font-semibold">{{ $user->name }}</p>
@@ -254,19 +258,23 @@
         <div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false"
             class="fixed inset-0 z-40 bg-black/40 md:hidden" style="display:none;" aria-hidden="true"></div>
 
-        {{-- MOBILE: hamburger kiri atas (tanpa topbar) --}}
+        {{-- MOBILE: hamburger kiri atas (safe-area top) --}}
         <button type="button" @click="sidebarOpen = true" x-show="!sidebarOpen" x-transition.opacity
-            class="md:hidden fixed top-4 left-4 z-40 inline-flex items-center justify-center
+            class="md:hidden fixed left-4 z-40 inline-flex items-center justify-center
             h-11 w-11 rounded-2xl border border-slate-200 bg-white/95 backdrop-blur
-            shadow-lg hover:bg-slate-50 active:scale-[0.98] transition"
+            shadow-lg hover:bg-slate-50 active:scale-[0.98] transition
+            top-[calc(1rem+env(safe-area-inset-top))]"
             aria-label="Buka menu">
             <x-icon name="bars-3" class="h-6 w-6 text-slate-700" />
         </button>
 
-
         {{-- MAIN --}}
-        <div class="h-screen flex flex-col md:pl-[280px]">
-            <main id="adminMainScroll" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 pt-16 md:pt-6">
+        <div class="h-[100dvh] flex flex-col md:pl-[280px]">
+            {{-- padding bawah pakai safe-area agar konten tidak ketutup bottom bar --}}
+            <main id="adminMainScroll"
+                class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6
+                       pt-16 md:pt-6
+                       pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
                 @yield('content')
             </main>
         </div>
