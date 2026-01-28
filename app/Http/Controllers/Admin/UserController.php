@@ -15,8 +15,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use App\Mail\InternAccountCreated;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -191,7 +194,14 @@ class UserController extends Controller
 
     public function create(Request $request)
     {
-        $locations = Location::query()->orderBy('name')->get();
+        $actor = $request->user();
+        $actorRole = (string) ($actor?->role ?? '');
+        $actorDinasId = (int) ($actor?->dinas_id ?? 0);
+
+        $locations = Location::query()
+            ->when($actorRole === 'admin_dinas' && $actorDinasId > 0, fn($q) => $q->where('dinas_id', $actorDinasId))
+            ->orderBy('name')
+            ->get();
         $dinasOptions = Dinas::query()->orderBy('name')->get();
 
         return view('admin.users.form', [
@@ -205,7 +215,14 @@ class UserController extends Controller
     {
         $this->ensureCanManageUser($request, $user);
 
-        $locations = Location::query()->orderBy('name')->get();
+        $actor = $request->user();
+        $actorRole = (string) ($actor?->role ?? '');
+        $actorDinasId = (int) ($actor?->dinas_id ?? 0);
+
+        $locations = Location::query()
+            ->when($actorRole === 'admin_dinas' && $actorDinasId > 0, fn($q) => $q->where('dinas_id', $actorDinasId))
+            ->orderBy('name')
+            ->get();
         $dinasOptions = Dinas::query()->orderBy('name')->get();
 
         return view('admin.users.form', [
@@ -625,6 +642,10 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        $actor = $request->user();
+        $actorRole = (string) ($actor?->role ?? '');
+        $actorDinasId = (int) ($actor?->dinas_id ?? 0);
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'nik' => ['required', 'digits:16', Rule::unique('users', 'nik')],
@@ -642,6 +663,18 @@ class UserController extends Controller
             'score_override_note' => ['nullable', 'string', 'max:255'],
             'password' => ['nullable', 'string', 'min:8'],
         ]);
+
+        // admin_dinas hanya boleh membuat akun intern di dinasnya.
+        if ($actorRole === 'admin_dinas') {
+            $validated['role'] = 'intern';
+            $validated['dinas_id'] = null;
+
+            if ($actorDinasId <= 0) {
+                return back()->withErrors([
+                    'role' => 'Admin dinas belum terhubung ke dinas. Hubungi super admin.',
+                ])->withInput();
+            }
+        }
 
         $tempPassword = null;
         $password = (string) ($validated['password'] ?? '');
@@ -664,14 +697,27 @@ class UserController extends Controller
                 ])->withInput();
             }
             $internDinasId = (int) $loc->dinas_id;
+
+            if ($actorRole === 'admin_dinas' && $internDinasId !== $actorDinasId) {
+                return back()->withErrors([
+                    'internship_location_id' => 'Lokasi magang tidak sesuai dengan dinas Anda.',
+                ])->withInput();
+            }
         }
 
-        User::query()->create([
+        if ($validated['role'] === 'intern' && $internLocationId <= 0) {
+            return back()->withErrors([
+                'internship_location_id' => 'Lokasi magang wajib dipilih untuk akun intern.',
+            ])->withInput();
+        }
+
+        $newUser = User::query()->create([
             'name' => $validated['name'],
             'nik' => $validated['nik'],
             'phone' => $validated['phone'],
             'username' => Str::lower($validated['username']),
             'email' => $validated['email'],
+            'email_verified_at' => now(),
             'role' => $validated['role'],
             'dinas_id' => ($validated['role'] === 'admin_dinas')
                 ? (int) $validated['dinas_id']
@@ -681,6 +727,7 @@ class UserController extends Controller
             'internship_start_date' => ($validated['role'] === 'intern') ? ($validated['internship_start_date'] ?? null) : null,
             'internship_end_date' => ($validated['role'] === 'intern') ? ($validated['internship_end_date'] ?? null) : null,
             'internship_location_id' => ($validated['role'] === 'intern') ? ($validated['internship_location_id'] ?? null) : null,
+            'epikir_letter_token' => null,
             'score_override' => ($validated['role'] === 'intern') ? ($validated['score_override'] ?? null) : null,
             'score_override_note' => ($validated['role'] === 'intern') ? ($validated['score_override_note'] ?? null) : null,
             'must_change_password' => ($validated['role'] === 'intern'),
@@ -690,6 +737,30 @@ class UserController extends Controller
         $msg = 'User berhasil ditambahkan.';
         if ($tempPassword !== null) {
             $msg .= ' Password sementara: ' . $tempPassword;
+        }
+
+        // Email notifikasi akun intern
+        if (($validated['role'] === 'intern') && !empty($newUser->email)) {
+            try {
+                $baseUrl = $request->getSchemeAndHttpHost();
+                $loginUrl = rtrim($baseUrl, '/') . route('login', absolute: false);
+                Mail::to($newUser->email)->send(new InternAccountCreated(
+                    recipientName: (string) $newUser->name,
+                    username: (string) $newUser->username,
+                    email: (string) $newUser->email,
+                    temporaryPassword: (string) $password,
+                    loginUrl: (string) $loginUrl,
+                    createdByName: (string) ($actor?->name ?? 'Admin'),
+                ));
+                $msg .= ' Notifikasi email terkirim.';
+            } catch (\Throwable $e) {
+                Log::warning('Gagal mengirim email akun intern', [
+                    'user_id' => $newUser->id,
+                    'email' => $newUser->email,
+                    'error' => $e->getMessage(),
+                ]);
+                $msg .= ' (Peringatan: email notifikasi gagal dikirim. Cek konfigurasi email.)';
+            }
         }
 
         return back()->with('status', $msg);

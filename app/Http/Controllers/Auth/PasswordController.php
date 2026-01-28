@@ -15,6 +15,17 @@ class PasswordController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
+        if (($user?->role ?? null) === 'intern') {
+            $missingToken = trim((string) ($user->epikir_letter_token ?? '')) === '';
+            if ($missingToken) {
+                return back()->withErrors([
+                    'epikir_letter_token' => 'Nomor surat e-Pikir wajib diisi terlebih dahulu sebelum mengganti password.',
+                ]);
+            }
+        }
+
         $validated = $request->validateWithBag('updatePassword', [
             'current_password' => ['required', 'current_password'],
             'password' => ['required', Password::defaults(), 'confirmed'],

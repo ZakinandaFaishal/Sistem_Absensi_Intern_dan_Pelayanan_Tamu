@@ -26,14 +26,29 @@ class AdminDashboardController extends Controller
     public function index()
     {
         $actor = Auth::user();
+        $actorRole = (string) ($actor?->role ?? '');
+        $actorDinasId = (int) ($actor?->dinas_id ?? 0);
+
+        $isAdminDinas = ($actorRole === 'admin_dinas');
+        $canScope = $isAdminDinas && $actorDinasId > 0;
+
         $today = Carbon::today();
 
-        $intern_present_today = Attendance::whereDate('created_at', $today)
+        $attendanceTodayBase = Attendance::query()
+            ->whereDate('created_at', $today)
+            ->whereHas('user', function ($q) use ($canScope, $actorDinasId) {
+                $q->where('role', 'intern');
+                if ($canScope) {
+                    $q->where('dinas_id', $actorDinasId);
+                }
+            });
+
+        $intern_present_today = (clone $attendanceTodayBase)
             ->whereNotNull('check_in_at')
             ->distinct('user_id')
             ->count('user_id');
 
-        $intern_open_today = Attendance::whereDate('created_at', $today)
+        $intern_open_today = (clone $attendanceTodayBase)
             ->whereNotNull('check_in_at')
             ->whereNull('check_out_at')
             ->distinct('user_id')
@@ -42,35 +57,62 @@ class AdminDashboardController extends Controller
         $stats = [
             'attendance_today' => $intern_present_today,
             'intern_open'      => $intern_open_today,
-            'guest_today'      => GuestVisit::whereDate('created_at', $today)->count(),
-            'survey_today'     => GuestSurvey::whereDate('created_at', $today)->count(),
-            'users_total'      => User::count(),
+            'guest_today'      => GuestVisit::query()
+                ->whereDate('created_at', $today)
+                ->when($canScope, fn($q) => $q->where('dinas_id', $actorDinasId))
+                ->count(),
+            'survey_today'     => GuestSurvey::query()
+                ->whereDate('created_at', $today)
+                ->when($canScope, function ($q) use ($actorDinasId) {
+                    $q->whereHas('visit', fn($v) => $v->where('dinas_id', $actorDinasId));
+                })
+                ->count(),
+            'users_total'      => $canScope
+                ? User::query()->where('role', 'intern')->where('dinas_id', $actorDinasId)->count()
+                : User::count(),
         ];
 
-        $chart = collect(range(6, 0))->map(function ($i) {
+        $chart = collect(range(6, 0))->map(function ($i) use ($canScope, $actorDinasId) {
             $date = Carbon::today()->subDays($i);
 
             return [
                 'date'   => $date->format('d M'),
-                'guest'  => GuestVisit::whereDate('created_at', $date)->count(),
-                'survey' => GuestSurvey::whereDate('created_at', $date)->count(),
+                'guest'  => GuestVisit::query()
+                    ->whereDate('created_at', $date)
+                    ->when($canScope, fn($q) => $q->where('dinas_id', $actorDinasId))
+                    ->count(),
+                'survey' => GuestSurvey::query()
+                    ->whereDate('created_at', $date)
+                    ->when($canScope, function ($q) use ($actorDinasId) {
+                        $q->whereHas('visit', fn($v) => $v->where('dinas_id', $actorDinasId));
+                    })
+                    ->count(),
             ];
         });
 
         $recentGuestVisits = GuestVisit::query()
             ->with(['dinas', 'handler'])
+            ->when($canScope, fn($q) => $q->where('dinas_id', $actorDinasId))
             ->orderByDesc('arrived_at')
             ->limit(6)
             ->get();
 
         $recentSurveys = GuestSurvey::query()
             ->with(['visit.dinas'])
+            ->when($canScope, function ($q) use ($actorDinasId) {
+                $q->whereHas('visit', fn($v) => $v->where('dinas_id', $actorDinasId));
+            })
             ->orderByDesc('submitted_at')
             ->limit(6)
             ->get();
 
         $recentAttendances = Attendance::query()
             ->with(['user', 'location'])
+            ->when($canScope, function ($q) use ($actorDinasId) {
+                $q->whereHas('user', fn($u) => $u->where('dinas_id', $actorDinasId)->where('role', 'intern'));
+            }, function ($q) {
+                $q->whereHas('user', fn($u) => $u->where('role', 'intern'));
+            })
             ->orderByDesc('check_in_at')
             ->limit(6)
             ->get();

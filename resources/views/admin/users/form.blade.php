@@ -5,6 +5,12 @@
 
 @section('content')
 
+    @php
+        $actor = Auth::user();
+        $actor?->loadMissing('dinas');
+        $isAdminDinasActor = $actor && ($actor->role ?? null) === 'admin_dinas';
+    @endphp
+
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h2 class="text-xl font-extrabold tracking-tight text-slate-900">{{ $editUser ? 'Edit User' : 'Tambah User' }}
@@ -116,16 +122,26 @@
                                 <span class="text-slate-500">(dikunci)</span>
                             </div>
                         @else
-                            <select id="userRoleSelect" name="role"
-                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
-                                required>
-                                <option value="intern" @selected($roleValue === 'intern')>intern</option>
-                                <option value="admin_dinas" @selected($roleValue === 'admin_dinas')>admin_dinas</option>
-                            </select>
+                            @if ($isAdminDinasActor)
+                                <input type="hidden" name="role" value="intern">
+                                <div
+                                    class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                                    <span class="font-semibold">intern</span>
+                                    <span class="text-slate-500">(dibuat oleh admin dinas)</span>
+                                </div>
+                            @else
+                                <select id="userRoleSelect" name="role"
+                                    class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
+                                    required>
+                                    <option value="intern" @selected($roleValue === 'intern')>intern</option>
+                                    <option value="admin_dinas" @selected($roleValue === 'admin_dinas')>admin_dinas</option>
+                                </select>
+                            @endif
                         @endif
                     </div>
 
-                    <div id="userDinasFields" class="md:col-span-4 {{ $roleValue === 'admin_dinas' ? '' : 'hidden' }}">
+                    <div id="userDinasFields"
+                        class="md:col-span-4 {{ $isAdminDinasActor ? 'hidden' : ($roleValue === 'admin_dinas' ? '' : 'hidden') }}">
                         <label class="block text-sm font-semibold text-slate-700">Dinas (wajib untuk admin_dinas)</label>
                         <select id="userDinasSelect" name="dinas_id"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">

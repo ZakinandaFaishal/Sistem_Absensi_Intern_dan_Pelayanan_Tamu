@@ -5,6 +5,7 @@
 
 @section('content')
     @php
+        $actor = $actor ?? Auth::user();
         $stats = $stats ?? [
             'attendance_today' => 0,
             'guest_today' => 0,
@@ -21,6 +22,8 @@
 
         $fmt = fn($n) => number_format((int) $n, 0, ',', '.');
         $chartPx = 140;
+
+        $isSuperAdmin = $actor && (($actor->role ?? null) === 'super_admin' || ($actor->role ?? null) === 'admin');
     @endphp
 
     <style>
@@ -512,65 +515,67 @@
         </div>
     </section>
 
-    {{-- EXPORT UI SCRIPT (dropdown + loading + trigger download via iframe) --}}
-    <script>
-        (function() {
-            const menuBtn = document.getElementById('btnExportMenu');
-            const menu = document.getElementById('exportMenu');
-            const chevron = document.getElementById('exportChevron');
-            const dlFrame = document.getElementById('dlFrame');
+    @if ($isSuperAdmin)
+        {{-- EXPORT UI SCRIPT (dropdown + loading + trigger download via iframe) --}}
+        <script>
+            (function() {
+                const menuBtn = document.getElementById('btnExportMenu');
+                const menu = document.getElementById('exportMenu');
+                const chevron = document.getElementById('exportChevron');
+                const dlFrame = document.getElementById('dlFrame');
 
-            function openMenu() {
-                if (!menu) return;
-                menu.classList.remove('hidden');
-                if (chevron) chevron.style.transform = 'rotate(180deg)';
-            }
+                function openMenu() {
+                    if (!menu) return;
+                    menu.classList.remove('hidden');
+                    if (chevron) chevron.style.transform = 'rotate(180deg)';
+                }
 
-            function closeMenu() {
-                if (!menu) return;
-                menu.classList.add('hidden');
-                if (chevron) chevron.style.transform = 'rotate(0deg)';
-            }
+                function closeMenu() {
+                    if (!menu) return;
+                    menu.classList.add('hidden');
+                    if (chevron) chevron.style.transform = 'rotate(0deg)';
+                }
 
-            menuBtn?.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (!menu) return;
-                if (menu.classList.contains('hidden')) openMenu();
-                else closeMenu();
-            });
-
-            document.addEventListener('click', closeMenu);
-            menu?.addEventListener('click', (e) => e.stopPropagation());
-
-            const actions = document.querySelectorAll('.export-action');
-            actions.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const url = btn.getAttribute('data-url');
-                    const label = btn.getAttribute('data-label') || 'Export';
-
-                    // loading state
-                    const original = btn.innerHTML;
-                    btn.disabled = true;
-                    btn.innerHTML = `
-                        <span class="inline-flex items-center gap-2">
-                            <span class="h-3 w-3 rounded-full border-2 border-slate-300 border-t-slate-700 animate-spin"></span>
-                            <span>Mengekspor ${label}...</span>
-                        </span>
-                        <span class="text-xs text-slate-400">harap tunggu</span>
-                    `;
-
-                    closeMenu();
-
-                    // download without redirect
-                    if (url && dlFrame) dlFrame.src = url;
-
-                    // restore after a moment
-                    setTimeout(() => {
-                        btn.disabled = false;
-                        btn.innerHTML = original;
-                    }, 1800);
+                menuBtn?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!menu) return;
+                    if (menu.classList.contains('hidden')) openMenu();
+                    else closeMenu();
                 });
-            });
-        })();
-    </script>
+
+                document.addEventListener('click', closeMenu);
+                menu?.addEventListener('click', (e) => e.stopPropagation());
+
+                const actions = document.querySelectorAll('.export-action');
+                actions.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const url = btn.getAttribute('data-url');
+                        const label = btn.getAttribute('data-label') || 'Export';
+
+                        // loading state
+                        const original = btn.innerHTML;
+                        btn.disabled = true;
+                        btn.innerHTML = `
+                            <span class="inline-flex items-center gap-2">
+                                <span class="h-3 w-3 rounded-full border-2 border-slate-300 border-t-slate-700 animate-spin"></span>
+                                <span>Mengekspor ${label}...</span>
+                            </span>
+                            <span class="text-xs text-slate-400">harap tunggu</span>
+                        `;
+
+                        closeMenu();
+
+                        // download without redirect
+                        if (url && dlFrame) dlFrame.src = url;
+
+                        // restore after a moment
+                        setTimeout(() => {
+                            btn.disabled = false;
+                            btn.innerHTML = original;
+                        }, 1800);
+                    });
+                });
+            })();
+        </script>
+    @endif
 @endsection
