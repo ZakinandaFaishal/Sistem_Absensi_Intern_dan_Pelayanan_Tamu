@@ -46,13 +46,19 @@ Route::view('/presensi/scan-qr', 'attendance.qr')
     ->middleware(['auth', 'verified', 'role:intern,super_admin,admin_dinas'])
     ->name('attendance.qr');
 
+// =====================
+// GUEST (PUBLIC)
+// =====================
 Route::get('/tamu', [GuestVisitController::class, 'create'])->name('guest.create');
 Route::post('/tamu', [GuestVisitController::class, 'store'])->name('guest.store');
+
 Route::get('/tamu/{visit}/survey', [GuestSurveyController::class, 'show'])->name('guest.survey.show');
 Route::post('/tamu/{visit}/survey', [GuestSurveyController::class, 'store'])->name('guest.survey.store');
+
+// ✅ ROUTE YANG KURANG (untuk redirect setelah submit survey)
+Route::get('/tamu/{visit}/survey/thanks', [GuestSurveyController::class, 'thanks'])->name('guest.thanks');
+
 Route::get('/tamu/active', [GuestVisitController::class, 'active'])->name('guest.active');
-
-
 
 Route::get('/admin', function () {
     if (!Auth::check()) {

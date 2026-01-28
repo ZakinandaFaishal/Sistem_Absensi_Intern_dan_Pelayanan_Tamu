@@ -255,6 +255,13 @@
         </svg>
     @break
 
+    @case('arrow-right')
+        <svg {{ $attributes->merge($baseAttrs) }}>
+            <path d="M5 12h14" />
+            <path d="M13 6l6 6-6 6" />
+        </svg>
+    @break
+
     {{-- QR / CAMERA --}}
     @case('qr-code')
         <svg {{ $attributes->merge($baseAttrs) }}>

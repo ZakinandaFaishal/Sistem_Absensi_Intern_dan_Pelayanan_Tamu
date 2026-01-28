@@ -163,50 +163,98 @@
 
         {{-- MODAL REMINDER --}}
         <div id="surveyReminderModal" class="hidden fixed inset-0 z-50">
-            <div id="surveyBackdrop" class="absolute inset-0 bg-black/60"></div>
+            <!-- Backdrop -->
+            <div
+                id="surveyBackdrop"
+                class="absolute inset-0 bg-slate-900/70 backdrop-blur-sm">
+            </div>
 
             <div class="relative mx-auto flex min-h-screen w-full items-center justify-center p-4">
                 <div
-                    class="w-full max-w-md overflow-hidden rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl">
-                    <div class="flex items-start justify-between gap-3 border-b border-white/15 px-5 py-4">
-                        <div class="min-w-0">
-                            <div class="text-white font-extrabold text-base">Ingatkan Isi Survey</div>
-                            <div id="surveyReminderName" class="truncate text-white/70 text-sm">—</div>
+                    class="relative w-full max-w-md overflow-hidden rounded-3xl
+                        border border-white/15
+                        bg-white/10 backdrop-blur-xl
+                        shadow-[0_30px_80px_rgba(0,0,0,.45)]">
+
+                    <!-- Accent glow -->
+                    <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent"></div>
+
+                    <!-- Header -->
+                    <div class="relative flex items-start justify-between gap-3 px-5 py-4 border-b border-white/10">
+                        <div class="flex items-start gap-3 min-w-0">
+                            <div
+                                class="h-10 w-10 rounded-2xl
+                                    bg-amber-400/15 border border-amber-300/25
+                                    flex items-center justify-center shrink-0">
+                                <x-icon name="exclamation-triangle" class="h-5 w-5 text-amber-200" />
+                            </div>
+
+                            <div class="min-w-0">
+                                <div class="text-sm font-extrabold text-white tracking-tight">
+                                    Ingatkan Isi Survey
+                                </div>
+                                <div id="surveyReminderName" class="truncate text-xs text-white/70">
+                                    —
+                                </div>
+                            </div>
                         </div>
 
-                        <button id="btnCloseSurveyModal" type="button"
-                            class="rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-white/90 hover:bg-white/15 transition">
+                        <button
+                            id="btnCloseSurveyModal"
+                            type="button"
+                            class="rounded-xl border border-white/15 bg-white/10
+                                px-3 py-2 text-xs font-semibold text-white/80
+                                hover:bg-white/15 transition">
                             Tutup
                         </button>
                     </div>
 
-                    <div class="space-y-3 px-5 py-4">
-                        <div class="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white/85">
-                            Tamu ini <span class="font-semibold">belum mengisi survey</span>. Silakan ingatkan untuk
-                            mengisi survey sebelum selesai.
+                    <!-- Content -->
+                    <div class="relative space-y-4 px-5 py-4">
+                        <div
+                            class="rounded-2xl border border-white/15 bg-white/5
+                                px-4 py-3 text-sm text-white/85 leading-relaxed">
+                            Tamu ini <span class="font-semibold text-white">belum mengisi survey</span>.
+                            Mohon diingatkan untuk mengisi survey sebelum kunjungan diselesaikan.
                         </div>
 
+                        <!-- Actions -->
                         <div class="flex flex-col gap-2 sm:flex-row">
-                            <a id="btnGoSurvey" href="#"
-                                class="inline-flex w-full items-center justify-center rounded-2xl border border-white/25 bg-white/20 px-4 py-3 text-sm font-semibold text-white hover:bg-white/25 transition">
+                            <a
+                                id="btnGoSurvey"
+                                href="#"
+                                class="inline-flex w-full items-center justify-center gap-2
+                                    rounded-2xl border border-white/25
+                                    bg-white/20 px-4 py-3
+                                    text-sm font-semibold text-white
+                                    hover:bg-white/25 transition">
+                                <x-icon name="star" class="h-4 w-4" />
                                 Isi Survey
                             </a>
 
-                            <button id="btnForceComplete" type="button"
-                                class="inline-flex w-full items-center justify-center rounded-2xl border border-emerald-400/30 bg-emerald-500/25 px-4 py-3 text-sm font-semibold text-emerald-50 hover:bg-emerald-500/30 transition">
+                            <button
+                                id="btnForceComplete"
+                                type="button"
+                                class="inline-flex w-full items-center justify-center gap-2
+                                    rounded-2xl border border-emerald-400/30
+                                    bg-emerald-500/25 px-4 py-3
+                                    text-sm font-semibold text-emerald-50
+                                    hover:bg-emerald-500/30 transition">
+                                <x-icon name="check-circle" class="h-4 w-4" />
                                 Tetap Selesai
                             </button>
                         </div>
 
-                        <div class="text-[11px] text-white/60">
-                            Klik <span class="font-semibold text-white/80">Isi Survey</span> untuk membuka form survey,
-                            atau
-                            <span class="font-semibold text-white/80">Tetap Selesai</span> untuk menutup kunjungan.
+                        <!-- Hint -->
+                        <div class="text-[11px] text-white/55">
+                            Pilih <span class="font-semibold text-white/80">Isi Survey</span> untuk membuka formulir,
+                            atau <span class="font-semibold text-white/80">Tetap Selesai</span> untuk menutup kunjungan.
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
 
         <style>
             html,

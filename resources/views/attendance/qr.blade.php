@@ -4,146 +4,150 @@
 @section('page_title', 'Scan QR Absensi')
 
 @section('content')
-    @php
-        $backUrl = \Illuminate\Support\Facades\Route::has('intern.userProfile')
-            ? route('intern.userProfile')
-            : (\Illuminate\Support\Facades\Route::has('profile.edit')
-                ? route('profile.edit')
-                : url('/userProfile'));
-    @endphp
+@php
+    $backUrl = \Illuminate\Support\Facades\Route::has('intern.userProfile')
+        ? route('intern.userProfile')
+        : (\Illuminate\Support\Facades\Route::has('profile.edit')
+            ? route('profile.edit')
+            : url('/userProfile'));
+@endphp
 
-    {{-- SCAN ONLY: rapikan UI bawaan scanner + hilangkan upload file --}}
-    <style>
-        /* scope khusus halaman ini */
-        .scan-only-shell #attendance-qr-reader {
-            color: rgba(255, 255, 255, .92);
-        }
+{{-- SCAN ONLY STYLE --}}
+<style>
+    .scan-only-shell #attendance-qr-reader {
+        color: rgba(255,255,255,.92);
+    }
 
-        /* rapikan elemen bawaan yang kadang berupa tabel */
-        .scan-only-shell #attendance-qr-reader table,
-        .scan-only-shell #attendance-qr-reader tr,
-        .scan-only-shell #attendance-qr-reader td {
-            border: 0 !important;
-        }
+    .scan-only-shell video,
+    .scan-only-shell canvas {
+        border-radius: 18px !important;
+    }
 
-        /* dropdown kamera */
-        .scan-only-shell #attendance-qr-reader select {
-            width: 100% !important;
-            border-radius: 14px !important;
-            border: 1px solid rgba(255, 255, 255, .16) !important;
-            background: rgba(255, 255, 255, .08) !important;
-            color: rgba(255, 255, 255, .92) !important;
-            padding: 10px 12px !important;
-            font-size: 14px !important;
-            outline: none !important;
-        }
+    .scan-only-shell select,
+    .scan-only-shell button {
+        width: 100% !important;
+        border-radius: 14px !important;
+    }
 
-        .scan-only-shell #attendance-qr-reader select:focus {
-            box-shadow: 0 0 0 3px rgba(255, 255, 255, .18) !important;
-        }
+    .scan-only-shell select {
+        background: rgba(255,255,255,.08) !important;
+        border: 1px solid rgba(255,255,255,.18) !important;
+        color: rgba(255,255,255,.95) !important;
+        padding: 10px 12px !important;
+    }
 
-        /* tombol start/stop */
-        .scan-only-shell #attendance-qr-reader button {
-            width: 100% !important;
-            border-radius: 14px !important;
-            border: 1px solid rgba(255, 255, 255, .16) !important;
-            background: rgba(255, 255, 255, .92) !important;
-            color: rgba(15, 23, 42, .95) !important;
-            padding: 10px 12px !important;
-            font-weight: 800 !important;
-            font-size: 14px !important;
-            transition: 180ms ease !important;
-        }
+    .scan-only-shell button {
+        background: rgba(255,255,255,.92) !important;
+        color: rgba(15,23,42,.95) !important;
+        font-weight: 800 !important;
+        padding: 10px 12px !important;
+        transition: .18s ease;
+    }
 
-        .scan-only-shell #attendance-qr-reader button:hover {
-            transform: translateY(-1px);
-            background: rgba(255, 255, 255, .86) !important;
-        }
+    .scan-only-shell button:hover {
+        transform: translateY(-1px);
+        background: rgba(255,255,255,.86) !important;
+    }
 
-        .scan-only-shell #attendance-qr-reader button:active {
-            transform: translateY(0);
-        }
+    .scan-only-shell
+    #html5-qrcode-anchor-scan-type-change,
+    .scan-only-shell
+    #html5-qrcode-button-file-selection,
+    .scan-only-shell input[type="file"] {
+        display: none !important;
+    }
+</style>
 
-        /* video/canvas rounded */
-        .scan-only-shell #attendance-qr-reader video,
-        .scan-only-shell #attendance-qr-reader canvas {
-            border-radius: 14px !important;
-        }
+<div class="max-w-4xl mx-auto space-y-6">
 
-        /* ✅ HILANGKAN MODE UPLOAD FILE (html5-qrcode) */
-        .scan-only-shell #attendance-qr-reader #html5-qrcode-anchor-scan-type-change,
-        .scan-only-shell #attendance-qr-reader #html5-qrcode-button-file-selection,
-        .scan-only-shell #attendance-qr-reader input[type="file"] {
-            display: none !important;
-        }
-    </style>
+    {{-- HERO --}}
+    <section
+        class="relative overflow-hidden rounded-[28px]
+               border border-white/12 bg-white/10 backdrop-blur-xl
+               shadow-[0_18px_60px_rgba(0,0,0,.28)]"
+    >
+        {{-- glow --}}
+        <div class="pointer-events-none absolute inset-0">
+            <div class="absolute -top-24 -left-24 h-56 w-56 rounded-full bg-sky-500/20 blur-3xl"></div>
+            <div class="absolute -bottom-24 -right-24 h-56 w-56 rounded-full bg-fuchsia-500/20 blur-3xl"></div>
+            <div class="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5"></div>
+        </div>
 
-    <div class="max-w-3xl mx-auto space-y-5 sm:space-y-6">
+        <div class="relative p-6 sm:p-8">
+            {{-- accent --}}
+            <div class="mb-5 h-1 w-full rounded-full bg-gradient-to-r from-sky-400/60 via-fuchsia-400/50 to-emerald-400/55"></div>
 
-        {{-- Header --}}
-        <section class="relative overflow-hidden rounded-3xl border border-white/15 bg-white/10 shadow-xl">
-            <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent"></div>
-
-            <div class="relative p-6 sm:p-7">
-                <div class="flex items-start justify-between gap-4">
-                    <div class="min-w-0">
-                        <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
-                            Scan QR Absensi
-                        </h2>
-                        <p class="mt-1 text-sm text-white/70">
-                            Arahkan kamera HP ke QR yang tampil di layar kiosk.
-                        </p>
-                    </div>
-
-                    <div class="shrink-0 h-12 w-12 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center">
-                        <x-icon name="camera" class="h-6 w-6" />
-                    </div>
-                </div>
-
-                <div class="mt-5 h-px w-full bg-white/15"></div>
-
-                @if ($errors->any())
-                    <div class="mt-5 rounded-2xl border border-rose-300/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                        <span class="font-semibold">Gagal:</span> {{ $errors->first() }}
-                    </div>
-                @endif
-            </div>
-        </section>
-
-        {{-- Reader --}}
-        <section class="relative overflow-hidden rounded-3xl border border-white/15 bg-white/10 shadow-xl">
-            <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent"></div>
-
-            <div class="relative p-6 sm:p-7 space-y-4 sm:space-y-5">
-
-                {{-- Frame --}}
-                <div class="rounded-2xl border border-white/15 bg-black/20 p-3 sm:p-4">
-                    <div class="rounded-xl border border-white/10 bg-black/30 p-3 sm:p-4 scan-only-shell">
-                        <div id="attendance-qr-reader" class="w-full"></div>
-                    </div>
-                </div>
-
-                {{-- Hint --}}
-                <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                    <p id="attendance-qr-hint" class="text-xs sm:text-sm text-white/70 leading-relaxed">
-                        Jika kamera tidak muncul, pastikan izin kamera diaktifkan pada browser dan gunakan HTTPS (atau localhost).
+            <div class="flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                    <p class="text-[11px] uppercase tracking-wider text-white/70">Presensi</p>
+                    <h2 class="mt-1 text-xl sm:text-2xl font-extrabold tracking-tight text-white">
+                        Scan QR Absensi
+                    </h2>
+                    <p class="mt-1 text-sm text-white/80 max-w-md">
+                        Arahkan kamera ke QR Code yang ditampilkan pada layar kiosk untuk melakukan presensi.
                     </p>
                 </div>
 
-                {{-- Actions --}}
-                <div class="flex flex-wrap gap-2 pt-1">
-                    <a href="{{ $backUrl }}"
-                       class="inline-flex items-center justify-center gap-2 rounded-xl
-                              bg-white/10 px-4 py-2.5 text-sm font-semibold text-white
-                              border border-white/20 hover:bg-white/20 transition
-                              focus:outline-none focus:ring-2 focus:ring-white/30">
-                        <span class="text-base">←</span>
-                        <span>Selesai</span>
-                    </a>
+                <div class="shrink-0">
+                    <div class="relative">
+                        <div class="absolute inset-0 rounded-3xl bg-gradient-to-br from-sky-400/35 to-fuchsia-400/35 blur-lg"></div>
+                        <div class="relative h-12 w-12 rounded-3xl border border-white/15 bg-white/10 backdrop-blur
+                                    flex items-center justify-center">
+                            <x-icon name="camera" class="h-6 w-6 text-white" />
+                        </div>
+                    </div>
                 </div>
-
             </div>
-        </section>
 
-    </div>
+            @if ($errors->any())
+                <div class="mt-5 rounded-2xl border border-rose-300/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
+                    <span class="font-semibold">Gagal:</span> {{ $errors->first() }}
+                </div>
+            @endif
+        </div>
+    </section>
+
+    {{-- SCANNER --}}
+    <section
+        class="relative overflow-hidden rounded-[28px]
+               border border-white/12 bg-white/10 backdrop-blur-xl
+               shadow-[0_18px_60px_rgba(0,0,0,.26)]"
+    >
+        <div class="h-1 w-full bg-gradient-to-r from-emerald-400/55 via-sky-400/50 to-fuchsia-400/50"></div>
+
+        <div class="p-6 sm:p-8 space-y-5">
+
+            {{-- FRAME --}}
+            <div class="rounded-2xl border border-white/15 bg-black/25 p-3 sm:p-4">
+                <div class="rounded-2xl border border-white/10 bg-black/35 p-3 sm:p-4 scan-only-shell">
+                    <div id="attendance-qr-reader" class="w-full"></div>
+                </div>
+            </div>
+
+            {{-- HINT --}}
+            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                <p class="text-xs sm:text-sm text-white/75 leading-relaxed">
+                    Jika kamera tidak muncul, pastikan izin kamera aktif dan gunakan browser modern
+                    (Chrome / Edge / Safari).
+                </p>
+            </div>
+
+            {{-- ACTION --}}
+            <div class="pt-1">
+                <a href="{{ $backUrl }}"
+                   class="inline-flex items-center gap-2 rounded-xl
+                          bg-white/10 px-4 py-2.5
+                          text-sm font-semibold text-white
+                          border border-white/20
+                          hover:bg-white/20 hover:-translate-y-0.5 transition
+                          focus:outline-none focus:ring-2 focus:ring-white/30">
+                    <x-icon name="chevron-left" class="h-5 w-5" />
+                    Kembali
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+</div>
 @endsection

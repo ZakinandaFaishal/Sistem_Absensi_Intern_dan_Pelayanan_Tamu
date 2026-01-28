@@ -64,7 +64,7 @@ class GuestSurveyController extends Controller
             $validated['q7'],
             $validated['q8'],
             $validated['q9'],
-        ])->map(fn ($v) => (int) $v);
+        ])->map(fn($v) => (int) $v);
 
         $rating = (int) round($scores->avg());
         $rating = max(1, min(4, $rating));
@@ -85,11 +85,31 @@ class GuestSurveyController extends Controller
             'submitted_at' => CarbonImmutable::now(),
         ]);
 
-        //  otomatis tandai kunjungan selesai
+        // otomatis tandai kunjungan selesai
         $visit->update([
             'completed_at' => CarbonImmutable::now(),
         ]);
 
-        return view('guest.survey_thanks');
+        // ✅ redirect ke halaman thanks (bukan return view langsung)
+        return redirect()
+            ->route('guest.thanks', $visit)
+            ->with('status', 'Survey berhasil tersimpan. Terima kasih.');
+    }
+
+    public function thanks(GuestVisit $visit)
+    {
+        // Proteksi: hanya layanan
+        if ($visit->service_type !== 'layanan') {
+            abort(403, 'Halaman ini hanya tersedia untuk kunjungan jenis layanan.');
+        }
+
+        // Kalau belum ada survey, jangan izinkan akses halaman thanks
+        if (!$visit->survey()->exists()) {
+            return redirect()
+                ->route('guest.survey.show', $visit)
+                ->with('status', 'Silakan isi survey terlebih dahulu.');
+        }
+
+        return view('guest.survey_thanks', compact('visit'));
     }
 }
