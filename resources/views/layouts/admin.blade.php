@@ -61,7 +61,8 @@
                 </div>
 
                 {{-- Menu --}}
-                <nav class="flex-1 overflow-y-auto px-4 py-5 space-y-5
+                <nav
+                    class="flex-1 overflow-y-auto px-4 py-5 space-y-5
                             pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
 
                     {{-- Date (sidebar) --}}
@@ -216,11 +217,6 @@
                                     </a>
 
                                     <div class="mt-2 grid grid-cols-1 gap-2">
-                                        <a href="{{ route('admin.users.security') }}"
-                                            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
-                                            Keamanan Registrasi
-                                        </a>
-
                                         <a href="{{ route('admin.users.create') }}"
                                             class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition">
                                             Tambah User

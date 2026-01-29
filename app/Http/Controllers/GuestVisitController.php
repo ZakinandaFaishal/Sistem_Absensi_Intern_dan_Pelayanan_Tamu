@@ -432,12 +432,31 @@ class GuestVisitController extends Controller
         ]);
     }
 
-    public function active()
+    public function active(Request $request)
     {
-        $visits = GuestVisit::query()
+        $actor = $request->user();
+        $role = (string) ($actor?->role ?? '');
+        $actorDinasId = (int) ($actor?->dinas_id ?? 0);
+
+        $visitsQuery = GuestVisit::query()
             ->whereNull('completed_at')
             ->withExists('survey')
-            ->orderByDesc('arrived_at')
+            ->orderByDesc('arrived_at');
+
+        // Admin dinas: hanya lihat tamu aktif untuk dinasnya.
+        // Super admin: lihat semua.
+        // Selain itu (unauth/role lain): kosongkan agar tidak bocor lintas OPD.
+        if ($role === 'admin_dinas') {
+            if ($actorDinasId > 0) {
+                $visitsQuery->where('dinas_id', $actorDinasId);
+            } else {
+                $visitsQuery->whereRaw('1=0');
+            }
+        } elseif ($role !== 'super_admin') {
+            $visitsQuery->whereRaw('1=0');
+        }
+
+        $visits = $visitsQuery
             ->limit(20)
             ->get([
                 'id',

@@ -5,21 +5,24 @@ namespace App\Http\Requests;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
-class ProfileUpdateRequest extends FormRequest
+class ProfileAndPasswordUpdateRequest extends FormRequest
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
-        $isIntern = (($this->user()?->role ?? null) === 'intern');
-        $currentToken = trim((string) ($this->user()?->epikir_letter_token ?? ''));
+        $user = $this->user();
+        $isIntern = (($user?->role ?? null) === 'intern');
+        $mustChangePassword = (bool) ($user?->must_change_password ?? false);
+        $currentToken = trim((string) ($user?->epikir_letter_token ?? ''));
 
         // Example format from e-Pikir: 070/028/16/2026
         $epikirFormatRule = 'regex:/^\d{1,4}\/\d{1,4}\/\d{1,4}\/\d{4}$/';
+
+        $wantsToChangePassword = $mustChangePassword
+            || trim((string) $this->input('password', '')) !== ''
+            || trim((string) $this->input('password_confirmation', '')) !== ''
+            || trim((string) $this->input('current_password', '')) !== '';
 
         return [
             'name' => ['required', 'string', 'max:255'],
@@ -30,8 +33,8 @@ class ProfileUpdateRequest extends FormRequest
                 'email',
                 'max:255',
                 // Email tidak boleh diubah dari halaman profil.
-                Rule::in([(string) ($this->user()?->email ?? '')]),
-                Rule::unique(User::class)->ignore($this->user()->id),
+                Rule::in([(string) ($user?->email ?? '')]),
+                Rule::unique(User::class)->ignore($user?->id),
             ],
             'epikir_letter_token' => [
                 ($isIntern && $currentToken === '') ? 'required' : 'nullable',
@@ -39,6 +42,14 @@ class ProfileUpdateRequest extends FormRequest
                 'max:120',
                 $epikirFormatRule,
             ],
+
+            // Password section (optional unless must_change_password)
+            'current_password' => array_merge(
+                $wantsToChangePassword ? ['required', 'current_password'] : ['nullable'],
+            ),
+            'password' => array_merge(
+                $wantsToChangePassword ? ['required', Password::defaults(), 'confirmed'] : ['nullable'],
+            ),
         ];
     }
 
