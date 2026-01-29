@@ -172,9 +172,6 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_dinas', 'admin_di
             // ======================================================
             Route::get('/presensi', [AdminAttendanceController::class, 'index'])->name('attendance.index');
 
-            Route::get('/users/keamanan-registrasi', [AdminUserController::class, 'security'])->name('users.security');
-            Route::post('/users/registration-security', [AdminUserController::class, 'updateRegistrationSecurity'])->name('users.registration-security');
-            Route::delete('/users/registration-security', [AdminUserController::class, 'disableRegistrationSecurity'])->name('users.registration-security.disable');
             Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
             Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.role');
         });
@@ -200,6 +197,7 @@ Route::middleware(['auth', 'verified', 'role:intern'])
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/combined', [ProfileController::class, 'updateCombined'])->name('profile.updateCombined');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/profile/mahasiswa', function () {

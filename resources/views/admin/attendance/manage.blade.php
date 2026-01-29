@@ -83,37 +83,6 @@
                 @endif
 
                 <div class="p-6 space-y-5">
-                    @if (($locationsForDinas ?? collect())->count() > 0)
-                        <div class="rounded-xl border border-slate-200 bg-slate-50/40 px-4 py-4">
-                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                <div>
-                                    <div class="text-xs font-semibold text-slate-700">Scope Lokasi</div>
-                                    <div class="text-sm text-slate-600">Aturan presensi disimpan per lokasi.</div>
-                                </div>
-                                <form id="location-switch" method="GET" action="{{ route('admin.attendance.manage') }}"
-                                    class="flex items-center gap-2">
-                                    <select name="location_id"
-                                        class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" required>
-                                        <option value="" disabled
-                                            {{ empty($activeLocationId ?? 0) ? 'selected' : '' }}>Pilih lokasi</option>
-                                        @foreach ($locationsForDinas ?? [] as $loc)
-                                            <option value="{{ $loc->id }}"
-                                                {{ (int) ($activeLocationId ?? 0) === (int) $loc->id ? 'selected' : '' }}>
-                                                {{ $loc->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <noscript>
-                                        <button type="submit"
-                                            class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
-                                            Terapkan
-                                        </button>
-                                    </noscript>
-                                </form>
-                            </div>
-                        </div>
-                    @endif
-
                     <div class="rounded-2xl border border-slate-200 bg-slate-50/40 px-4 py-4">
                         <div class="text-xs font-semibold text-slate-700">Ringkasan Aturan</div>
                         <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-700">
@@ -385,34 +354,5 @@
         @endif
 
     </div>
-
-    <script>
-        (function() {
-            var officeSelect = document.getElementById('officeFromLocation');
-            if (officeSelect) {
-                officeSelect.addEventListener('change', function() {
-                    var opt = officeSelect.options[officeSelect.selectedIndex];
-                    var lat = opt && opt.getAttribute('data-lat');
-                    var lng = opt && opt.getAttribute('data-lng');
-                    if (!lat || !lng) return;
-
-                    var latInput = document.querySelector('input[name="office_lat"]');
-                    var lngInput = document.querySelector('input[name="office_lng"]');
-                    if (latInput) latInput.value = lat;
-                    if (lngInput) lngInput.value = lng;
-                });
-            }
-
-            var locationSwitch = document.getElementById('location-switch');
-            if (locationSwitch) {
-                var locationSelect = locationSwitch.querySelector('select[name="location_id"]');
-                if (locationSelect) {
-                    locationSelect.addEventListener('change', function() {
-                        locationSwitch.submit();
-                    });
-                }
-            }
-        })();
-    </script>
 
 @endsection

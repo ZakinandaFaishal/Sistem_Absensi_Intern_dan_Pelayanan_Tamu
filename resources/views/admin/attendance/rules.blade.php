@@ -70,38 +70,6 @@
                 </div>
             @endif
 
-            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/40">
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <div class="text-xs font-semibold text-slate-700">Scope Lokasi</div>
-                        <div class="text-sm text-slate-600">Aturan presensi disimpan per lokasi.</div>
-                    </div>
-                    <form id="location-switch" method="GET" action="{{ route('admin.attendance.rules') }}"
-                        class="flex items-center gap-2">
-                        @if (!empty($activeDinasId ?? 0))
-                            <input type="hidden" name="dinas_id" value="{{ (int) $activeDinasId }}">
-                        @endif
-                        <select name="location_id" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
-                            required>
-                            <option value="" disabled {{ empty($activeLocationId ?? 0) ? 'selected' : '' }}>Pilih
-                                lokasi</option>
-                            @foreach ($locationsForDinas ?? [] as $loc)
-                                <option value="{{ $loc->id }}"
-                                    {{ (int) ($activeLocationId ?? 0) === (int) $loc->id ? 'selected' : '' }}>
-                                    {{ $loc->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <noscript>
-                            <button type="submit"
-                                class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
-                                Terapkan
-                            </button>
-                        </noscript>
-                    </form>
-                </div>
-            </div>
-
             <form method="POST" action="{{ route('admin.attendance.settings') }}" class="p-6 space-y-5">
                 @csrf
 
@@ -113,18 +81,6 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="text-xs font-semibold text-slate-700">Office Latitude</label>
-
-                        <script>
-                            (function() {
-                                var form = document.getElementById('location-switch');
-                                if (!form) return;
-                                var select = form.querySelector('select[name="location_id"]');
-                                if (!select) return;
-                                select.addEventListener('change', function() {
-                                    form.submit();
-                                });
-                            })();
-                        </script>
                         <input name="office_lat" value="{{ old('office_lat', $settings['office_lat'] ?? '') }}"
                             class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
                             placeholder="contoh: -7.479xxx" />
@@ -143,28 +99,6 @@
                         @enderror
                     </div>
                 </div>
-
-                @if (($locationsForDinas ?? collect())->count() > 0)
-                    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                        <div class="text-xs font-semibold text-slate-700">Gunakan koordinat dari Lokasi</div>
-                        <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                                <select id="officeFromLocation"
-                                    class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
-                                    <option value="">— Pilih lokasi —</option>
-                                    @foreach ($locationsForDinas as $loc)
-                                        <option value="{{ $loc->id }}" data-lat="{{ $loc->lat }}"
-                                            data-lng="{{ $loc->lng }}">
-                                            {{ $loc->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <p class="mt-1 text-xs text-slate-500">Memasukkan lat/lng otomatis (tidak langsung
-                                    menyimpan).</p>
-                            </div>
-                        </div>
-                    </div>
-                @endif
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -250,24 +184,5 @@
             </form>
         </div>
     </div>
-
-    <script>
-        (function() {
-            var officeSelect = document.getElementById('officeFromLocation');
-            if (!officeSelect) return;
-
-            officeSelect.addEventListener('change', function() {
-                var opt = officeSelect.options[officeSelect.selectedIndex];
-                var lat = opt && opt.getAttribute('data-lat');
-                var lng = opt && opt.getAttribute('data-lng');
-                if (!lat || !lng) return;
-
-                var latInput = document.querySelector('input[name="office_lat"]');
-                var lngInput = document.querySelector('input[name="office_lng"]');
-                if (latInput) latInput.value = lat;
-                if (lngInput) lngInput.value = lng;
-            });
-        })();
-    </script>
 
 @endsection

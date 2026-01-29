@@ -185,11 +185,7 @@ class UserController extends Controller
 
     public function security(Request $request)
     {
-        $registrationSecurityEnabled = AppSettings::getString(AppSettings::REGISTRATION_ADMIN_CODE_HASH, '') !== '';
-
-        return view('admin.users.security', [
-            'registrationSecurityEnabled' => $registrationSecurityEnabled,
-        ]);
+        abort(404);
     }
 
     public function create(Request $request)
@@ -198,15 +194,32 @@ class UserController extends Controller
         $actorRole = (string) ($actor?->role ?? '');
         $actorDinasId = (int) ($actor?->dinas_id ?? 0);
 
+        if ($actorRole === 'admin_dinas' && $actorDinasId > 0) {
+            $defaultLocId = (int) Location::query()->where('dinas_id', $actorDinasId)->orderBy('name')->value('id');
+            if ($defaultLocId <= 0) {
+                $actor?->loadMissing('dinas');
+                $defaultName = (string) ($actor?->dinas?->name ?? 'Lokasi Dinas');
+                Location::query()->create([
+                    'dinas_id' => $actorDinasId,
+                    'name' => $defaultName,
+                ]);
+            }
+        }
+
         $locations = Location::query()
             ->when($actorRole === 'admin_dinas' && $actorDinasId > 0, fn($q) => $q->where('dinas_id', $actorDinasId))
             ->orderBy('name')
             ->get();
+
+        $defaultInternshipLocationId = (int) ($locations->first()?->id ?? 0);
+        $defaultInternshipLocationName = (string) ($locations->first()?->name ?? '');
         $dinasOptions = Dinas::query()->orderBy('name')->get();
 
         return view('admin.users.form', [
             'editUser' => null,
             'locations' => $locations,
+            'defaultInternshipLocationId' => $defaultInternshipLocationId,
+            'defaultInternshipLocationName' => $defaultInternshipLocationName,
             'dinasOptions' => $dinasOptions,
         ]);
     }
@@ -219,35 +232,44 @@ class UserController extends Controller
         $actorRole = (string) ($actor?->role ?? '');
         $actorDinasId = (int) ($actor?->dinas_id ?? 0);
 
+        if ($actorRole === 'admin_dinas' && $actorDinasId > 0) {
+            $defaultLocId = (int) Location::query()->where('dinas_id', $actorDinasId)->orderBy('name')->value('id');
+            if ($defaultLocId <= 0) {
+                $actor?->loadMissing('dinas');
+                $defaultName = (string) ($actor?->dinas?->name ?? 'Lokasi Dinas');
+                Location::query()->create([
+                    'dinas_id' => $actorDinasId,
+                    'name' => $defaultName,
+                ]);
+            }
+        }
+
         $locations = Location::query()
             ->when($actorRole === 'admin_dinas' && $actorDinasId > 0, fn($q) => $q->where('dinas_id', $actorDinasId))
             ->orderBy('name')
             ->get();
+
+        $defaultInternshipLocationId = (int) ($locations->first()?->id ?? 0);
+        $defaultInternshipLocationName = (string) ($locations->first()?->name ?? '');
         $dinasOptions = Dinas::query()->orderBy('name')->get();
 
         return view('admin.users.form', [
             'editUser' => $user,
             'locations' => $locations,
+            'defaultInternshipLocationId' => $defaultInternshipLocationId,
+            'defaultInternshipLocationName' => $defaultInternshipLocationName,
             'dinasOptions' => $dinasOptions,
         ]);
     }
 
     public function updateRegistrationSecurity(Request $request)
     {
-        $validated = $request->validate([
-            'registration_code' => ['required', 'string', 'min:6', 'max:100', 'confirmed'],
-        ]);
-
-        Setting::setValue(AppSettings::REGISTRATION_ADMIN_CODE_HASH, Hash::make((string) $validated['registration_code']));
-
-        return back()->with('status', 'Kode registrasi berhasil diperbarui.');
+        abort(404);
     }
 
     public function disableRegistrationSecurity(Request $request)
     {
-        Setting::setValue(AppSettings::REGISTRATION_ADMIN_CODE_HASH, '');
-
-        return back()->with('status', 'Registrasi berhasil dinonaktifkan.');
+        abort(404);
     }
 
     public function completeInternship(Request $request, User $user)
@@ -674,6 +696,21 @@ class UserController extends Controller
                     'role' => 'Admin dinas belum terhubung ke dinas. Hubungi super admin.',
                 ])->withInput();
             }
+
+            // Untuk admin_dinas: lokasi magang otomatis mengikuti dinas.
+            if (empty($validated['internship_location_id'] ?? null)) {
+                $defaultLocId = (int) Location::query()->where('dinas_id', $actorDinasId)->orderBy('name')->value('id');
+                if ($defaultLocId <= 0) {
+                    $actor?->loadMissing('dinas');
+                    $defaultName = (string) ($actor?->dinas?->name ?? 'Lokasi Dinas');
+                    $defaultLocId = (int) Location::query()->create([
+                        'dinas_id' => $actorDinasId,
+                        'name' => $defaultName,
+                    ])->id;
+                }
+
+                $validated['internship_location_id'] = $defaultLocId;
+            }
         }
 
         $tempPassword = null;
@@ -770,6 +807,40 @@ class UserController extends Controller
     {
         $this->ensureCanManageUser($request, $user);
 
+        $actor = $request->user();
+        $actorRole = (string) ($actor?->role ?? '');
+        $actorDinasId = (int) ($actor?->dinas_id ?? 0);
+
+        // admin_dinas hanya boleh mengubah user intern di dinasnya, dan tidak boleh memindahkan ke dinas lain.
+        if ($actorRole === 'admin_dinas') {
+            if ($actorDinasId <= 0) {
+                return back()->withErrors([
+                    'role' => 'Admin dinas belum terhubung ke dinas. Hubungi super admin.',
+                ])->withInput();
+            }
+
+            // Paksa role supaya tidak bisa dipalsukan via request.
+            $request->merge(['role' => 'intern']);
+            $request->request->remove('dinas_id');
+
+            // Pastikan internship_location_id selalu terisi.
+            if (empty($request->input('internship_location_id'))) {
+                $fallbackLocId = (int) ($user->internship_location_id ?? 0);
+                if ($fallbackLocId <= 0) {
+                    $fallbackLocId = (int) Location::query()->where('dinas_id', $actorDinasId)->orderBy('name')->value('id');
+                    if ($fallbackLocId <= 0) {
+                        $actor?->loadMissing('dinas');
+                        $defaultName = (string) ($actor?->dinas?->name ?? 'Lokasi Dinas');
+                        $fallbackLocId = (int) Location::query()->create([
+                            'dinas_id' => $actorDinasId,
+                            'name' => $defaultName,
+                        ])->id;
+                    }
+                }
+                $request->merge(['internship_location_id' => $fallbackLocId]);
+            }
+        }
+
         $isEditingSuperAdmin = (($user->role ?? 'intern') === 'super_admin');
 
         $validated = $request->validate([
@@ -797,6 +868,12 @@ class UserController extends Controller
                 if (($loc->dinas_id ?? null) === null) {
                     return back()->withErrors([
                         'internship_location_id' => 'Lokasi magang belum terhubung ke dinas. Silakan perbaiki data lokasi dulu.',
+                    ])->withInput();
+                }
+
+                if ($actorRole === 'admin_dinas' && (int) $loc->dinas_id !== $actorDinasId) {
+                    return back()->withErrors([
+                        'internship_location_id' => 'Lokasi magang tidak sesuai dengan dinas Anda.',
                     ])->withInput();
                 }
                 $validated['dinas_id'] = (int) $loc->dinas_id;

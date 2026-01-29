@@ -62,10 +62,11 @@
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <x-input-label for="email" :value="__('Email')"
                     class="text-[11px] uppercase tracking-wider text-white/70" />
-                <x-text-input id="email" name="email" type="email"
-                    class="mt-2 block w-full !rounded-xl !border-white/10 !bg-white/5 !text-white
-                           placeholder:!text-white/40 focus:!border-sky-300/25 focus:!ring-sky-200/20"
-                    :value="old('email', $user->email)" required autocomplete="username" />
+                <input type="hidden" name="email" value="{{ $user->email }}">
+                <x-text-input id="email" name="email_display" type="email"
+                    class="mt-2 block w-full !rounded-xl !border-white/10 !bg-white/5 !text-white/80
+                           placeholder:!text-white/40"
+                    :value="$user->email" required autocomplete="username" disabled />
                 <x-input-error class="mt-2 text-rose-100" :messages="$errors->get('email')" />
 
                 @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail())
@@ -98,6 +99,8 @@
                     class="mt-2 block w-full !rounded-xl !border-white/10 !bg-white/5 !text-white
                            placeholder:!text-white/40 focus:!border-fuchsia-300/25 focus:!ring-fuchsia-200/15"
                     :value="old('epikir_letter_token', $user->epikir_letter_token)" placeholder="Contoh: 070/028/16/2026" />
+
+                <p class="mt-2 text-[12px] text-white/70">Nomor surat ini disimpan dan digunakan untuk validasi.</p>
 
                 <div class="mt-2 rounded-xl border border-fuchsia-300/15 bg-fuchsia-400/8 px-3 py-2">
                     <p class="text-[12px] text-white/80">

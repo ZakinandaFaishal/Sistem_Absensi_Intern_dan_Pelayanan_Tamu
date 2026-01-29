@@ -184,15 +184,29 @@
                         </div>
                         <div class="md:col-span-4">
                             <label class="block text-sm font-semibold text-slate-700">Lokasi / Dinas Magang</label>
-                            <select name="internship_location_id"
-                                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
-                                <option value="">—</option>
-                                @foreach ($locations ?? [] as $loc)
-                                    <option value="{{ $loc->id }}" @selected((string) old('internship_location_id', $editUser->internship_location_id ?? '') === (string) $loc->id)>
-                                        {{ $loc->name }}{{ $loc->code ? ' (' . $loc->code . ')' : '' }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            @if ($isAdminDinasActor)
+                                <input type="hidden" name="internship_location_id"
+                                    value="{{ (int) old('internship_location_id', $editUser->internship_location_id ?? ($defaultInternshipLocationId ?? 0)) }}">
+                                <div
+                                    class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                                    <span
+                                        class="font-semibold">{{ $actor?->dinas?->name ?? ($defaultInternshipLocationName ?? '—') }}</span>
+                                    <span class="text-slate-500">(otomatis)</span>
+                                </div>
+                                <p class="mt-1 text-xs text-slate-500">Lokasi magang otomatis mengikuti dinas Anda.</p>
+                            @endif
+
+                            @unless ($isAdminDinasActor)
+                                <select name="internship_location_id"
+                                    class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
+                                    <option value="">—</option>
+                                    @foreach ($locations ?? [] as $loc)
+                                        <option value="{{ $loc->id }}" @selected((string) old('internship_location_id', $editUser->internship_location_id ?? '') === (string) $loc->id)>
+                                            {{ $loc->name }}{{ $loc->code ? ' (' . $loc->code . ')' : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endunless
                         </div>
 
                         <div class="md:col-span-4">
