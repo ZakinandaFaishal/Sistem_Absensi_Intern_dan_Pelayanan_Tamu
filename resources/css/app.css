@@ -1,3 +1,39 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /* Biar browser ikut mode gelap untuk form control (ngaruh ke autofill juga) */
+  :root { color-scheme: dark; }
+
+  /* FORCE: hilangkan putih/kuning autofill (Chrome/Edge/Safari) */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-text-fill-color: rgba(255,255,255,.92) !important;
+    caret-color: rgba(255,255,255,.92) !important;
+
+    /* ini yang paling penting: timpa “fill” putihnya */
+    -webkit-box-shadow: 0 0 0px 9999px rgba(2, 6, 23, 0.25) inset !important; /* slate-950/25 */
+    box-shadow: 0 0 0px 9999px rgba(2, 6, 23, 0.25) inset !important;
+
+    background-color: transparent !important;
+
+    /* kadang chrome masih kasih highlight internal, ini bantu netralin */
+    filter: none !important;
+  }
+
+  /* Firefox */
+  input:-moz-autofill,
+  textarea:-moz-autofill,
+  select:-moz-autofill {
+    box-shadow: 0 0 0px 9999px rgba(2, 6, 23, 0.25) inset !important;
+    -moz-text-fill-color: rgba(255,255,255,.92) !important;
+  }
+}
