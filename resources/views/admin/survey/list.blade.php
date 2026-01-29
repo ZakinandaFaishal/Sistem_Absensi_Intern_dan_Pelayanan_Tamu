@@ -45,22 +45,23 @@
             <div class="relative">
                 <button type="button" id="btnExportSurvey"
                     class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white
-                           hover:bg-slate-800 transition active:scale-[0.98]">
+                           shadow-sm shadow-slate-900/10 hover:bg-slate-800 hover:shadow-md hover:shadow-slate-900/10
+                           transition active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-200">
                     <span>Export Laporan</span>
                     <span class="inline-block transition" id="exportSurveyChevron">▾</span>
                 </button>
 
                 <div id="menuExportSurvey"
-                    class="hidden absolute right-0 mt-2 w-56 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-50">
+                    class="hidden absolute right-0 mt-2 w-56 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-50 ring-1 ring-slate-200/60">
                     <button type="button"
-                        class="export-survey-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+                        class="export-survey-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between transition"
                         data-url="{{ route('admin.survey.export.excel', request()->query()) }}" data-label="Excel">
                         <span>Export Excel (Survey)</span>
                         <span class="text-xs text-slate-400">.xlsx</span>
                     </button>
 
                     <button type="button"
-                        class="export-survey-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+                        class="export-survey-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between transition"
                         data-url="{{ route('admin.survey.export.pdf', request()->query()) }}" data-label="PDF">
                         <span>Export PDF (Survey)</span>
                         <span class="text-xs text-slate-400">.pdf</span>
@@ -71,19 +72,19 @@
             <iframe id="dlSurveyFrame" class="hidden"></iframe>
 
             <a href="{{ route('dashboard') }}"
-                class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700
+                       shadow-sm shadow-slate-900/5 hover:bg-slate-50 hover:shadow-md hover:shadow-slate-900/5
+                       transition active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-200">
                 ← Kembali
             </a>
         </div>
     </div>
 
     <div class="pt-5 space-y-6">
-
         <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div
-                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-200 bg-gradient-to-b from-white to-slate-50/30">
                 <div class="flex items-center gap-2">
-                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 ring-1 ring-slate-200/70">
                         <x-icon name="star" class="h-5 w-5 text-slate-700" />
                     </span>
                     <div>
@@ -105,16 +106,20 @@
                     <input type="hidden" name="page" value="1">
 
                     <div class="sm:col-span-5">
-                        <label class="block text-xs font-semibold text-slate-600">Cari</label>
+                        <label class="block text-xs font-semibold text-slate-700">Cari</label>
                         <input id="surveyQInput" type="text" name="q" value="{{ $q }}"
                             placeholder="Nama tamu / keperluan / komentar…"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                   shadow-sm shadow-slate-900/5
+                                   focus:outline-none focus:ring-4 focus:ring-slate-200 focus:border-slate-300 transition">
                     </div>
 
                     <div class="sm:col-span-3">
-                        <label class="block text-xs font-semibold text-slate-600">Minimal Rata-rata (Q1–Q9)</label>
+                        <label class="block text-xs font-semibold text-slate-700">Minimal Rata-rata (Q1–Q9)</label>
                         <select id="surveyAvgMinSelect" name="avg_min"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                   shadow-sm shadow-slate-900/5
+                                   focus:outline-none focus:ring-4 focus:ring-slate-200 focus:border-slate-300 transition">
                             <option value="" @selected($avgMin === '')>Semua</option>
                             <option value="4" @selected($avgMin === '4')>≥ 4.00</option>
                             <option value="3.5" @selected($avgMin === '3.5')>≥ 3.50</option>
@@ -127,21 +132,30 @@
                     </div>
 
                     <div class="sm:col-span-2">
-                        <label class="block text-xs font-semibold text-slate-600">Dari</label>
+                        <label class="block text-xs font-semibold text-slate-700">Dari</label>
                         <input id="surveyFromInput" type="date" name="from" value="{{ $from }}"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                   shadow-sm shadow-slate-900/5
+                                   focus:outline-none focus:ring-4 focus:ring-slate-200 focus:border-slate-300 transition">
                     </div>
 
                     <div class="sm:col-span-2">
-                        <label class="block text-xs font-semibold text-slate-600">Sampai</label>
+                        <label class="block text-xs font-semibold text-slate-700">Sampai</label>
                         <input id="surveyToInput" type="date" name="to" value="{{ $to }}"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                                   shadow-sm shadow-slate-900/5
+                                   focus:outline-none focus:ring-4 focus:ring-slate-200 focus:border-slate-300 transition">
                     </div>
 
                     <div class="sm:col-span-12 flex items-center justify-between gap-2">
                         <div class="text-xs text-slate-500">
                             @if ($activeFilter)
-                                <span class="font-semibold text-slate-600">Filter aktif</span>
+                                <span class="font-semibold text-slate-700">Filter aktif</span>
+                                <span class="text-slate-400">•</span>
+                                <a href="{{ url()->current() }}"
+                                    class="font-semibold text-blue-700 hover:text-blue-800 underline underline-offset-2">
+                                    Reset
+                                </a>
                             @else
                                 Menampilkan data terbaru.
                             @endif
@@ -197,36 +211,40 @@
                     })();
                 </script>
 
+                {{-- SORT CHIPS --}}
                 <div class="mt-3 flex flex-wrap items-center gap-2">
                     <a href="{{ $sortUrl('submitted_at') }}"
-                        class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                        class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700
+                               shadow-sm shadow-slate-900/5 hover:bg-slate-50 hover:shadow-md hover:shadow-slate-900/5 transition">
                         Tanggal <span class="text-slate-400">{{ $sortIcon('submitted_at') }}</span>
                     </a>
                     <a href="{{ $sortUrl('avg') }}"
-                        class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                        class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700
+                               shadow-sm shadow-slate-900/5 hover:bg-slate-50 hover:shadow-md hover:shadow-slate-900/5 transition">
                         Rata-rata <span class="text-slate-400">{{ $sortIcon('avg') }}</span>
                     </a>
                     <a href="{{ $sortUrl('name') }}"
-                        class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                        class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700
+                               shadow-sm shadow-slate-900/5 hover:bg-slate-50 hover:shadow-md hover:shadow-slate-900/5 transition">
                         Nama <span class="text-slate-400">{{ $sortIcon('name') }}</span>
                     </a>
                 </div>
             </div>
 
             <div class="p-6">
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto rounded-2xl border border-slate-200">
                     <table class="min-w-full text-sm">
-                        <thead>
+                        <thead class="bg-slate-50">
                             <tr class="text-left text-slate-600 border-b border-slate-200">
-                                <th class="py-3 pr-4 font-semibold whitespace-nowrap">Tanggal</th>
-                                <th class="py-3 pr-4 font-semibold whitespace-nowrap">Nama</th>
-                                <th class="py-3 pr-4 font-semibold whitespace-nowrap">Keperluan</th>
-                                <th class="py-3 pr-4 font-semibold whitespace-nowrap">Avg</th>
-                                <th class="py-3 pr-4 font-semibold whitespace-nowrap">Komentar</th>
-                                <th class="py-3 pr-0 font-semibold whitespace-nowrap">Detail</th>
+                                <th class="py-3 px-4 font-semibold whitespace-nowrap">Tanggal</th>
+                                <th class="py-3 px-4 font-semibold whitespace-nowrap">Nama</th>
+                                <th class="py-3 px-4 font-semibold whitespace-nowrap">Keperluan</th>
+                                <th class="py-3 px-4 font-semibold whitespace-nowrap">Avg</th>
+                                <th class="py-3 px-4 font-semibold whitespace-nowrap">Komentar</th>
+                                <th class="py-3 px-4 font-semibold whitespace-nowrap text-right">Detail</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
+                        <tbody class="divide-y divide-slate-100 bg-white">
                             @forelse ($surveys as $s)
                                 @php
                                     $avg = null;
@@ -250,8 +268,17 @@
                                                 (int) $s->q6 +
                                                 (int) $s->q7 +
                                                 (int) $s->q8 +
-                                                (int) $s->q9) /
-                                            9.0;
+                                                (int) $s->q9) / 9.0;
+                                    }
+
+                                    $avgFloat = $avg !== null ? (float) $avg : null;
+
+                                    $avgBadge = 'bg-slate-100 text-slate-700 ring-slate-200';
+                                    if ($avgFloat !== null) {
+                                        if ($avgFloat >= 3.75) $avgBadge = 'bg-emerald-50 text-emerald-700 ring-emerald-100';
+                                        elseif ($avgFloat >= 3.25) $avgBadge = 'bg-sky-50 text-sky-700 ring-sky-100';
+                                        elseif ($avgFloat >= 2.75) $avgBadge = 'bg-amber-50 text-amber-800 ring-amber-100';
+                                        else $avgBadge = 'bg-rose-50 text-rose-700 ring-rose-100';
                                     }
 
                                     $surveyPayload = [
@@ -274,24 +301,40 @@
                                         ],
                                     ];
                                 @endphp
-                                <tr class="hover:bg-slate-50/70">
-                                    <td class="py-3 pr-4 whitespace-nowrap text-slate-700">
-                                        {{ $s->submitted_at ? $s->submitted_at->format('Y-m-d H:i') : '-' }}</td>
-                                    <td class="py-3 pr-4 whitespace-nowrap">
+
+                                <tr class="hover:bg-slate-50/70 transition">
+                                    <td class="py-3 px-4 whitespace-nowrap text-slate-700">
+                                        {{ $s->submitted_at ? $s->submitted_at->format('Y-m-d H:i') : '-' }}
+                                    </td>
+
+                                    <td class="py-3 px-4 whitespace-nowrap">
                                         <div class="font-semibold text-slate-900">{{ $s->visit?->name ?? '-' }}</div>
                                         <div class="text-xs text-slate-500">{{ $s->visit?->email ?? '' }}</div>
                                     </td>
-                                    <td class="py-3 pr-4 whitespace-nowrap text-slate-700">
-                                        {{ $s->visit?->purpose ?? '-' }}</td>
-                                    <td class="py-3 pr-4 whitespace-nowrap text-slate-700 tabular-nums">
-                                        {{ $avg !== null ? number_format((float) $avg, 2, ',', '.') : '-' }}
+
+                                    <td class="py-3 px-4 text-slate-700">
+                                        <div class="max-w-[22rem] truncate" title="{{ $s->visit?->purpose ?? '-' }}">
+                                            {{ $s->visit?->purpose ?? '-' }}
+                                        </div>
                                     </td>
-                                    <td class="py-3 pr-4 text-slate-700">
-                                        <div class="max-w-xl break-words">{{ $s->comment ?? '-' }}</div>
+
+                                    <td class="py-3 px-4 whitespace-nowrap text-slate-700 tabular-nums">
+                                        <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 {{ $avgBadge }}">
+                                            {{ $avg !== null ? number_format((float) $avg, 2, ',', '.') : '-' }}
+                                        </span>
                                     </td>
-                                    <td class="py-3 pr-0 whitespace-nowrap">
+
+                                    <td class="py-3 px-4 text-slate-700">
+                                        <div class="max-w-xl break-words line-clamp-2" title="{{ $s->comment ?? '-' }}">
+                                            {{ $s->comment ?? '-' }}
+                                        </div>
+                                    </td>
+
+                                    <td class="py-3 px-4 whitespace-nowrap text-right">
                                         <button type="button"
-                                            class="btnSurveyDetail inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+                                            class="btnSurveyDetail inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700
+                                                   shadow-sm shadow-slate-900/5 hover:bg-slate-50 hover:shadow-md hover:shadow-slate-900/5
+                                                   transition active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-200"
                                             data-survey='@json($surveyPayload)'>
                                             Lihat
                                         </button>
@@ -299,8 +342,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="py-10 text-center text-slate-600">Belum ada data survey.
-                                    </td>
+                                    <td colspan="6" class="py-10 text-center text-slate-600">Belum ada data survey.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -312,16 +354,16 @@
                     <div class="absolute inset-0 bg-slate-900/40" data-modal-close></div>
 
                     <div class="absolute inset-0 flex items-center justify-center p-4">
-                        <div
-                            class="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
-                            <div
-                                class="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-200 bg-slate-50">
+                        <div class="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden ring-1 ring-slate-200/60">
+                            <div class="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-200 bg-gradient-to-b from-white to-slate-50/40">
                                 <div class="min-w-0">
                                     <div class="text-sm font-extrabold tracking-tight text-slate-900">Detail Survey</div>
                                     <div class="text-xs text-slate-500" id="surveyDetailMeta">-</div>
                                 </div>
                                 <button type="button"
-                                    class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                    class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700
+                                           shadow-sm shadow-slate-900/5 hover:bg-slate-50 hover:shadow-md hover:shadow-slate-900/5
+                                           transition active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-200"
                                     data-modal-close>
                                     Tutup
                                 </button>
@@ -329,17 +371,18 @@
 
                             <div class="p-5 space-y-4">
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div class="rounded-xl border border-slate-200 px-4 py-3">
+                                    <div class="rounded-2xl border border-slate-200 px-4 py-3 shadow-sm shadow-slate-900/5">
                                         <div class="text-xs font-semibold text-slate-500">Nama</div>
-                                        <div class="mt-1 text-sm font-semibold text-slate-900" id="surveyDetailName">-
-                                        </div>
+                                        <div class="mt-1 text-sm font-semibold text-slate-900" id="surveyDetailName">-</div>
                                         <div class="mt-1 text-xs text-slate-500" id="surveyDetailEmail"></div>
                                     </div>
-                                    <div class="rounded-xl border border-slate-200 px-4 py-3">
+                                    <div class="rounded-2xl border border-slate-200 px-4 py-3 shadow-sm shadow-slate-900/5">
                                         <div class="text-xs font-semibold text-slate-500">Keperluan</div>
                                         <div class="mt-1 text-sm text-slate-800" id="surveyDetailPurpose">-</div>
-                                        <div class="mt-2 text-xs text-slate-500">Avg: <span
-                                                class="font-semibold text-slate-700" id="surveyDetailAvg">-</span></div>
+                                        <div class="mt-2 text-xs text-slate-500">
+                                            Avg:
+                                            <span class="font-semibold text-slate-700" id="surveyDetailAvg">-</span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -360,7 +403,7 @@
                                     </div>
                                 </div>
 
-                                <div class="rounded-xl border border-slate-200 px-4 py-3">
+                                <div class="rounded-2xl border border-slate-200 px-4 py-3 shadow-sm shadow-slate-900/5">
                                     <div class="text-xs font-semibold text-slate-500">Komentar</div>
                                     <div class="mt-1 text-sm text-slate-800" id="surveyDetailComment">-</div>
                                 </div>
@@ -415,14 +458,9 @@
                     if (!raw) return;
 
                     let data = null;
-                    try {
-                        data = JSON.parse(raw);
-                    } catch (e) {
-                        return;
-                    }
+                    try { data = JSON.parse(raw); } catch (e) { return; }
 
-                    if (metaEl) metaEl.textContent = data.submitted_at ?
-                        `Dikirim: ${data.submitted_at}` : '-';
+                    if (metaEl) metaEl.textContent = data.submitted_at ? `Dikirim: ${data.submitted_at}` : '-';
                     if (nameEl) nameEl.textContent = data.name || '-';
                     if (emailEl) emailEl.textContent = data.email || '';
                     if (purposeEl) purposeEl.textContent = data.purpose || '-';
@@ -447,6 +485,7 @@
                 });
             });
 
+            // ===== Export dropdown =====
             const btn = document.getElementById('btnExportSurvey');
             const menu = document.getElementById('menuExportSurvey');
             const chevron = document.getElementById('exportSurveyChevron');
