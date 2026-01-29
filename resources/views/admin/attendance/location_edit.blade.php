@@ -14,7 +14,7 @@
         <div class="flex flex-wrap items-center gap-2">
             <a href="{{ $backUrl }}"
                 class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-                ← Kembali
+                Kembali
             </a>
         </div>
     </div>

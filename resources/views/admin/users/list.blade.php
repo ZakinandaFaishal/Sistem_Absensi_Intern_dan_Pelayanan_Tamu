@@ -6,6 +6,9 @@
 @section('content')
 
     @php
+        $actor = auth()->user();
+        $isAdminDinasActor = $actor && ($actor->role ?? null) === 'admin_dinas';
+
         // ====== FILTER & SORT STATE (dari query string) ======
         $q = request('q', '');
         $role = request('role', '');
@@ -225,16 +228,20 @@
                     <table class="min-w-full text-sm">
                         <thead class="bg-slate-50">
                             <tr class="text-left text-slate-600 border-b border-slate-200">
-                                <th class="py-3 px-4 font-semibold">Nama</th>
-                                <th class="py-3 px-4 font-semibold">Username</th>
-                                <th class="py-3 px-4 font-semibold">NIK</th>
-                                <th class="py-3 px-4 font-semibold">No. Telepon</th>
-                                <th class="py-3 px-4 font-semibold">Email</th>
-                                <th class="py-3 px-4 font-semibold">Role</th>
-                                <th class="py-3 px-4 font-semibold">Dinas</th>
-                                <th class="py-3 px-4 font-semibold">Status</th>
-                                <th class="py-3 px-4 font-semibold">Nilai</th>
-                                <th class="py-3 px-4 font-semibold text-right">Aksi</th>
+                                <th class="py-3 pr-4 font-semibold">Nama</th>
+                                <th class="py-3 pr-4 font-semibold">Username</th>
+                                <th class="py-3 pr-4 font-semibold">NIK</th>
+                                <th class="py-3 pr-4 font-semibold">No. Telepon</th>
+                                <th class="py-3 pr-4 font-semibold">Email</th>
+                                <th class="py-3 pr-4 font-semibold">Role</th>
+                                @unless ($isAdminDinasActor)
+                                    <th class="py-3 pr-4 font-semibold">Dinas</th>
+                                @endunless
+                                <th class="py-3 pr-4 font-semibold">Status</th>
+                                @if ($isAdminDinasActor)
+                                    <th class="py-3 pr-4 font-semibold">Nilai</th>
+                                @endif
+                                <th class="py-3 pr-0 font-semibold text-right">Aksi</th>
                             </tr>
                         </thead>
 
@@ -277,9 +284,11 @@
                                         </span>
                                     </td>
 
-                                    <td class="py-3 px-4 whitespace-nowrap text-slate-700">
-                                        {{ $uRole === 'admin_dinas' ? ($dinasName ?? '—') : '—' }}
-                                    </td>
+                                    @unless ($isAdminDinasActor)
+                                        <td class="py-3 pr-4 whitespace-nowrap text-slate-700">
+                                            {{ $dinasName ?? '—' }}
+                                        </td>
+                                    @endunless
 
                                     <td class="py-3 px-4 whitespace-nowrap">
                                         @if ($uRole === 'intern')
@@ -291,18 +300,21 @@
                                         @endif
                                     </td>
 
-                                    <td class="py-3 px-4 whitespace-nowrap">
-                                        @if ($uRole !== 'intern')
-                                            <span class="text-slate-400">—</span>
-                                        @else
-                                            <div class="font-semibold text-slate-900 tabular-nums">
-                                                {{ (int) ($user->computed_score ?? 0) }}
-                                            </div>
-                                            @if (!empty($user->computed_score_subtitle))
-                                                <div class="text-xs text-slate-500">{{ $user->computed_score_subtitle }}</div>
+                                    @if ($isAdminDinasActor)
+                                        <td class="py-3 pr-4 whitespace-nowrap">
+                                            @if (($user->role ?? 'intern') !== 'intern')
+                                                <span class="text-slate-400">—</span>
+                                            @else
+                                                <div class="font-semibold text-slate-900">
+                                                    {{ (int) ($user->computed_score ?? 0) }}</div>
+                                                @if (!empty($user->computed_score_subtitle))
+                                                    <div class="text-xs text-slate-500">
+                                                        {{ $user->computed_score_subtitle }}
+                                                    </div>
+                                                @endif
                                             @endif
-                                        @endif
-                                    </td>
+                                        </td>
+                                    @endif
 
                                     <td class="py-3 px-4 whitespace-nowrap text-right">
                                         @if (auth()->id() === $user->id)
@@ -356,7 +368,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="10" class="py-10 text-center text-slate-600">Belum ada user.</td>
+                                    <td colspan="9" class="py-10 text-center text-slate-600">Belum ada user.</td>
                                 </tr>
                             @endforelse
                         </tbody>

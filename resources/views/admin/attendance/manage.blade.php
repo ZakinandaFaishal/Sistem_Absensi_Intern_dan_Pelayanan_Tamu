@@ -419,33 +419,4 @@
 
     </div>
 
-    <script>
-        (function() {
-            var officeSelect = document.getElementById('officeFromLocation');
-            if (officeSelect) {
-                officeSelect.addEventListener('change', function() {
-                    var opt = officeSelect.options[officeSelect.selectedIndex];
-                    var lat = opt && opt.getAttribute('data-lat');
-                    var lng = opt && opt.getAttribute('data-lng');
-                    if (!lat || !lng) return;
-
-                    var latInput = document.querySelector('input[name="office_lat"]');
-                    var lngInput = document.querySelector('input[name="office_lng"]');
-                    if (latInput) latInput.value = lat;
-                    if (lngInput) lngInput.value = lng;
-                });
-            }
-
-            var locationSwitch = document.getElementById('location-switch');
-            if (locationSwitch) {
-                var locationSelect = locationSwitch.querySelector('select[name="location_id"]');
-                if (locationSelect) {
-                    locationSelect.addEventListener('change', function() {
-                        locationSwitch.submit();
-                    });
-                }
-            }
-        })();
-    </script>
-
 @endsection

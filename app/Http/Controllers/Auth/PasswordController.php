@@ -18,11 +18,19 @@ class PasswordController extends Controller
         $user = $request->user();
 
         if (($user?->role ?? null) === 'intern') {
-            $missingToken = trim((string) ($user->epikir_letter_token ?? '')) === '';
-            if ($missingToken) {
+            $token = trim((string) ($user->epikir_letter_token ?? ''));
+            $valid = (bool) preg_match('/^\d{1,4}\/\d{1,4}\/\d{1,4}\/\d{4}$/', $token);
+
+            if ($token === '') {
                 return back()->withErrors([
                     'epikir_letter_token' => 'Nomor surat e-Pikir wajib diisi terlebih dahulu sebelum mengganti password.',
-                ]);
+                ], 'updatePassword');
+            }
+
+            if (!$valid) {
+                return back()->withErrors([
+                    'epikir_letter_token' => 'Format nomor surat e-Pikir tidak sesuai. Contoh: 070/028/16/2026',
+                ], 'updatePassword');
             }
         }
 
