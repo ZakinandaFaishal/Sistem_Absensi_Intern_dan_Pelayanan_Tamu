@@ -116,12 +116,37 @@
         </svg>
     @break
 
+    {{-- NEW: building-office-2 --}}
+    @case('building-office-2')
+        <svg {{ $attributes->merge($baseAttrs) }}>
+            <path d="M3 21V9a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v12" />
+            <path d="M13 11h6a2 2 0 0 1 2 2v8" />
+            <path d="M7 11h2" />
+            <path d="M7 14h2" />
+            <path d="M7 17h2" />
+            <path d="M16 15h2" />
+            <path d="M16 18h2" />
+        </svg>
+    @break
+
     {{-- GUESTBOOK / DOCUMENTS --}}
     @case('clipboard-document')
         <svg {{ $attributes->merge($baseAttrs) }}>
             <path d="M8 4h8v3H8z" />
             <path d="M9 3h6a1 1 0 0 1 1 1v2H8V4a1 1 0 0 1 1-1z" />
             <path d="M7 7h10v14H7z" />
+        </svg>
+    @break
+
+    {{-- NEW: clipboard-document-list --}}
+    @case('clipboard-document-list')
+        <svg {{ $attributes->merge($baseAttrs) }}>
+            <path d="M9 3h6a1 1 0 0 1 1 1v2H8V4a1 1 0 0 1 1-1z" />
+            <path d="M8 6h8" />
+            <path d="M7 7h10v14H7z" />
+            <path d="M9 11h6" />
+            <path d="M9 14h6" />
+            <path d="M9 17h6" />
         </svg>
     @break
 
@@ -143,6 +168,17 @@
         </svg>
     @break
 
+    {{-- NEW: table-cells --}}
+    @case('table-cells')
+        <svg {{ $attributes->merge($baseAttrs) }}>
+            <path d="M3 6h18v12H3z" />
+            <path d="M3 10h18" />
+            <path d="M3 14h18" />
+            <path d="M8 6v12" />
+            <path d="M16 6v12" />
+        </svg>
+    @break
+
     {{-- PEOPLE --}}
     @case('user')
         <svg {{ $attributes->merge($baseAttrs) }}>
@@ -155,6 +191,16 @@
         <svg {{ $attributes->merge($baseAttrs) }}>
             <path d="M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0z" />
             <path d="M4 20a8 8 0 0 1 16 0" />
+        </svg>
+    @break
+
+    {{-- NEW: user-group --}}
+    @case('user-group')
+        <svg {{ $attributes->merge($baseAttrs) }}>
+            <path d="M16 11a3 3 0 1 0-6 0 3 3 0 0 0 6 0z" />
+            <path d="M18 21a6 6 0 0 0-12 0" />
+            <path d="M20 11a3 3 0 1 1 0 6" />
+            <path d="M22 21a5 5 0 0 0-4-4.8" />
         </svg>
     @break
 
@@ -239,6 +285,14 @@
         </svg>
     @break
 
+    {{-- NEW: tag --}}
+    @case('tag')
+        <svg {{ $attributes->merge($baseAttrs) }}>
+            <path d="M20.6 13.6 13.6 20.6a2 2 0 0 1-2.8 0L3 12.8V3h9.8l7.8 7.8a2 2 0 0 1 0 2.8z" />
+            <path d="M7 7h.01" />
+        </svg>
+    @break
+
     {{-- SETTINGS / AUTH --}}
     @case('cog-6-tooth')
         <svg {{ $attributes->merge($baseAttrs) }}>
@@ -262,6 +316,33 @@
         </svg>
     @break
 
+    {{-- NEW: arrow-path (reset/refresh) --}}
+    @case('arrow-path')
+        <svg {{ $attributes->merge($baseAttrs) }}>
+            <path d="M21 12a9 9 0 0 0-15.3-6.4" />
+            <path d="M6 3v4h4" />
+            <path d="M3 12a9 9 0 0 0 15.3 6.4" />
+            <path d="M18 21v-4h-4" />
+        </svg>
+    @break
+
+    {{-- NEW: arrow-down-tray (export/download) --}}
+    @case('arrow-down-tray')
+        <svg {{ $attributes->merge($baseAttrs) }}>
+            <path d="M12 3v10" />
+            <path d="m8 10 4 4 4-4" />
+            <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
+        </svg>
+    @break
+
+    {{-- NEW: check-badge --}}
+    @case('check-badge')
+        <svg {{ $attributes->merge($baseAttrs) }}>
+            <path d="M12 2l3 2 3.5.5-.5 3.5L20 11l-2 2 .5 3.5-3.5-.5-3 2-3-2-3.5.5.5-3.5-2-2 2-3-.5-3.5L9 4l3-2z" />
+            <path d="M9 12.5 11 14.5l4-5" />
+        </svg>
+    @break
+
     {{-- QR / CAMERA --}}
     @case('qr-code')
         <svg {{ $attributes->merge($baseAttrs) }}>
@@ -281,7 +362,8 @@
         </svg>
     @break
 
-        @case('academic-cap') {{-- pendidikan --}}
+    {{-- (opsional lain yg sudah ada di file kamu) --}}
+    @case('academic-cap')
         <svg {{ $attributes->merge($baseAttrs) }}>
             <path d="M12 3 2 8l10 5 10-5-10-5z" />
             <path d="M5 10v5c0 2 3 4 7 4s7-2 7-4v-5" />
@@ -289,24 +371,11 @@
         </svg>
     @break
 
-    @case('briefcase') {{-- pekerjaan --}}
+    @case('briefcase')
         <svg {{ $attributes->merge($baseAttrs) }}>
             <path d="M9 7V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1" />
             <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z" />
             <path d="M3 13h18" />
-        </svg>
-    @break
-
-    @case('building-office') {{-- instansi / kantor (opsional, kalau mau seragam) --}}
-        <svg {{ $attributes->merge($baseAttrs) }}>
-            <path d="M4 21V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v14" />
-            <path d="M9 9h1" />
-            <path d="M9 12h1" />
-            <path d="M9 15h1" />
-            <path d="M12 9h1" />
-            <path d="M12 12h1" />
-            <path d="M12 15h1" />
-            <path d="M8 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4" />
         </svg>
     @break
 

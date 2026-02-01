@@ -40,8 +40,9 @@
                     class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white
                            shadow-sm shadow-slate-900/10 hover:bg-slate-800 hover:shadow-md hover:shadow-slate-900/10
                            transition active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-200">
+                    <x-icon name="arrow-down-tray" class="h-5 w-5 text-white" />
                     <span>Export Laporan</span>
-                    <span class="inline-block transition" id="exportGuestChevron">▾</span>
+                    <x-icon id="exportGuestChevron" name="chevron-down" class="h-5 w-5 text-white/90 transition" />
                 </button>
 
                 <div id="menuExportGuest"
@@ -49,14 +50,20 @@
                     <button type="button"
                         class="export-guest-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between transition"
                         data-url="{{ route('admin.guest.export.excel', request()->query()) }}" data-label="Excel">
-                        <span>Export Excel (Buku Tamu)</span>
+                        <span class="inline-flex items-center gap-2">
+                            <x-icon name="table-cells" class="h-4 w-4 text-slate-600" />
+                            <span>Export Excel (Buku Tamu)</span>
+                        </span>
                         <span class="text-xs text-slate-400">.xlsx</span>
                     </button>
 
                     <button type="button"
                         class="export-guest-action w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between transition"
                         data-url="{{ route('admin.guest.export.pdf', request()->query()) }}" data-label="PDF">
-                        <span>Export PDF (Buku Tamu)</span>
+                        <span class="inline-flex items-center gap-2">
+                            <x-icon name="document-text" class="h-4 w-4 text-slate-600" />
+                            <span>Export PDF (Buku Tamu)</span>
+                        </span>
                         <span class="text-xs text-slate-400">.pdf</span>
                     </button>
                 </div>
@@ -65,10 +72,11 @@
             <iframe id="dlGuestFrame" class="hidden"></iframe>
 
             <a href="{{ route('dashboard') }}"
-                class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700
+                class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700
                        shadow-sm shadow-slate-900/5 hover:bg-slate-50 hover:shadow-md hover:shadow-slate-900/5
                        transition active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-200">
-                ← Kembali
+                <x-icon name="chevron-left" class="h-5 w-5 text-slate-700" />
+                <span>Kembali</span>
             </a>
         </div>
     </div>
@@ -76,7 +84,10 @@
     <div class="pt-5 space-y-6">
         @if (session('status'))
             <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-sm shadow-emerald-900/5">
-                <div class="font-semibold">Berhasil</div>
+                <div class="font-semibold inline-flex items-center gap-2">
+                    <x-icon name="check-circle" class="h-5 w-5 text-emerald-700" />
+                    <span>Berhasil</span>
+                </div>
                 <div class="mt-0.5 text-emerald-700/90">{{ session('status') }}</div>
             </div>
         @endif
@@ -109,11 +120,16 @@
 
                     <div class="sm:col-span-4">
                         <label class="block text-xs font-semibold text-slate-700">Cari</label>
-                        <input id="guestQInput" type="text" name="q" value="{{ $q }}"
-                            placeholder="Nama tamu / keperluan…"
-                            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
-                                   shadow-sm shadow-slate-900/5
-                                   focus:outline-none focus:ring-4 focus:ring-slate-200 focus:border-slate-300 transition" />
+                        <div class="relative mt-1">
+                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+                                <x-icon name="magnifying-glass" class="h-4 w-4" />
+                            </span>
+                            <input id="guestQInput" type="text" name="q" value="{{ $q }}"
+                                placeholder="Nama tamu / keperluan…"
+                                class="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm
+                                       shadow-sm shadow-slate-900/5
+                                       focus:outline-none focus:ring-4 focus:ring-slate-200 focus:border-slate-300 transition" />
+                        </div>
                     </div>
 
                     <div class="sm:col-span-2">
@@ -159,11 +175,15 @@
                     <div class="sm:col-span-8 flex flex-wrap items-end justify-between gap-2">
                         <div class="text-xs text-slate-500">
                             @if ($activeFilter)
-                                <span class="font-semibold text-slate-700">Filter aktif</span>
+                                <span class="font-semibold text-slate-700 inline-flex items-center gap-1">
+                                    <x-icon name="funnel" class="h-4 w-4 text-slate-500" />
+                                    <span>Filter aktif</span>
+                                </span>
                                 <span class="text-slate-400">•</span>
                                 <a href="{{ url()->current() }}"
-                                    class="font-semibold text-blue-700 hover:text-blue-800 underline underline-offset-2">
-                                    Reset
+                                    class="font-semibold text-blue-700 hover:text-blue-800 underline underline-offset-2 inline-flex items-center gap-1">
+                                    <x-icon name="arrow-path" class="h-4 w-4" />
+                                    <span>Reset</span>
                                 </a>
                             @else
                                 Menampilkan data terbaru.
@@ -200,13 +220,8 @@
                     };
 
                     if (qInput) {
-                        qInput.addEventListener('compositionstart', () => {
-                            isComposing = true;
-                        });
-                        qInput.addEventListener('compositionend', () => {
-                            isComposing = false;
-                            debounceSubmit();
-                        });
+                        qInput.addEventListener('compositionstart', () => { isComposing = true; });
+                        qInput.addEventListener('compositionend', () => { isComposing = false; debounceSubmit(); });
                         qInput.addEventListener('input', debounceSubmit);
                     }
 
@@ -263,14 +278,21 @@
                                         </span>
 
                                         <span class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ring-1 {{ $visitPill }}">
-                                            {{ $isGroup ? 'Kelompok' : 'Sendiri' }}
+                                            <span class="inline-flex items-center gap-1.5">
+                                                <x-icon name="{{ $isGroup ? 'user-group' : 'user' }}" class="h-4 w-4 opacity-80" />
+                                                <span>{{ $isGroup ? 'Kelompok' : 'Sendiri' }}</span>
+                                            </span>
+
                                             @if ($isGroup && $groupCount)
                                                 <span class="ml-1 opacity-80">• {{ $groupCount }} org</span>
                                             @endif
                                         </span>
 
                                         <span class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ring-1 {{ $servicePill }}">
-                                            {{ $serviceLabel($visit->service_type) }}
+                                            <span class="inline-flex items-center gap-1.5">
+                                                <x-icon name="tag" class="h-4 w-4 opacity-80" />
+                                                <span>{{ $serviceLabel($visit->service_type) }}</span>
+                                            </span>
                                         </span>
                                     </div>
 
@@ -279,15 +301,18 @@
                                     </div>
 
                                     <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
-                                        <div>
-                                            Datang:
+                                        <div class="inline-flex items-center gap-1.5">
+                                            <x-icon name="clock" class="h-4 w-4 text-slate-400" />
+                                            <span>Datang:</span>
                                             <span class="font-semibold text-slate-700">
                                                 {{ $visit->arrived_at ? $visit->arrived_at->timezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB' : '-' }}
                                             </span>
                                         </div>
+
                                         @if ($visit->completed_at)
-                                            <div>
-                                                Selesai:
+                                            <div class="inline-flex items-center gap-1.5">
+                                                <x-icon name="check-circle" class="h-4 w-4 text-slate-400" />
+                                                <span>Selesai:</span>
                                                 <span class="font-semibold text-slate-700">
                                                     {{ $visit->completed_at ? $visit->completed_at->timezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB' : '-' }}
                                                 </span>
@@ -298,25 +323,28 @@
                                             <div class="inline-flex items-center gap-1 text-slate-400">
                                                 <span class="hidden sm:inline">•</span>
                                                 <span class="font-semibold text-slate-500">Detail kelompok</span>
-                                                <span class="transition group-open:rotate-180">▾</span>
+                                                <x-icon name="chevron-down" class="h-4 w-4 transition group-open:rotate-180" />
                                             </div>
                                         @endif
                                     </div>
 
                                     <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                                         @if ($visit->institution)
-                                            <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700 ring-1 ring-slate-200">
-                                                🏢 {{ $visit->institution }}
+                                            <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700 ring-1 ring-slate-200">
+                                                <x-icon name="building-office-2" class="h-4 w-4 text-slate-600" />
+                                                <span class="truncate max-w-[18rem]">{{ $visit->institution }}</span>
                                             </span>
                                         @endif
                                         @if ($visit->email)
-                                            <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700 ring-1 ring-slate-200">
-                                                ✉️ {{ $visit->email }}
+                                            <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700 ring-1 ring-slate-200">
+                                                <x-icon name="envelope" class="h-4 w-4 text-slate-600" />
+                                                <span class="truncate max-w-[18rem]">{{ $visit->email }}</span>
                                             </span>
                                         @endif
                                         @if ($visit->phone)
-                                            <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700 ring-1 ring-slate-200">
-                                                📞 {{ $visit->phone }}
+                                            <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700 ring-1 ring-slate-200">
+                                                <x-icon name="phone" class="h-4 w-4 text-slate-600" />
+                                                <span class="truncate max-w-[18rem]">{{ $visit->phone }}</span>
                                             </span>
                                         @endif
                                     </div>
@@ -324,17 +352,19 @@
 
                                 <div class="flex items-center gap-2 shrink-0">
                                     @if ($visit->completed_at)
-                                        <span class="inline-flex items-center rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200">
-                                            ✓ Selesai
+                                        <span class="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200">
+                                            <x-icon name="check" class="h-5 w-5 text-slate-700" />
+                                            <span>Selesai</span>
                                         </span>
                                     @else
                                         <form method="POST" action="{{ route('admin.guest.complete', $visit) }}">
                                             @csrf
                                             <button type="submit"
-                                                class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white
+                                                class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white
                                                        shadow-sm shadow-slate-900/10 hover:bg-slate-800 hover:shadow-md hover:shadow-slate-900/10
                                                        transition active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-200">
-                                                Tandai Selesai
+                                                <x-icon name="check" class="h-5 w-5 text-white" />
+                                                <span>Tandai Selesai</span>
                                             </button>
                                         </form>
                                     @endif
@@ -351,8 +381,9 @@
                                                 <div class="text-sm font-extrabold text-slate-900">Informasi Kelompok</div>
                                                 <div class="text-xs text-slate-600">Data kunjungan berkelompok.</div>
                                             </div>
-                                            <span class="inline-flex items-center rounded-xl bg-white border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm shadow-slate-900/5">
-                                                👥 {{ $groupCount ?? max(1, count($groupNames)) }} orang
+                                            <span class="inline-flex items-center gap-2 rounded-xl bg-white border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm shadow-slate-900/5">
+                                                <x-icon name="user-group" class="h-4 w-4 text-slate-600" />
+                                                <span>{{ $groupCount ?? max(1, count($groupNames)) }} orang</span>
                                             </span>
                                         </div>
 
@@ -382,8 +413,9 @@
                                                 </div>
                                             </div>
 
-                                            <span class="inline-flex items-center rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
-                                                🧾 Anggota
+                                            <span class="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                                                <x-icon name="clipboard-document-list" class="h-4 w-4 text-slate-600" />
+                                                <span>Anggota</span>
                                             </span>
                                         </div>
 
@@ -434,13 +466,13 @@
             function openMenu() {
                 if (!menu) return;
                 menu.classList.remove('hidden');
-                if (chevron) chevron.style.transform = 'rotate(180deg)';
+                chevron?.classList.add('rotate-180');
             }
 
             function closeMenu() {
                 if (!menu) return;
                 menu.classList.add('hidden');
-                if (chevron) chevron.style.transform = 'rotate(0deg)';
+                chevron?.classList.remove('rotate-180');
             }
 
             btn?.addEventListener('click', (e) => {
@@ -460,12 +492,12 @@
                     const original = el.innerHTML;
                     el.disabled = true;
                     el.innerHTML = `
-                    <span class="inline-flex items-center gap-2">
-                        <span class="h-3 w-3 rounded-full border-2 border-slate-300 border-t-slate-700 animate-spin"></span>
-                        <span>Mengekspor ${label}...</span>
-                    </span>
-                    <span class="text-xs text-slate-400">harap tunggu</span>
-                `;
+                        <span class="inline-flex items-center gap-2">
+                            <span class="h-3 w-3 rounded-full border-2 border-slate-300 border-t-slate-700 animate-spin"></span>
+                            <span>Mengekspor ${label}...</span>
+                        </span>
+                        <span class="text-xs text-slate-400">harap tunggu</span>
+                    `;
 
                     closeMenu();
 
